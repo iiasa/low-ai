@@ -396,6 +396,48 @@ def call_local_llm_api(model_config: Dict, prompt: str, base_url: str = "http://
     
     return "error"
 
+def group_related_questions(questions: Dict) -> Dict[str, List[Tuple[str, Dict]]]:
+    """
+    Group related questions by their base topic.
+    Questions like "Local_Economy_Help" and "Local_Economy_Hurt" are grouped together
+    since they share the same base topic "Local_Economy".
+    
+    Handles special cases like:
+    - "Landscape_Unattractive" and "Landscape_Not_Unattractive" -> both grouped as "Landscape"
+    - "Space_Too_Much" and "Space_Acceptable" -> both grouped as "Space"
+    
+    Returns:
+        Dictionary mapping base_topic -> list of (question_id, question_info) tuples
+    """
+    # Define variant suffixes that should be stripped to find the base topic
+    variant_suffixes = [
+        '_Help', '_Hurt', '_No_Difference',
+        '_Lower', '_Higher',
+        '_Unattractive', '_Not_Unattractive',
+        '_Too_Much', '_Acceptable'
+    ]
+    
+    groups = {}
+    for question_id, question_info in questions.items():
+        # Try to find base topic by removing known variant suffixes
+        base_topic = question_id
+        for suffix in variant_suffixes:
+            if question_id.endswith(suffix):
+                base_topic = question_id[:-len(suffix)]
+                break
+        
+        # If no variant suffix matched, try splitting on last underscore as fallback
+        if base_topic == question_id:
+            parts = question_id.split('_')
+            if len(parts) > 1:
+                base_topic = '_'.join(parts[:-1])
+        
+        if base_topic not in groups:
+            groups[base_topic] = []
+        groups[base_topic].append((question_id, question_info))
+    
+    return groups
+
 def create_relevance_prompt(statement: str, question_info: Dict) -> str:
     """Create prompt for first pass: determine if statement is relevant to question"""
     prompt = f"""Please determine if this statement is relevant to the survey question below.
@@ -413,6 +455,42 @@ Please respond with valid JSON:
 
 - "yes" if the statement is relevant to this survey question
 - "no" if the statement is not relevant to this survey question
+
+Response (JSON only):"""
+    return prompt
+
+def create_relevance_prompt_grouped(statement: str, grouped_questions: List[Tuple[str, Dict]]) -> str:
+    """
+    Create prompt for first pass: determine if statement is relevant to a group of related questions.
+    This is more efficient than checking each question separately.
+    
+    Args:
+        statement: The statement to check
+        grouped_questions: List of (question_id, question_info) tuples for related questions
+    
+    Returns:
+        Prompt string
+    """
+    questions_text = "\n".join([
+        f"- {q_info['question']}" for _, q_info in grouped_questions
+    ])
+    
+    prompt = f"""Please determine if this statement is relevant to ANY of the following related survey questions.
+
+Related Survey Questions:
+{questions_text}
+
+Statement: "{statement}"
+
+Is this statement relevant to any of these survey questions? Does it express an opinion, belief, or concern related to any of these questions?
+
+Please respond with valid JSON:
+{{
+  "relevant": "yes"  // or "no"
+}}
+
+- "yes" if the statement is relevant to any of these survey questions
+- "no" if the statement is not relevant to any of these survey questions
 
 Response (JSON only):"""
     return prompt
@@ -478,11 +556,41 @@ def classify_statement_against_question(statement: str, question_id: str, questi
     else:
         return (question_id, 'error')
 
+def check_relevance_grouped(statement: str, grouped_questions: List[Tuple[str, Dict]], 
+                            model_config: Dict, base_url: str = "http://127.0.0.1:1234") -> Dict[str, str]:
+    """
+    First pass: Check if statement is relevant to a group of related questions.
+    Returns the same relevance result for all questions in the group.
+    
+    Returns:
+        Dictionary mapping question_id -> 'yes'/'no'/'error'
+    """
+    prompt = create_relevance_prompt_grouped(statement, grouped_questions)
+    response = call_local_llm_api(model_config, prompt, base_url)
+    
+    # Normalize response to yes/no
+    if 'yes' in response or response == 'y':
+        result = 'yes'
+    elif 'no' in response or response == 'n':
+        result = 'no'
+    else:
+        result = 'error'
+    
+    # Return same result for all questions in the group
+    return {question_id: result for question_id, _ in grouped_questions}
+
 def check_relevance_task(args: Tuple) -> Tuple[int, str, str]:
     """First pass: Check relevance of a single statement-question pair"""
     stmt_idx, statement, question_id, question_info, model_config, base_url = args
     _, response = check_relevance(statement, question_id, question_info, model_config, base_url)
     return (stmt_idx, question_id, response)
+
+def check_relevance_grouped_task(args: Tuple) -> List[Tuple[int, str, str]]:
+    """First pass: Check relevance of a statement to a group of related questions"""
+    stmt_idx, statement, grouped_questions, model_config, base_url = args
+    results = check_relevance_grouped(statement, grouped_questions, model_config, base_url)
+    # Return list of (stmt_idx, question_id, response) tuples
+    return [(stmt_idx, question_id, response) for question_id, response in results.items()]
 
 def classify_single_task(args: Tuple) -> Tuple[int, str, str]:
     """Second pass: Classify a relevant statement-question pair"""
@@ -497,40 +605,49 @@ def first_pass_relevance(statements: List[str], questions: Dict,
                         max_workers: int = 50) -> Dict:
     """
     First pass: Determine relevance of all statements to all questions
+    Uses grouped questions to reduce API calls (e.g., Help/Hurt variants checked together)
     
     Returns:
         Dictionary with structure: {statement_index: {question_id: 'yes'/'no'/'error'}}
     """
     results = {}
-    total_tasks = len(statements) * len(questions)
     
-    # Prepare all tasks
+    # Group related questions by base topic
+    question_groups = group_related_questions(questions)
+    
+    # Prepare all tasks (one per statement-group pair)
     tasks = []
     for stmt_idx, statement in enumerate(statements):
-        for question_id, question_info in questions.items():
-            tasks.append((stmt_idx, statement, question_id, question_info, model_config, base_url))
+        for grouped_questions in question_groups.values():
+            tasks.append((stmt_idx, statement, grouped_questions, model_config, base_url))
     
     # Initialize results structure
     for stmt_idx in range(len(statements)):
         results[stmt_idx] = {}
     
+    # Calculate total tasks for progress bar (still one per statement-question pair for display)
+    total_tasks = len(statements) * len(questions)
+    
     # Process tasks in parallel with progress bar
     model_short_name = model_config['name'].split('/')[-1] if '/' in model_config['name'] else model_config['name']
     with tqdm(total=total_tasks, desc=f"{model_short_name[:30]:<30} [Pass 1: Relevance]", unit="task") as pbar:
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_task = {executor.submit(check_relevance_task, task): task for task in tasks}
+            future_to_task = {executor.submit(check_relevance_grouped_task, task): task for task in tasks}
             
             for future in concurrent.futures.as_completed(future_to_task):
                 try:
-                    stmt_idx, question_id, response = future.result()
-                    results[stmt_idx][question_id] = response
-                    pbar.update(1)
+                    grouped_results = future.result()
+                    for stmt_idx, question_id, response in grouped_results:
+                        results[stmt_idx][question_id] = response
+                        pbar.update(1)
                 except Exception:
                     task = future_to_task[future]
                     stmt_idx = task[0]
-                    question_id = task[2]
-                    results[stmt_idx][question_id] = "error"
-                    pbar.update(1)
+                    grouped_questions = task[2]
+                    # Mark all questions in group as error
+                    for question_id, _ in grouped_questions:
+                        results[stmt_idx][question_id] = "error"
+                        pbar.update(1)
     
     return results
 
@@ -610,8 +727,14 @@ def get_majority_vote(responses: List[str]) -> str:
     counts = Counter(valid_responses)
     return counts.most_common(1)[0][0]
 
-def save_results_csv(all_results: Dict[str, Dict], statements: List[str], questions: Dict, filename: str = "sample_local_llm_results.csv", has_ground_truth: bool = True):
-    """Save results to CSV file with statement text, model classifications, ground truth (if available), and coherence"""
+def save_results_csv(all_results: Dict[str, Dict], statements: List[str], questions: Dict, filename: str = "sample_local_llm_results.csv", has_ground_truth: bool = True, statement_to_original_index: Dict[int, int] = None):
+    """
+    Save results to CSV file with statement text, model classifications, ground truth (if available), and coherence
+    
+    Args:
+        statement_to_original_index: Optional mapping from resampled statement index to original index.
+                                    Used when statements have been resampled and ground truth indices need to be mapped.
+    """
     import csv
     
     question_ids = list(questions.keys())
@@ -638,7 +761,9 @@ def save_results_csv(all_results: Dict[str, Dict], statements: List[str], questi
                 
                 # Get ground truth (if available)
                 if has_ground_truth:
-                    ground_truth = GROUND_TRUTH.get(stmt_idx, {}).get(question_id, 'unknown')
+                    # Use mapping if provided (for resampled statements), otherwise use stmt_idx directly
+                    original_idx = statement_to_original_index.get(stmt_idx, stmt_idx) if statement_to_original_index else stmt_idx
+                    ground_truth = GROUND_TRUTH.get(original_idx, {}).get(question_id, 'unknown')
                     row['Ground_Truth'] = ground_truth
                 
                 # Get classification from each model
