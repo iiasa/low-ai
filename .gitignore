@@ -1,0 +1,6 @@
+# Data: CSV and JSON (large caches, labels, CSVs)
+*.csv
+*.json
+
+# Keep config JSON tracked
+!local_LLM_api_from_vLLM.json
