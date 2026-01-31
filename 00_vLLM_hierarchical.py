@@ -293,19 +293,51 @@ SECTOR_TOPIC = {
     "housing": "solar",
 }
 
+# Safety net: when stance is "against", recheck if text asks for more options or complains insufficient options
+STANCE_AGAINST_RECHECK_TEMPLATE = (
+    "Does this comment ask for more {sector_topic} options or complain that current {sector_topic} options are insufficient? "
+    "Answer with exactly one word: yes or no."
+)
+
+# Second pass (stringent): for comments still labelled "against" after first pass, reclassify with strict question
+STANCE_AGAINST_STRICT_RECHECK_OPTIONS = ["against", "frustrated but still pro", "unclear stance"]
+STANCE_AGAINST_STRICT_RECHECK_TEMPLATE = (
+    "This comment was initially classified as the author being AGAINST {sector_topic}. "
+    "Apply a strict second pass. Is the author truly AGAINST {sector_topic} (opposes, rejects, or is hostile)? "
+    "Or are they frustrated with aspects (e.g. availability, cost) but still supportive of {sector_topic}? "
+    "Or is their stance unclear or ambiguous? "
+    "Answer with exactly one of: against, frustrated but still pro, unclear stance."
+)
+
 # question_id, user_prompt (or prompt_template with {sector_topic} for sector-specific questions), options, map_to
 NORMS_QUESTIONS: List[Dict[str, Any]] = [
     {
         "id": "1.1_gate",
-        "prompt": "Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no.",
+        "prompt": (
+            "Definitions: A social norm is a shared belief or expectation about what is typical or what is approved/disapproved. "
+            "Descriptive norm = reference to what people typically do or how common something is (e.g. 'most people here drive EVs'). "
+            "Injunctive norm = reference to what people should do, or explicit approval/disapproval (e.g. 'you should go vegan', 'eating meat is wrong'). "
+            "Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no."
+        ),
         "options": ["yes", "no"],
         "map_to": {"yes": "1", "no": "0"},
     },
     {
         "id": "1.1.1_stance",
-        "prompt": "What is the author's stance toward the topic (EVs / solar / veganism or diet)? Answer with exactly one of: against, against particular but pro, neither/mixed, pushing for.",
-        "prompt_template": "What is the author's stance toward {sector_topic}? Answer with exactly one of: against, against particular but pro, neither/mixed, pushing for.",
-        "options": ["against", "against particular but pro", "neither/mixed", "pushing for"],
+        "prompt": (
+            "What is the author's stance toward the topic (EVs / solar / veganism or diet)? "
+            "against = opposes or rejects the topic. pro but lack of options = author is in favor but wants more options or complains current options are insufficient (do not code as against). "
+            "Answer with exactly one of: against, against particular but pro, neither/mixed, pro, pro but lack of options."
+        ),
+        "prompt_template": (
+            "What is the author's stance toward {sector_topic}? "
+            "Definitions: against = author opposes or rejects {sector_topic}. "
+            "pro but lack of options = author is in favor of {sector_topic} but wants more options or complains that current options are insufficient; do NOT code this as against. "
+            "Complaints that there are too few {sector_topic} options count as 'pro but lack of options', not 'against'. "
+            "Examples: 'I wish there were more {sector_topic} options' → pro but lack of options. '{sector_topic} is stupid' → against. "
+            "Answer with exactly one of: against, against particular but pro, neither/mixed, pro, pro but lack of options."
+        ),
+        "options": ["against", "against particular but pro", "neither/mixed", "pro", "pro but lack of options"],
         "map_to": None,
     },
     {
@@ -322,14 +354,14 @@ NORMS_QUESTIONS: List[Dict[str, Any]] = [
     },
     {
         "id": "1.3.1_reference_group",
-        "prompt": "Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, people like me, political tribe.",
-        "options": ["coworkers", "family", "friends", "local community", "neighbors", "online community", "other", "other reddit user", "partner/spouse", "people like me", "political tribe"],
+        "prompt": "Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.",
+        "options": ["coworkers", "family", "friends", "local community", "neighbors", "online community", "other", "other reddit user", "partner/spouse", "political tribe"],
         "map_to": None,
     },
     {
         "id": "1.3.1b_perceived_reference_stance",
-        "prompt": "What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pushing for.",
-        "options": ["against", "neither/mixed", "pushing for"],
+        "prompt": "What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pro.",
+        "options": ["against", "neither/mixed", "pro"],
         "map_to": None,
     },
     {
@@ -438,6 +470,72 @@ async def call_vllm_disagreement(
         return "error", str(e)
 
 
+async def _recheck_against_is_lack_of_options(
+    session: aiohttp.ClientSession,
+    text: str,
+    sector: str,
+    base_url: str,
+    model_name: str,
+) -> bool:
+    """If stance was 'against', ask whether text asks for more options or complains options are insufficient. Returns True if yes (override to pro but lack of options)."""
+    url = base_url.rstrip("/") + CHAT_ENDPOINT
+    sector_topic = SECTOR_TOPIC.get(sector, sector)
+    prompt = STANCE_AGAINST_RECHECK_TEMPLATE.format(sector_topic=sector_topic)
+    user_content = prompt + "\n\n---\n\nComment/post:\n\n" + (text[:4000] if text else "")
+    payload = {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": NORMS_SYSTEM},
+            {"role": "user", "content": user_content},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 16,
+    }
+    timeout = aiohttp.ClientTimeout(total=REQUEST_TIMEOUT)
+    try:
+        async with session.post(url, json=payload, timeout=timeout) as resp:
+            resp.raise_for_status()
+            data = await resp.json()
+            content = (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip().lower()
+            return "yes" in content and "no" not in content[: content.find("yes")]
+    except Exception:
+        return False
+
+
+async def _recheck_against_strict(
+    session: aiohttp.ClientSession,
+    text: str,
+    sector: str,
+    base_url: str,
+    model_name: str,
+) -> str:
+    """Second pass for comments still labelled 'against': stringent question. Returns one of: against, frustrated but still pro, unclear stance."""
+    url = base_url.rstrip("/") + CHAT_ENDPOINT
+    sector_topic = SECTOR_TOPIC.get(sector, sector)
+    prompt = STANCE_AGAINST_STRICT_RECHECK_TEMPLATE.format(sector_topic=sector_topic)
+    user_content = prompt + "\n\n---\n\nComment/post:\n\n" + (text[:4000] if text else "")
+    payload = {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": NORMS_SYSTEM},
+            {"role": "user", "content": user_content},
+        ],
+        "temperature": 0.1,
+        "max_tokens": 64,
+    }
+    timeout = aiohttp.ClientTimeout(total=REQUEST_TIMEOUT)
+    options = STANCE_AGAINST_STRICT_RECHECK_OPTIONS
+    try:
+        async with session.post(url, json=payload, timeout=timeout) as resp:
+            resp.raise_for_status()
+            data = await resp.json()
+            content = (data.get("choices") or [{}])[0].get("message", {}).get("content", "").strip()
+            parsed = _parse_single_choice(content, options, map_to=None)
+            return parsed if parsed in options else options[0]
+    except Exception:
+        return options[0]
+
+
 async def label_one_item_norms(
     session: aiohttp.ClientSession,
     item: Dict[str, str],
@@ -447,12 +545,20 @@ async def label_one_item_norms(
     sem: asyncio.Semaphore,
     sector: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Run all NORMS_QUESTIONS for one comment; return { comment_index, comment, answers } (dashboard format). sector used for sector-specific prompts (e.g. stance toward EVs vs solar vs diet)."""
+    """Run all NORMS_QUESTIONS for one comment; return { comment_index, comment, answers } (dashboard format). sector used for sector-specific prompts (e.g. stance toward EVs vs solar vs diet). Safety net: if stance is 'against', recheck for 'pro but lack of options'."""
     async with sem:
         answers: Dict[str, str] = {}
         for q in NORMS_QUESTIONS:
             ans, _ = await call_vllm_single_choice(session, item["body"], q, base_url, model_name, sector=sector)
             answers[q["id"]] = ans
+        # Safety net: if model said "against", recheck whether text asks for more options or complains options insufficient
+        if sector and answers.get("1.1.1_stance") == "against":
+            if await _recheck_against_is_lack_of_options(session, item["body"], sector, base_url, model_name):
+                answers["1.1.1_stance"] = "pro but lack of options"
+            else:
+                # Second pass (stringent): still "against" — recheck with strict question; store result for dashboard
+                recheck = await _recheck_against_strict(session, item["body"], sector, base_url, model_name)
+                answers["1.1.1_stance_recheck"] = recheck
         return {
             "comment_index": comment_index,
             "comment": item["body"],
@@ -651,7 +757,20 @@ if __name__ == "__main__":
     p.add_argument("--max-concurrent", type=int, default=MAX_CONCURRENT, help="Max concurrent vLLM requests")
     p.add_argument("--norms", action="store_true", help="Run norms labelling (8 IPCC social-driver questions per comment); output for 00_vLLM_visualize.py")
     p.add_argument("--out-norms", default=None, help="Output JSON for norms labels (default: paper4data/norms_labels.json)")
+    p.add_argument("--incomplete", action="store_true", help="Shortcut: label-only, norms, 10k sample cache (equiv. to --label-only --norms --cache paper4data/sector_to_comments_cache_10k_sample.json); use with e.g. --limit 500")
     args = p.parse_args()
+
+    if args.incomplete:
+        args.label_only = True
+        args.norms = True
+        args.cache = SAMPLE_CACHE_PATH
+    # When only --limit/--limit-total is given (no other mode), run same as --label-only --norms --cache 10k_sample
+    if (args.limit is not None or args.limit_total is not None) and not (
+        args.build_only or args.build_sample or args.label_only or args.norms
+    ):
+        args.label_only = True
+        args.norms = True
+        args.cache = SAMPLE_CACHE_PATH
 
     out_path = args.out or os.path.join("paper4data", "disagreement_labels.json")
     out_norms_path = args.out_norms or os.path.join("paper4data", "norms_labels.json")

@@ -6,35 +6,41 @@
 <style>
 * { box-sizing: border-box; }
 html { background: #0d1117; }
-body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 16px; background: #0d1117; color: #e6edf3; min-height: 100vh; }
-h1 { text-align: center; color: #e6edf3; }
-.back-link { text-align: center; margin-bottom: 24px; }
+body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 12px; background: #0d1117; color: #e6edf3; min-height: 100vh; font-size: 13px; }
+h1 { text-align: center; color: #e6edf3; font-size: 1.28em; margin: 0.4em 0; }
+.back-link { text-align: center; margin-bottom: 14px; font-size: 0.8em; }
 .back-link a { color: #58a6ff; }
-.question-section { max-width: 1400px; margin: 0 auto 40px; background: #161b22; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); padding: 24px; }
-.question-title { font-size: 18px; font-weight: 600; color: #c9d1d9; margin-bottom: 20px; border-bottom: 2px solid #30363d; padding-bottom: 10px; }
-.category-group { margin-bottom: 24px; }
-.category-title { font-weight: 600; font-size: 14px; margin-bottom: 12px; padding: 8px 12px; border-radius: 6px; display: inline-block; color: #e6edf3; }
-.sectors-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.sector-column { display: flex; flex-direction: column; }
-.sector-header { font-weight: 600; font-size: 12px; color: #8b949e; margin-bottom: 8px; text-transform: uppercase; }
-.example-comment { padding: 14px; border-radius: 8px; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; border-left: 4px solid #58a6ff; background: #0d1117; color: #e6edf3; }
-.prompt-dropdown { margin-bottom: 20px; }
-.prompt-dropdown summary { cursor: pointer; color: #58a6ff; font-size: 14px; user-select: none; }
+.question-section { max-width: 1400px; margin: 0 auto 10px; background: #161b22; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.question-section summary { font-size: 14px; font-weight: 600; color: #c9d1d9; padding: 12px 18px; cursor: pointer; list-style: none; border-bottom: 2px solid transparent; }
+.question-section summary::-webkit-details-marker { display: none; }
+.question-section summary::before { content: "▶ "; color: #58a6ff; font-size: 10px; }
+.question-section[open] summary::before { content: "▼ "; }
+.question-section[open] summary { border-bottom-color: #30363d; }
+.question-content { padding: 18px; padding-top: 10px; }
+.category-group { margin-bottom: 14px; }
+.category-title { font-weight: 600; font-size: 11px; margin-bottom: 8px; padding: 6px 10px; border-radius: 0; display: inline-block; color: #e6edf3; }
+.sectors-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px; }
+.sector-column { display: flex; flex-direction: column; min-width: 0; }
+.sector-header { font-weight: 600; font-size: 9px; color: #8b949e; margin-bottom: 4px; text-transform: uppercase; }
+.example-comment { padding: 6px 8px; border-radius: 0; font-size: 9.5px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; border-left: 3px solid #58a6ff; background: #0d1117; color: #e6edf3; }
+.prompt-dropdown { margin-bottom: 14px; }
+.prompt-dropdown summary { cursor: pointer; color: #58a6ff; font-size: 11px; user-select: none; }
 .prompt-dropdown summary:hover { text-decoration: underline; }
-.prompt-box { margin-top: 12px; padding: 14px; border-radius: 8px; background: #0d1117; border: 1px solid #30363d; font-size: 13px; }
-.prompt-box .prompt-text { color: #e6edf3; line-height: 1.6; margin-bottom: 12px; }
-.prompt-box .choices-label { color: #8b949e; font-weight: 600; margin-bottom: 6px; }
-.prompt-box .choices-list { color: #c9d1d9; list-style: none; padding-left: 0; }
-.prompt-box .choices-list li { margin: 4px 0; }
+.prompt-box { margin-top: 10px; padding: 10px; border-radius: 0; background: #0d1117; border: 1px solid #30363d; font-size: 10.4px; }
+.prompt-box .prompt-text { color: #e6edf3; line-height: 1.5; margin-bottom: 8px; }
+.prompt-box .choices-label { color: #8b949e; font-weight: 600; margin-bottom: 4px; font-size: 10.4px; }
+.prompt-box .choices-list { color: #c9d1d9; list-style: none; padding-left: 0; font-size: 10.4px; }
+.prompt-box .choices-list li { margin: 2px 0; }
 </style>
 </head>
 <body>
 <h1>Example Comments by Category</h1>
 <div class="back-link"><a href="00_dashboardv2.html">&lt;- Back to Dashboard</a></div>
-<div class="question-section"><div class="question-title">Norm signal present</div>
+<details class="question-section"><summary>Norm signal present</summary>
+<div class="question-content">
 <details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>
 <div class="prompt-box">
-<div class="prompt-text">Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no.</div>
+<div class="prompt-text">Definitions: A social norm is a shared belief or expectation about what is typical or what is approved/disapproved. Descriptive norm = reference to what people typically do or how common something is (e.g. 'most people here drive EVs'). Injunctive norm = reference to what people should do, or explicit approval/disapproval (e.g. 'you should go vegan', 'eating meat is wrong'). Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no.</div>
 <div class="choices-label">Valid choices:</div>
 <ul class="choices-list">
 <li>yes</li>
@@ -43,33 +49,77 @@ h1 { text-align: center; color: #e6edf3; }
 </div>
 </details>
 <div class="category-group"><div class="category-title">No</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">This is a debate I've been having internally, and with a close friend who's vegan for environmental reasons for quite a while too. I should really do some good reading on the topic</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I mostly don't see how it applies.  For most people, their commutes take the EV away from the their home during the solar production hours.  The EV doesn't really add any value in this case.  EVs may be the cheapest way to buy a battery, but they don't always benefit a solar system.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Cross posting from the Tesla forum 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">I don't know how this is a debate we're having, we're clearly on the same team. 
 
-Solar Roof v3 - how accurate is the quote?
+If someone wants to dumpster dive they can and will. If you think it's too risky then you don't have to. Vegan Gains also promoted and had a vasectomy. If someone sees that video and decides to do it then they will. How much are people responsible for what their subscribers do? Before you say it I'm not equating vasectomy to dumpster diving, I'm saying people will do what they want to no matter where they get the i...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">They shouldn’t be downvoted, but cravings do go away for some people. I had really strong cravings when I was a vegetarian teen and assumed when I later became a vegan adult it would be harder (there was a gap between the two) but after about a year vegan I stopped having cravings. 
 
-Current: 4.2 kW solar panel installation on the roof (previous owner) 
+Sometimes I’ll crave something greasy and want a vegan version of something meaty, but I’m lucky enough not to ever crave “the real deal” anymore. I’m four years in now and the idea of eating any animal products gen...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I like the taste and texture of meat. I grew up eating lots of meat, and I went vegan for the animals, not for the texture. If I can keep eating things that are similar to what I grew up enjoying, why not? If you dislike them, fine, don't eat them. It's great we all now have the luxury of choice, one of the reasons I didn't cut out meat earlier in life was because I was raised by a fussy parent and had ever been exposed to foods like lentils and nut roasts so for a long time I wasn't keen on tho...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">**This is not related to EVs and should be removed.**
 
-Problem: The roof needs a replacement in the next year or two with $1500 worth of immediate work needed (northern CA = $$)
+How generous of him to donate shares to an org that is run by his brother kimbo. Also what's in it for Elon?
 
-**Asphalt option:** Take the panels off + replace with 25-30 year shingles + put the panels back (&quot;nah, we don't need permits&quot; - not sure if I can palette this) + 5 year weatherization warranty = **$23.5K + cost of repairin...</div></div>
+
+&quot;A large gift to charity last year would help reduce what Musk claimed would be the biggest tax bill in U.S. history.&quot;</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Err, my Tesla costs only slightly more than half from new compared to what I paid...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Except, you're wrong. 
+
+Bolt EUV launched last year and Cadillac Lyriq started initial production in March.
+
+As of right now GM has more models in production then Tesla and they have 3 more models confirmed within the next 18 months and at least 2 additional planned but yet to be officially announced for production timeline.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">It's from Australia so the terminology and chosen data points is better suited to there, however the numbers still work for any other currency.
+
+The Import Tariff is what you pay for electricity coming from the grid and the Feed in Tariff is what you are reimbursed for sending power to the grid. So u/LifeWithMike you were spot on. It's really just self consumption intended in this chart though. The savings from using your own solar power are what makes the payback happen. However you could use t...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">The bottom of that page says &quot;solar range - an average of 112km/week&quot;
+
+That's 70 miles, which at 4miles/kWh, needs 17.5kW
+
+The car looks like it has about 3 square meters of solar panel. If they're 20% efficient, that's 600W
+
+\[Germany gets nearly 2000 hours of sunlight per year\]([https://ru-geld.de/en/country/weather-and-climate/sunshine.html](https://ru-geld.de/en/country/weather-and-climate/sunshine.html)), which is 36 hours a week.
+
+600W \* 36hours = 22kWh
+
+So, it's possible - if you don't ...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Here in Germany Meyer Burger have a good reputation as very efficient, hq panels with very low degradation over their lifetime, like SunPower.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">Yes</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Always vegan! Anything else is failing non-human animals socially and as a consumer. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">&gt;Eating meat is not abuse, it's supporting it
 
-If the vegan equivalent of their favourite item isn't what they want, I would just figure out another gift!</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Carmakers historically have had to be very conservative to survive. It's a cut-throat market. Every new automaker (until Tesla) in the past 50+ years has gone out of business. The only &quot;innovative&quot; ones like the performance carmakers were small scale, and after a while the technology from those would bleed into the mass-produced stuff. Carmakers that have tried to go &quot;all in&quot; on a new technology have been burned badly before. Mazda almost went bankrupt in the 70s because of it. Many went heavily...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I'm not a Sunpower dealer but have been in the industry for some time now as one of Sunpowers biggest competitors. 
+Hiring an assassin isnt murder, its just supporting it
 
-An organization like Sunpower is multi state, has compliance departments, has extensive training and development programs. 
+When your ready to become vegan let us know
 
-Every contract signed by Sunpower and a customer impacts the entire multi state organization. 
+&gt;  
+&gt;  
+&gt;But I'm not going to tell people that they're horrible animal abusers because they support something that most people support
 
-When measuring an installer on price per watt for a &quot;cheaper price&quot; understand that the cheaper the price the less money the installer has to hire and develop and...</div></div>
+As i said for the 3rd time and this is the last reply i will give, its obvious your just a non vegan troll or perhaps you just lack proper comprehension
+
+You keep repeating over and over and over that calling people ...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Which side are you on? Is the Impossible Burger vegan enough for you?</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Oh yeah! My husband is vegan so I've never had to worry about the whole kissing-meat-mouth thing (we went vegan at the same time). I'd definitely want someone to have brushed their teeth after they ate meat before I kissed them, same way I wouldn't kiss a smoker after a cigarette. 
+
+Definitely a good idea to skip the meat if you're looking for a romantic first kiss in which she's not thinking, &quot;Oh god, can I taste the meat? I CAN TASTE THE MEAT!&quot; Haha -_-</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">You said the car was a 2015 Leaf.  How long have they had this car? I don’t understand why you expected the charging infrastructure for EVs to be exactly like the gas station industry at this point.  The government is just starting to take building out the infrastructure seriously.  As been brought up multiple times, the closest thing you gonna get to the gas station experience as far as charging is Tesla’s network and they don’t have credit card terminals so there still would be some account se...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Buy a TeslaTap before you do any more traveling. It's essential for non Tesla vehicles as Tesla destination chargers are pretty common.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">The modest range will be fine for the vast majority of ~~fleet~~ vehicles. Biggest problem with EVs is people thinking they need gas-like range.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Afaik he sold it or something, and his new place of ask recycled materials, full of solar panels, carbon-neutral, blah blah, and he switched to a vegetarian diet because of the negative  environmental impacts of meat production.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">The 'solar creates jobs' argument has been mentioned several times on this thread, and it is one of the things that suggests to me that the solar advocates really don't have their heads around these issues.   
+
+Taxing Bill and Bob to create a subsidized paycheck for Tom is not 'creating a job,' especially when you're just duplicating/replacing a pre-existing facility. Hazlitt's 'Broken window fallacy' is relevant here.  
+
+Also, what's been putting coal out of business is natural gas. It burns cl...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">In all seriousness, a big argument being made in this subreddit is that EVs are deserving of huge subsidies because ICEVs benefit from fossil fuel subsidies.
+
+So I looked into it, and recently wrote a fairly in-depth accounting of subsidies, comparing the specifics on vehicle subsidies for both purchases and operation (aka fuel subsidies).  As it turned out, even including fossil fuel subsidies, BEVs were far and away the most subsidized vehicles by a large margin.
+
+Between federal tax credits, ...</div></div>
 </div></div>
-</div>
-<div class="question-section"><div class="question-title">Author stance</div>
+</div></details>
+<details class="question-section"><summary>Author stance</summary>
+<div class="question-content">
 <details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>
 <div class="prompt-box">
 <div class="choices-label">Prompt uses only the comment's sector topic (not all three):</div>
@@ -77,66 +127,101 @@ When measuring an installer on price per watt for a &quot;cheaper price&quot; un
 <div class="prompt-text"><strong>food:</strong> veganism or vegetarianism / diet</div>
 <div class="prompt-text"><strong>housing:</strong> solar</div>
 <div class="choices-label">Prompt template:</div>
-<div class="prompt-text">What is the author's stance toward {sector_topic}? Answer with exactly one of: against, against particular but pro, neither/mixed, pushing for.</div>
+<div class="prompt-text">What is the author's stance toward {sector_topic}? Definitions: against = author opposes or rejects {sector_topic}. pro but lack of options = author is in favor of {sector_topic} but wants more options or complains that current options are insufficient; do NOT code this as against. Complaints that there are too few {sector_topic} options count as 'pro but lack of options', not 'against'. Examples: 'I wish there were more {sector_topic} options' → pro but lack of options. '{sector_topic} is stupid' → against. Answer with exactly one of: against, against particular but pro, neither/mixed, pro, pro but lack of options.</div>
 <div class="choices-label">Valid choices:</div>
 <ul class="choices-list">
 <li>against</li>
 <li>against particular but pro</li>
 <li>neither/mixed</li>
-<li>pushing for</li>
+<li>pro</li>
+<li>pro but lack of options</li>
 </ul>
 </div>
 </details>
 <div class="category-group"><div class="category-title">against</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">You’re trying to argue that one way is better than any other ways. Your argument isn’t new or original. The pick me vegans have been crying about angry vegans and coddling carnists all along. I said it takes all types. All forms of activism reach a certain type of person. I’m not interested in debating a vegan about this. The end.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I mostly don't see how it applies.  For most people, their commutes take the EV away from the their home during the solar production hours.  The EV doesn't really add any value in this case.  EVs may be the cheapest way to buy a battery, but they don't always benefit a solar system.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Doesn't seem worth it. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Accidentally started (then purposely finished) earthlings. I thought it was an alien themed film, so glad I didn't read the description otherwise I probably wouldn't have watched it. I was vegetarian back then I thought veganism was pointless.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Idk, I just think someone has to be really delusional to post on a vegan sub about how much meat they eat, throw a fit when they don’t get praise, and then throw around insults and accusations. 
 
-11,000 kwh per year means about 900 kwh per month. 
+You say that I’m on a loop, but I’m only refuting every baseless comment that you make.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Leftism larping. They heard from someone who heard from someone who heard from someone that veganism is for rich white liberals so they think veganism is super expensive, meanwhile we're out here making some of the cheapest meals one can make.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">What is so important that the one single model Tesla has on family SUV segment is on top?
 
-Electricity in Texas is about $0.12 per kwh. So you're paying $116 per month to generate $108 worth of electricity per month at best. 
+When other companies sell way more using several different badges. Teslas sales “dominance” is nothing but a lie for years.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">&quot;I can't wait for real automakers to make EVs...so their dealerships can jack up the price ten of thousands above retail.&quot;</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Everyone on this sub is always yelling about how buying an ICE car nowadays is dumb and you’re an idiot if you do it. Fuck off with that shit.
 
-And this assuming you're able to use every single kwh generated or find a net-metering plan that offers 1 to 1 net metering. I am not sure those are still available in Texas without a minimum fee or without capping you on how much you can send back. 
+Like millions and millions of other people, I live in an apartment and have nowhere to charge a car. So yeah, until landlords start putting in charging stations for every unit, or until commercial charging stations are plentiful and fast, people are going to keep buying ICE cars.
 
-You probably won't get your money'...</div></div>
-</div></div>
-<div class="category-group"><div class="category-title">against particular but pro</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Rip every vegan w/ milk allergies once again 😞 I'm glad they're making progress tho</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I think some of that will change as larger EVs become available.  As someone who works on a ranch and owns multiple horses, I cannot afford to lose the utility of my truck to go to an electric car or crossover.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I don't know is if this is a hit piece or not. In a way, it reminded me of Cowspiracy, with the on the spot interviews of environmental leaders, etc,
-
-I do know that there was no discussion of energy storage other than batteries, the lifetime of solar panels was misstated (10 years? really?), as was the carbon impact of electric cars etc.  
-[https://thumbor.forbes.com/thumbor/960x0/https%3A%2F%2Fblogs-images.forbes.com%2Fenergyinnovation%2Ffiles%2F2018%2F03%2FUS-EV-mpg.jpg](https://thumbor.forbe...</div></div>
+But yes, we’re all idiots who don’t realize not paying for gas is cheaper ...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">As of August 2024, Solar Edge has one of the worst customer support experiences I have ever had.  They do not care about the homeowner...even when your large solar installer, Titan Solar, goes out of business.  For anyone considering solar, be sure and call the customer support number for your installer and products they install and let that be part of your decision making.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Omg, another SunRun victim. Ask for their litigation team contact. If they refuse or delay, and if you purchased in Home Depot or Costco, go directly to them and tell them what’s going on. One of my friends committed the error of signing up with SunRun and the only way to make them walk straight was to file a complaint in Costco and threat to sue Costco over SunRun.   Costco manager called SunRun and made them move their ass. Talk also to your homeowners insurance, ask for advice about filing  a...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Sdge. I just made the cutoff the be grandfathered in to the older net metering scheme. CPUC cut the legs out from under residential rooftop and it sucks.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">neither/mixed</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">This is a debate I've been having internally, and with a close friend who's vegan for environmental reasons for quite a while too. I should really do some good reading on the topic</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Actually, someone by name Jeff commented the exact same thing on [Tech Crunch's article](http://techcrunch.com/2014/05/14/electric-cruisebeast-creator-elon-musk-tells-the-oatmeal-hes-happy-to-help-fund-tesla-museum/?ncid=rss) and I looked up the stock values of Tesla before and after the day of posting. The increase is not $10 over a day, it's more like over 10 days.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">What’s the difference between factory farming vs regular farming</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Oatly is a brand. They are asking if your oat milk is oatly the brand. Sorry my phone sucks.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Doc Martens has a vegan line: http://www.drmartens.com/uk/search?text=vegan&amp;amp;x=0&amp;amp;y=0</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Tesla Model 3 Used Car Buying Guide on Youtube</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">&amp;gt;I'll bite. I don't think any reasonable person thinks there's &quot;no way&quot; VW catches Tesla by 2025.
 
-That aside, Elon could easily afford $8M and honor the great man Tesla.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">save money, generate revenue... all the same ..financial benefits.  Solar PV does not provide any occupant or utilitarian benefit by itself.
+looks like you havent looked at the sub or posts from the usual Tesla trolls over here.
 
-We are talking within the context of this project here. Giant water Solar PV Farm... is this cheaper than Nuclear or Wind.. or energy savings program within the city... there may be a lot more viable option, when you start true uping the actual additional O&amp;M and R&amp;R cost.</div></div>
+I havent either because these people are always the ones i just see as &quot;blocked account&quot;
+
+its just like 5 - 10 people and this sub is suddenly much cleaner.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Electrify America said that it just wanted to get charging stations up as soon as possible.
+
+Now, Electrify America is going back to those locations to add canopies.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Those who installed solar PV system did the appraised value of your home increase?</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">But are you currently net metering at 18 cents or is there some other form of incentive (that you might have to pay taxes on, significantly altering your payback calculation...)</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">You can't regulate free (home rooftop solar)</div></div>
 </div></div>
-<div class="category-group"><div class="category-title">pushing for</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Always vegan! Anything else is failing non-human animals socially and as a consumer. 
-
-If the vegan equivalent of their favourite item isn't what they want, I would just figure out another gift!</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Carmakers historically have had to be very conservative to survive. It's a cut-throat market. Every new automaker (until Tesla) in the past 50+ years has gone out of business. The only &quot;innovative&quot; ones like the performance carmakers were small scale, and after a while the technology from those would bleed into the mass-produced stuff. Carmakers that have tried to go &quot;all in&quot; on a new technology have been burned badly before. Mazda almost went bankrupt in the 70s because of it. Many went heavily...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Cross posting from the Tesla forum 
-
-Solar Roof v3 - how accurate is the quote?
-
-Current: 4.2 kW solar panel installation on the roof (previous owner) 
-
-Problem: The roof needs a replacement in the next year or two with $1500 worth of immediate work needed (northern CA = $$)
-
-**Asphalt option:** Take the panels off + replace with 25-30 year shingles + put the panels back (&quot;nah, we don't need permits&quot; - not sure if I can palette this) + 5 year weatherization warranty = **$23.5K + cost of repairin...</div></div>
+<div class="category-group"><div class="category-title">pro</div><div class="sectors-row">
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Inspiring interview on VegWorld radio with German vegan fitness celebrity Attila Hildmann...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">vegan Slam poetry by Jaimie G</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Vegan App in the App Store's Top 10!</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">—</div></div>
 </div></div>
-</div>
-<div class="question-section"><div class="question-title">Reference group</div>
+<div class="category-group"><div class="category-title">pro but lack of options</div><div class="sectors-row">
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">health, environment, animals.
+
+eating meat contributes to heart disease which is the leading cause of death in most developed countries because meat is hard on your body. processed meats have also been proven to cause cancer, things like sausages, patties, and bacon.
+
+animal agriculture is one of the worst things for our environment. a lot of land is deforested for grazing. cows produce methane which goes into our atmosphere and causes climate change. we are farming an excessive amount of them w...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Went vegan at 15 too. The veggie thing is so true. Frozen is great until you've got an idea how much you need.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">https://plantepusherne.dk/the-best-vegan-dandelion-honey-tastes-like-honey/</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">&amp;gt; My understanding is that there is no connection between the ICE and the drivetrain.
+
+That's a common misconception.  [Here](https://www.gm-volt.com/threads/gen-2-volt-transmission-operating-modes-explained.337644/) description of the Gen1 and Gen2 voltec transmissions.  You can find the missing pictures [here](https://www.gm-volt.com/attachments/slide21-jpg.168446/) and [here](https://www.gm-volt.com/attachments/slide31-jpg.164350/)
+
+Couple points:
+
+* The Volt transmission is designed to ru...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Fastned And Tesla Open Germany’s Largest Fast Charging Hub</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Give the BMW i3 a look. The suicide rear door will be the make or break point of living with it, given you have a small child. There's a waltz to opening the doors in a parking space, or you start stalking corner spaces... But I'm 6'3&quot; and it had excellent viability and it's a tough little cookie. It is a beemer, tho, so your mirror is $1k easily to replace if you hit the mailbox/trashcan on the way out of the drive. But the BEV (not range extended, or REx) are quite reliable. I'd suggest a 2017...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">TBH I don't really recommend it. When we bought our house, I REALLY wanted a solar roof - I put in the order. When I started doing research, i went the other way. Upgrading panels in the future isn't easy - if a solar tile fails, swapping it out isn't easy. Plus, I don't think it looks very good. It looks fantastic in their marketing, but a house near us got the solar roof. Because the tiles are so rigid, I think it looks weird when the roof has transitions and changes angles. I ended up getting...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">We need more information to help you.  Which NEM are you on and when does it expire.  Makes a huge difference. It’s not on your bill.  EVA expires November, 2025, not EV2A.  
+
+There is no way your current system is worth $15k.  For that price you could get a new system after the 30% tax credit. 
+
+I would sit tight and not do anything. 
+
+Sun Run, like the cellphone companies is trying to get you locked into a contract for reoccurring revenue.  Don’t do it.
+
+Wait until 2028 when your  solar system...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">LG Neon and SunEdison solar panels killed SunPower - $1.20/W is no longer sustainable for high efficiency solar panels</div></div>
+</div></div>
+</div></details>
+<details class="question-section"><summary>Reference group</summary>
+<div class="question-content">
 <details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>
 <div class="prompt-box">
-<div class="prompt-text">Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, people like me, political tribe.</div>
+<div class="prompt-text">Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.</div>
 <div class="choices-label">Valid choices:</div>
 <ul class="choices-list">
 <li>coworkers</li>
@@ -148,78 +233,133 @@ Problem: The roof needs a replacement in the next year or two with $1500 worth o
 <li>other</li>
 <li>other reddit user</li>
 <li>partner/spouse</li>
-<li>people like me</li>
 <li>political tribe</li>
 </ul>
 </div>
 </details>
 <div class="category-group"><div class="category-title">coworkers</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">I know I'm late to this but I just have one simple piece of advice: 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">It’s not a ridiculous hypothetical because it happens all the time. I see different versions of Carl everywhere. Coworkers, youtubers, etc
+
+Not everyone initially gets into veganism for ethics. I started cutting out meat for health reasons. Then over time, it turned into an ethical thing for me as I educated myself. Not everyone is magically “woke” after a lifetime of being a carnivore. The perspective shift is often gradual, which is understandable when a habit is INGRAINED in you for years 
+
+D...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">I know I'm late to this but I just have one simple piece of advice: 
 Just talk. 
 Talk to your coworkers, your friends, people you randomly meet throughout your life. Not shouting activism but rather just creating a sane conversation where you remain calm and simply normalize being vegan and what it means. There are too many people that don't even know what veganism really means. They see it as unattainable or weird or elitist. Bringing your lunch to work and someone saying &quot;that smells good&quot; and...</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">The problem lies with the people who buy those cars that are generally biased towards ICE as it gives them a bigger sense of driving sensation and emotion, with a lively V8 for example.
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Flexis are often inspired by vegans.
 
-I'm not saying that EVs are boring (quite the opposite) but it's just something I've gathered from talking to car people, they generally THINK EVs are boring.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Modules
-18 Freedom Forever 400W BOBs
-Battery
-2 Tesla Powerwall
-Inverters
-18 Enphase Enphase IQ8PLUS-72-2-US
-Mount Type
-Roof Mount - Comp Shingle
-Key Adders
-Critter Guard, 
-Enphase IQ 8, 
-Tesla Powerwall 2, 
-Module Upgrade, 
-Tesla Powerwall 2
+Source:  Am vegan that has spread my filthy hippy ideology to many of my co-workers who have now reduced much of their meat intake and in some cases gone vegetarian or full vegan.
 
-7.2 KW 
+The trick?  Make 'em think it was their idea all along.  Mwa-ha-^ha-^haaaa</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">I think that’s the greatest divide - I work in EVs and it’s split down the middle. Folks either want to feel like it’s the future (telsa-ish) Or they want their old car with a battery (F-150 Lightning). And neither will really compromise on that front. In general though, I feel like the futuristic folks are early adopters versus a representation of the coming-majority. At least that’s what’s come out of my testing with the Big 3.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">There is a huge reduction in company car tax (50%) for PHEVs. It is even lower for BEVs, but they make a lot of sense for fleets. When fleets don't want to bother with installing charging equipment or charging during long-distance travelling PHEVs are a money-saving option without additional investment being necessary. They also help in bringing down the company car fleet CO2 emissions on paper which can be important for PR or to reach a companies sustainability goals.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">As a big Tesla fan, I do hope they open their charging network up, as they’ve talked about, and sooner rather than later.  The only downside for Tesla is possible crowding at some stations, which will be alleviated by building out more.  The upsides are increased brand awareness/positivity, likely better utilization of chargers, and more revenue from charging (to support further expansion).
 
-I did this project for my customer for $47,674 all on with 2 Tesla PW in Southern California, Orange County.</div></div>
+I also hope — and I’ll admit this is my own, selfish speculation — that Tesla’s connector would become a ...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">That's legit. I don't think my company (Dominion VA) has that but it is 1:1 net metering so haven't really been looking into batteries.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Haha, thanks for your long reply, I like reading those instead of the oneliners you mostly see on social media. But going from 18.000 liters a day to 4500 is crazy. A colleague of mine built a new diesel electric crane ship for installation and dredging works a few years ago, almost the same models as he had before, he told me similar stories. The crane is electric running on the same generators as for the main propulsion and is also equipped with a flywheel that can absorb released energy when ...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Yeah, that's who we have been in touch with about it. They see it as a liability, apparently, which I find frustrating because it's one potential point of failure and I would think they would be confident enough in their abilities as roofers to properly flash and seal one penetration. We've shown them the solar roof jack and everything. I think we are going to have to find another roofer that's willing to do the job.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">family</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">But perhaps the perceived rigor of being vegan will dissuade a relative from becoming a vegan themself. It’s not clear cut. Maybe I’m wrong. But nobody should confidently say I’m wrong.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I would do it 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">One small advice I'd give is not to think about it in  restrictive way (&quot;I'll have to give up X, Y and Z&quot;), but look at it from an inclusive point of view (&quot;There are many new flavours I get to explore&quot;).
 
-If it's your first time driving an EV, make sure you plan ahead - which you are doing.
+Since going vegan, I tried plant based recipes from around the world, got really into cooking, became the main cook in my household, tried new produce, explored a variety of food combinations... go ahead and try vegan recipes and include them on your daily meals and you'll see there are so man...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Your English is great! 
 
-70 miles you will be fine. Bad outcomes include Hertz giving you a low charged car that you have to charge before those 70 miles.
+I had bloodwork done about 1 month into being pescetarian around 6 months ago and my cholesterol was at 195, which isn't bad. Bloodwork again after 2 months on the vegan diet and it dropped to 136! 
 
-Another bad situation is if that Bolt doesn't have a mobile charger. Don't take it if it doesn't have one.
+For reference I am 26 years old and have a family history of very high cholesterol.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">My mom is visiting next week, my fridge is going to be full of her favorite food but Vegan, and I'm taking her to the Gentle Barn (amazing Vegan sanctuary) WISH ME LUCK!!!! :)</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">I will be frank that ONLY IMBECILE buys EV without their own WALL CHARGER (house, townhome, etc..).
 
-The best thing is to make sure you can plug in at your family's (with the mobile connector).
+When I bought my S, then Y and X, I had a house with Tesla Wall Charger in my garage.
 
-But public works, too, if you go work in Cafes anyway (I know p...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I think the rumors were the not-yet-announced Powerwall 3 would be LFP. I thought the 1&amp;2 were already out and nickel?
+(When people asked me about my opinion IF it's ok to buy an EV, my 1st question was always, 'Do you have your own place that can have a Home Wall Charger, if you do, buy one, if you don't, just buy a hybrid car&quot;)
 
-I'm about to get solar+battery installed by a family friend who's a retiring solar installer in SoCal. My install will unfortunately be his first and last battery install, so I'm helping with the research.
+Look @ what happened to hundreds (if not thousands) of people who have EV but CANNOT CHARGE them (...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Assuming you're in the US: It depends on where you're going (parts of the upper midwest don't have a lot of chargers yet), but it's totally doable.  I've got an EV6 like OP, and my wife and I have taken several electric road trips, including a 12-hour trip from Maryland to Bar Harbor ME a few months ago and a circumnavigation of Iceland for our honeymoon a few weeks ago in a rental EV.  It is somewhat slower in that you have to account for charge time (and in some places waiting for an available...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">The conspiracy is more insidious than that. They're not going to control you by shutting off the electricity, they're actually going to *take control of your car/disable it remotely*.
 
-I think there were some other disadvantages to the Tesla batteries, but I can't remember them right now. The inter-brand compatibility has generally sounded horrible for eve...</div></div>
+Fact: EVs can get software updates over the air. (Um, some...)
+
+Fact: EVs have self driving capability. (Welllll...)
+
+Therefore, &quot;they&quot; (government? the Illuminati? Antifa?) can remotely disable or control *all* EVs! 🤦‍♂️
+
+(Fact: I need to stop talking to some of my relatives! 😁)</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">It is nuts. I hope that the new wind turbines coming online will make prices cheaper. We’re looking at solar to offset our power bill with net metering</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Right now we are subsidizing oil and gas - in effect - reinforcing bad behavior, rather than removing those subsidies and subsidizing good behaviour: Solar panels and wind farms. If uncle sam really did look after the populace as a father would they would penalize bad behaviour and reward good....</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Indeed, it's the reason why I ended up going with an ICE to replace our older family car.  The hurdles of trying to get solar panels installed and the cost of electricity makes owning an EV pointless, from a cost-saving perspective.  There are other reasons to own an EV, but the fact that fueling my ICE hurts less than charging an EV sucks.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">friends</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">This is a debate I've been having internally, and with a close friend who's vegan for environmental reasons for quite a while too. I should really do some good reading on the topic</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Recommendation, sure. But how do I test drive a car or get a recommendation/opinion about one that none of my friends own? When I bought my Leaf, the only friend I knew IRL with an EV was a Chevy Bolt owner. I'd driven that, thanks to them, but I'm not sure how that helps me decide how it compares to other EVs.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">You are awesome for your willingness to watch the whole thing. Let me share with you some links that will help you transition to veganism.
 
-And that's now, when there's only a dozen or so choices available in the US. What about 5-10 years from now when there's several dozen choices? I don't have that many friends! :)</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I had forgotten about this, but I did talk with my Ameco sales rep about it when I first started shopping around for solar about a year ago (I think the original owner of Ameco started having health issues and sold the company to NRG).   
+Dr Neil Barnard from PCRM makes good suggestions on how to them make changes. (Videos linked later)
 
+I highly suggest you start out by watching these on Netflix; they are the best two: 
 
-Maybe my luck has just been bad in shopping around, but in my search for the amazing, unicorn-like local installer that's been in business for forever, has great service, competitive prices, etc., I've come up goose eggs.   
+-The Game Changers
+-What the Health
 
+As far as resources to help you, I highly suggest the Physicians Committee for Responsible Medicine, at https://www.pcrm.org/veganstarte...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Wow it seems like you have a lot of anxiety over this. If you’re very anxious, I think you can say that you’re on a special diet first, and seeing how it affects your health. Yo don’t have to give too many details. No one will debate it with you if you’re doing it for health reasons. Later, after they are used to seeing you eat this way and thrive, you can say you’ve decided to stay on the plant-based diet because you saw many benefits.   
 
-I've either gotten much, much hi...</div></div>
+You can still be social, if you’re friends want to meet...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">THATS WHAT IM WONDERING LMFAO i have no idea how these people met their vegan partners but i’m actually dying to know. cause my answer is also be no but i have no idea how people actually do it.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Range anxiety is real.   I tried to talk a friend into an electric vehicle   He said what if I want to drive to the mountain and ski and stay overnight.  I won’t have enough range.   I asked how often he does this.   He answered one with every 3 years.    Then I found that where he stays has a vehicle charger.    Long story short he bought an expensive gas car</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">People ask the same kind of questions about my electric car. Range, where I charge it, doesn't it suck not to have gas available, etc. Honestly I chalk most of it up to curiosity or jealousy when people dig a bit too deep or get too defensive about how they do things.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">there are custom shops that do conversions. but  all the manufacturers are busy making parts for new cars..  it's not even easy to get parts for repairs right now.
+
+&amp;#x200B;
+
+**Look Out, Small-Block V-8s—This Tesla Crate Motor Is Coming For Your Jobs**
+
+[https://www.motortrend.com/vehicle-genres/tesla-crate-motor-ev-conversion-small-block-v-8/](https://www.motortrend.com/vehicle-genres/tesla-crate-motor-ev-conversion-small-block-v-8/)
+
+&amp;#x200B;
+
+dropping 480hp Ford crate motor into a 1978 Ford c...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Told my buddy who works at sunrun I’ll sign for PPA tomorrow if he gets me 1% escalator in a 1200sqft apt in MA we use 1100kwh a month imagine 2400 with pool in Florida</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">You're going to need quite a bit more than what your bill has currently been. With net metering 3.0 you really have to oversize your system (people around me are generally oversizing 50%). You're looking at batteries, that's a great move to get out of the expensive time of use pricing in the afternoon. But, depending on how many miles you drive charging your electric car is going to be a problem. It's doubtful your batteries will be able to store all the energy you need to use in the late aftern...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">You’re touching on the key point here: it looks cool
+
+_My car has a solar roof, brah_
+
+It has no other utility or likely practical purpose, apart from looking cool. Which it does. So for those that value that, it’s worth it.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">local community</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Vegan options in St Maarten / St Martin</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Thanks! I've been working on a lot of micromobility policy projects. Its really important to me that people understand that the community development and climate policy aspects are two sides of the same coin.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Have no fear! France, unintentionally, makes loads of vegan food, they just don't realise it. They're a country of food lovers after all, and good food is often vegan. Go to France, eat delicious fresh bread from boulangeries, eat ratatouille everyday, eat jams(jellies/preserves), eat vegetables, eat gratins, eat minestrones and other veg soups. You'll be surprised how easy it can be and how much of the French cultural experience you'll be able to have. Oh and the wine...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">hm, it seems it varies regionally. In the UK and Swedish website, they're vegan. The US lists 'beef flavour' which is not lard, and does not contain any actual beef, but it does have 'milk derivatives'.
 
-\-Lassor</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I live in FL. The majority of homes with solar panels on the roof do not own their panels. I think your specific question just doesn't reflect reality. Lots of leases and payment plans still going on. So buyers do not want to anything to do with that, one.  Two, the panels have to be removed from the roof when re-roofing and, again, here in FL we have to re-roof every 15-20 years or we don't qualify for homeowners insurance. The cost to remove panels, store them, and re -install is close to $10k...</div></div>
+edit: yeah, pretty much all you can get in the US one is a side salad, apple slices, and if you don't mind palm oil, the apple pie. In sweden you can get a decent main, with fries and all.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Yay :\). My vegan\-themed Buffyverse campaign:
+
+[https://vampiresveggieburgers.obsidianportal.com](https://vampiresveggieburgers.obsidianportal.com)
+
+It involves a vegan food bus fighting the forces of darkness. PCs include an adept of the ancient secretive \(and vegetarian\) order of Pythagoreans, and a vegan food blogger / were\-badger. \(Badgers are the victims of a controversial cull in the UK, so are particularly apposite.\) The campaign began with animal activists breaking into a slaughter...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Don't underestimate the monetary effect of paying no gas. Where I live in WA the scooter is costing me $0.03 a mile after I factor in its purchase price along with the power costs.
+
+I no longer drive my SUV for an accurate test of its costs but it's got to be at least 25 cents and mile.  Last year I refilled the tank once.
+
+And if carrying capacity is a concern also consider one day adding a folding cargo e-bike to your collection.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Dunno if you remember the [scare stories](https://forums.mbclub.co.uk/threads/c350e-quoted-14k-for-replacing-battery.294761/) in the media 18-24 months ago about Merc PHEV batteries costing 12-15K to replace? 
+
+The lack of charging infra is indeed a problem in the US. In North West-Europe there's much better charging infrastructure, so while in the US it may be true, in the EU plug-in hybrids should die. As they do in Norway, where BEV is 92% of new vehicle sales and PHEV less than 3%. The publi...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">It's a quadricycle. Legally, it's equivalent to a 4-wheel moped in Europe. And, vehicles like this make a lot more sense in dense areas if you can't just use a bicycle or transit: https://youtube.com/watch?v=B9ly7JjqEb0
+
+If it were sold in the US, it'd be slowed down a touch to 25 MPH, and sold as a Low Speed Vehicle or a Neighborhood Electric Vehicle.
+
+(For comparison, in the US, golf carts are limited to below 20 MPH.)</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Thank you very much for that. We're limited in access to solar installers here (San Juan islands), but I'll be pausing to seek additional quotes. Hopefully I can find some other businesses that will install in our remote location. 
+
+It may just be a remote-premium that we have to pay (the same applies to the grocery store and gas pump), but hopefully we can find more-competitive pricing.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">I am Orlando, and most of the houses in our sub-division have either Tesla or Sunrun (via Costco membership). Both companies have been great so far, but they are expensive. Both give out 25-year warranties 
+
+We have Tesla, and they monitor on their side as well, and if the panels aren't functioning properly, they will set up a service call and address the issue.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I know nothing of nvenergy, and there's plenty to distrust with utilities, but they have a *small* point, residential rooftop solar is much less efficient and effective than utility scale installations, especially in a place like Nevada where open, flat land is cheap and abundant. Community solar is the best of both worlds IMO.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">neighbors</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Being vegan doesnt support animals  
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Being vegan doesnt support animals  
 I dont support my neighbors by not killing them
 
 Being vegan is a neutral act the same way non racism is a neutral act it means we dont cause harm to others
@@ -228,138 +368,272 @@ Donating, volunteering etc; that is supporting
 
 
 I am not saving animals by being vegan im simply not killing them</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">There's 2 R1Ts that I can identify, 1 Taycan, I think 6 IONIQ 5s, and I haven't seen any Mercedes yet. I'm from a town of only around 250,000 people.
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">yeah many EVs get about what you do. It's just courteous to keep those spots open if not needing to charge.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">The Teslas that park next to me have the same issue with the ChargePoint L2 at work. Tesla might have a bigger/more reliable network. Though that doesn't help when a Tesla also uses a crappy ChargePoint EVSE. Not to mention Tesla are adding CCS to their chargers. So buying a Tesla vehicle isn't going to help in my use case nor in near future.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">There's 2 R1Ts that I can identify, 1 Taycan, I think 6 IONIQ 5s, and I haven't seen any Mercedes yet. I'm from a town of only around 250,000 people.
 
 I see lots of Teslas around the university campus, and lots of Nissan Leafs by the community college. Downtown I see more Bolts and in the suburbs is where I see things like the Polestar, iD.4, Hyundai Kona and IONIQ 5, and the occasional BMW i-series.
 
 A really good spot is the local Costco. I've seen an i4, i8, R1T, and a couple F150 Lightnings....</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">When we had our solar panels installed the neighbor came over asking a bunch of questions and ultimately concluding with; “welp my genny will run at night”
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">do you see the advantage of sharing the PV panel capacity with the neighborhood?</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">For utilities this is true.
 
-True. Until it’s out of fuel. Then what? If your propane tank is empty someone has to come fill it. What if they don’t have power? 
+For commercial properties above a certain scale or doing ground mounted or self-installed systems this may be true.
 
-Also, our solar does work at night because batteries exist. So there.</div></div>
+For residential homes procuring rooftop systems this is **not** true. The panels and hard costs are low cost enough, but the sales margins and other soft costs are still far too high with a lot of room to drop, and the operations and maintenance ecosystem leaves much to be desired.
+
+If you aren't getting a rooftop residential system at the same time as...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I attended a community solar conference in Boston this year. http://www.iscvt.org/ncsp-ne/ It was packed with municipal sustainability folks, some vendors, and a number of community activists. There was much interest.
+
+As the solar coach for a dense urban community, I think there is definitely demand for it among my neighbors. We have a high density city (really--we're the most dense Northeast community outside NYC). This means that our roof area for residents is smaller and may not fit their us...</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">online community</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">The video opens by saying this is a frequent repost on /r/vegan?</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">The difference for the ID.4 is total vs available.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Poker playing vegans!</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">https://www.reddit.com/r/vegan/comments/j3q9kt/part_two_of_a_pig_decorating_her_house_with/?utm_source=share&amp;amp;utm_medium=ios_app&amp;amp;utm_name=iossmf</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Oh hey - fellow Germ here! I struggled when I moved back from London which has so much amazing vegan substitutes everywhere and at great prices, but I have found some good ones here over the years:
 
-I think 4 kWh would be worth about 15 miles, there was a test posted here a few days ago which had the European Ioniq 5 with 10 miles less range than the ID.4 under the same conditions, so even with the extra battery I don’t think there’s going to be much difference. I think Hyundai probably just did the 5 cycle EPA test which is why the range figure is so good.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Cross posting from the Tesla forum 
+1. vMeat:
 
-Solar Roof v3 - how accurate is the quote?
+- I recently discovered the v-bacon at LPG which is scarily close to (what I remember - it’s been like 20 years lol) the real thing. Bit pricey imo but nice for a Sunday brunch or so
+- Edeka has some pea protein red sausages which are spectacular and great for bangers and mash.
+- Also if y...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">This is the best tl;dr I could make, [original](http://www.volkswagenag.com/content/vwcorp/info_center/en/news/2015/10/VW_Effizienz.html) reduced by 80%. (I'm a bot)
+*****
+&amp;gt; Accelerated implementation of the efficiency program creates room for reorientation Streamlined processes leverage further cost-saving potential, including cuts in fixed costs Investments to be reduced by 1 billion euros per year compared with planning - combined with prioritization of projects for the future Product deci...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">&amp;gt;I'll bite. I don't think any reasonable person thinks there's &quot;no way&quot; VW catches Tesla by 2025.
 
-Current: 4.2 kW solar panel installation on the roof (previous owner) 
+looks like you havent looked at the sub or posts from the usual Tesla trolls over here.
 
-Problem: The roof needs a replacement in the next year or two with $1500 worth of immediate work needed (northern CA = $$)
+I havent either because these people are always the ones i just see as &quot;blocked account&quot;
 
-**Asphalt option:** Take the panels off + replace with 25-30 year shingles + put the panels back (&quot;nah, we don't need permits&quot; - not sure if I can palette this) + 5 year weatherization warranty = **$23.5K + cost of repairin...</div></div>
+its just like 5 - 10 people and this sub is suddenly much cleaner.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">It's another article sharing the cherry-picked nonsense 'research' that has been discussed here quite a few times.
+
+&amp;gt;The study found that: Commercial charging rates are two to four times higher than residential rates.
+
+True. Which brings those costs up to amounts that are typically a little less than, but may occasionally exceed, the cost of gas. This is why we need to get residential charging viable for as many people as possible, and some people who can't charge at home should stick with hy...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">tl;dr: Schellenberger is very passionate, but he is not very technical. Nuclear is good, but can never take over &quot;peaker&quot; duties, like solar and grid-scale storage.
+
+Most of what he says are generalizations taken from his specific, notable experiences.  Houses in many parts of the country, in fact, are very capable of producing adequate gross power to power the home based solely on their roof area.  I say gross, because as everyone agrees, renewable require battery storage.  And while Shellenber...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">&gt;Wind and solar do not produce even close to enough Megawatts for the current needs
+
+Because enough haven't been built *yet*. That's very different from it being impossible. The same can be said about nuclear, so it should be very clear that it is a bad argument.
+
+Almost enough on its own to discredit you as merely a bad-faith &quot;pro nuclear&quot; but actually anti-renewable troll.
+
+&gt; If you’ve ever driven by one of those wind farms you might have noticed a large percentage of them aren’t working 
+
+The...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">This is the best tl;dr I could make, [original](http://www.bloomberg.com/news/articles/2016-04-06/wind-and-solar-are-crushing-fossil-fuels) reduced by 85%. (I'm a bot)
+*****
+&amp;gt; Recent solar and wind auctions in Mexico and Morocco ended with winning bids from companies that promised to produce electricity at the cheapest rate, from any source, anywhere in the world, said Michael Liebreich, chairman of the advisory board for Bloomberg New Energy Finance.
+
+&amp;gt; Government subsidies have helped wi...</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">other</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">You’re trying to argue that one way is better than any other ways. Your argument isn’t new or original. The pick me vegans have been crying about angry vegans and coddling carnists all along. I said it takes all types. All forms of activism reach a certain type of person. I’m not interested in debating a vegan about this. The end.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I mostly don't see how it applies.  For most people, their commutes take the EV away from the their home during the solar production hours.  The EV doesn't really add any value in this case.  EVs may be the cheapest way to buy a battery, but they don't always benefit a solar system.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">save money, generate revenue... all the same ..financial benefits.  Solar PV does not provide any occupant or utilitarian benefit by itself.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">ALDI US - lots of limited-time vegan items in stores right now!</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Whenever this question comes up I always recommend [Will's](https://wills-vegan-shoes.com/) they aren't exactly cheap but they are really high quality.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Haha those fucking shit vegans are eating beans with female things inside hahahaha</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">&amp;gt; It plans to build 800,000 fully electric cars worldwide this year and 1.3 million in 2023, it said on Thursday.
 
-We are talking within the context of this project here. Giant water Solar PV Farm... is this cheaper than Nuclear or Wind.. or energy savings program within the city... there may be a lot more viable option, when you start true uping the actual additional O&amp;M and R&amp;R cost.</div></div>
+Ramping up yes, but not nearly fast enough to be selling more than Tesla by 2024. Tesla sold a million in 2021 and will have factory capacity for 2.5m in 2023 (well it has that *capacity* right now but it will take most of 2022 to get into full production rate). 
+
+So if Tesla are building twice as many in 2023, then VW are going to need to be really getting focussed to be able to...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Rivian was always meant to be a luxury product though.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">You said the car was a 2015 Leaf.  How long have they had this car? I don’t understand why you expected the charging infrastructure for EVs to be exactly like the gas station industry at this point.  The government is just starting to take building out the infrastructure seriously.  As been brought up multiple times, the closest thing you gonna get to the gas station experience as far as charging is Tesla’s network and they don’t have credit card terminals so there still would be some account se...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">I was saying &quot;exclusively&quot;, meaning if we keep doing it (1:1 net metering) until every household has solar, the only source of revenue for the utility companies are from government with our tax money. 
+
+At this moment, it makes sense to certain degree that government should step in to pay some of the difference as incentive to boost the adaptation of solar panel, but it is different from just paying to straight paying to company.
+
+This is exactly what they do, because solar incentive still exist...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Best inverter for 2000 Watt Grid-Tie Solar array</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Golf Nets Protect Solar Panels</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">other reddit user</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">yeah on this sub we only allow circlejerks and advertisements for expensive vegan cheeses and meats. The &quot;discuss&quot; flair that is available to all posters is actually just a fluke.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Your cat [can be :)](https://www.reddit.com/r/vegan/comments/14h0dgd/can_your_pets_go_vegan/jpal0jc/?utm_source=share&amp;utm_medium=ios_app&amp;utm_name=ioscss&amp;utm_content=1&amp;utm_term=1&amp;context=3)</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">I still think tinder should let us filter by “vegan”</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Sorry you’re getting downvoted for agreeing. I personally think hunting/killing and eating an overpopulated deer is MUCH different than eating factory farmed meat. I would still never do it, but I have way more respect for someone who “humanely” hunts an animal, and uses every part of it* than someone who “hates hunting” but eats factory farmed meat.
 
-Personally I went vegan from a combination of learning about the intelligence of pigs and the capacity of farm animals for feeling pain, and feeling guilty when getting them at the cafeteria, and from reading about the effects that cattle farming has on local environments and ultimately contributing to climate change....</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">What I don't understand is yes people have different ideas and will have discussions or even arguments but OP purposefully attacks Tesla and skews information. 
+Also, it is absolutely natural for predators to kill and eat other animals...what is not natural is the scale on which we do that today. Especiall...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">I disagree with a lot of the answers here:
 
-Why don't mods ban?</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Where did you get that info from? did you factor in the prevailing winds that the yacht has to consider if they were going to make the trip around 2 weeks? 
-They claim its zero-carbon but how much more further did you investigate? or did you just threw up your hands after reading &quot;zero-carbon&quot; and bowed down to Greta?
+1. Retrofitting an electric drivetrain into a chassis and frame built for a combustion vehicle is always going to be suboptimal. It means you're awkwardly stuffing batteries into the transmission tunnel and under seats, which you then have to strengthen against impact, run cooling pipes through, etc. Building components around those constraints inceases the complexity and cost to manufacture and assemble. EVs are simpler but to fully realize the benefi...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">The Tahoe has no autopilot. Tesla’s are some of the best cars for road trips. I doubt many Tesla owners would use any other car for a long trip.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">There was a Tesla related post that was fairly recent... think it was in this subreddit. Not sure if the test was valid.. but I thought I remember seeing a 50% reduction in range at 0F. It seemed very extreme to me.
 
-https://www.thegatewaypundit.com/2019/12/figures-green-teen-greta-thunbergs-yacht-used-more-fuel-to-cross-atlantic-than-if-she-flew-from-new-york-to-madrid/
+Use the heater and you'll take a hit in mileage too, of course.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">“Purchasing a system from someone other than sunrun is the way to go” dang didn’t know we had some comedians in this sub</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Most net metering agreements these days will let you bank credit for overproduction for 1 year, but then they reset those credits. So you can use overproduction from May when you underproduce in November, but you don’t get a check at the end of the year. Those days are over.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Yes, exactly--  
 
-And even if what your...</div></div>
+There's no need to try to set up the programming, metering, and infrastructure to do this from scratch.  This kind of adaptive load is actually quite common, it's called &quot;AC-Coupling&quot; using a storage battery.  The system will require (in addition to the gridtied inverter and PV array): an islanding, grid-forming inverter and battery.  The Tesla Powerwall 1 and 2, for example, are a grid-forming inverter and battery combined.    
+-- The &quot;islanding&quot; part means the grid-forming in...</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">partner/spouse</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">My wife has POTS and her symptoms were very severe until she went vegan. She is now very healthy and attributes it to the diet. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Thanks.
 
-Hope your other issues can also be resolved.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I do not know Tesla's process yet. My wife and I are very much considering leasing an entry-level Model 3. I will update you on my experience if we pull the trigger.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Fourth Partner Energy provides industrial solar panels with a complete mission to provide solar energy to industries which is a much needed boost.</div></div>
-</div></div>
-<div class="category-group"><div class="category-title">people like me</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Always vegan! Anything else is failing non-human animals socially and as a consumer. 
+I love reading most of what is posted on this sub, until I see stuff like this. It really baffles me what people like OP expect me to do? My SO will not go vegan as much as I want her to. What, am I supposed to divorce her? All I can do is continue to have honest and open conversation with her in the hope that she decides to eventually join me. 
 
-If the vegan equivalent of their favourite item isn't what they want, I would just figure out another gift!</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Carmakers historically have had to be very conservative to survive. It's a cut-throat market. Every new automaker (until Tesla) in the past 50+ years has gone out of business. The only &quot;innovative&quot; ones like the performance carmakers were small scale, and after a while the technology from those would bleed into the mass-produced stuff. Carmakers that have tried to go &quot;all in&quot; on a new technology have been burned badly before. Mazda almost went bankrupt in the 70s because of it. Many went heavily...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Matt's conclusion is that NM is a good thing...
+Isolating and excluding her will not help.
 
-Practical example, I have a PV system. I also have a community solar subscription. My utility doesn't get to mark up the energy I get from the solar farm. Our kWh charge is lower for the solar farm then from the utility. I do pay for delivery and some connection charges, which makes sense.. Functionally, which doesn't necessarily mean equal price, this works the same way that my solar surplus during the summer works.
+Being combative and condescending about her diet will not help.
 
-Energy storage has to happen....</div></div>
+Being caring, compassionate and u...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">me and my husband tried to be vegetarian for 1.5 years. We only ate plant based burgers and meat.
+
+we really tried. 
+
+but after 1.5 years it was too hard to only eat those plant based meat. only a few brands taste good. most of them smell terrible. and we just couldn't stand the taste of them anymore.
+
+plus it was almost impossible to gain muscle being vegetarian. and we both needed to grow our muscles because we both have herniated lumbar discs and I was recivering from spinal surgery (not rela...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I was thinking about it for a month or so but I was stuck on my student meal plan so it didn’t make sense, then I started dating my vegan girlfriend, then covid happened, then I went vegetarian (like a bozo). Few months later I decided one day I wanted to be vegan and went vegan.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">I think for my wife, in a couple of years if she's still not comfortable going EV- we may just get her a hybrid.  I will hopefully talk her into going electric, though, at that time.  (problem is pricing for PHEV's is not really any different than full electric for the most part)</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">I do not know Tesla's process yet. My wife and I are very much considering leasing an entry-level Model 3. I will update you on my experience if we pull the trigger.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">I sold my 2018 Tesla Model 3 and purchased a 2017 Toyota Prius Prime. I switched due to preparing myself for a better financial future for myself and my future wife. I'll go back to Tesla at some point. But right now I'm maxing out everything I can for retirement. Plus the Toyota build quality isn't bad at all. In fact it's actually much better than my Tesla. I do prefer the Tesla overall in many areas. Realistically I could have kept the Model 3 and just kept my goals going with retirement. I j...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Fourth Partner Energy provides industrial solar panels with a complete mission to provide solar energy to industries which is a much needed boost.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">LADWP doesn't currently do TOU billing, though they have all the infrastructure for it (our bill actually reports our usage for something like five different time periods, but it's all the same rate). And you can't get special rates for EV charging unless you install an L2 with its own sub-meter. If you do, it's 10¢/kWh.
+
+We pay \~20¢/kWh for 100% &quot;green power&quot; (guarantee that all the power we use is generated from renewable sources). I say approximately because there \*is\* a tiered pricing str...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I mean it's just me and the wife. It's not hot so the AC isn't really running. I just set the Enphase app to show me a custom range that matched the billing month and what the app is reporting is WAAAY higher than what Evergy is reporting we produced. I'm in Kansas BTW and we also have net metering.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">political tribe</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">It's pretty disgusting that Democrats aren't doing anything to ensure good vegan options in all government buildings. Even if they don't want to go vegan themselves they should at least be supporting moves to make it easier for those who want to be vegan to do that.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Greed. The idea of an &quot;American Dream&quot; is peddled to the uneductated masses. The US is one of the places with the lowest social mobility. Politicians and big corps make sure money goes there way (is there even a single non-millionaire in Congress? How is that 'representative of the people'?)...and you can only do that by keeping very crucial things in the hands of few (water, energy, ....)
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">That isn't how things get done though.  The vegan movement needs to move beyond left vs right in order for real change to happen.  If its always viewed as a leftist idea no progress will be made.  Especially now that republicans control the three branches of government. The point is to reduce meat consumption and we should explore any method that will make that happen.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">But why should it be comparable.
+The reason you can afford being vegan is because the humankind has enslaved the entire planet to serve it's needs, because there are the poor who make your food (and life) somewhat cheap.
 
-EVs, solar, wind, distributed strorage...all of that democratizes wealth. The ruling class can't have that...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">&gt; with absolutely no variability
+Justice is an invention of those who have enough to get by.
+I do like and respect it.
 
-So, this part isn't really true.  Nuclear reactors have to be shut down every 18-24 months for one full month to refuel and for inspections.
+But this well being only comes at the cost of exploitation</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">It's pretty disgusting that Democrats aren't doing anything to ensure good vegan options in all government buildings. Even if they don't want to go vegan themselves they should at least be supporting moves to make it easier for those who want to be vegan to do that.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">“I don’t want an electric car, I like my hot rod,” 
 
-That means with just a little bit of battery storage to get you through the night, solar is actually more reliable and consistent than nuclear power.
+“What we need to do is keep having those gas-guzzling cars. We got the good emissions under those cars.”
 
-That said, I don't oppose this move, because political reality is often that if you don't spend this money on nuclear power it often gets funneled back to fossil fuels, so I...</div></div>
+This is in a campaign speech, not just some random dude declaring “I like gas cars”.  There is context… used to be called “dog whistles”, but these days Trump has made it okay for Republicans to be overtly racist, homophobic, treasonous, misogynistic, and moronic… so no longer dog whistles… rather more like fog horns.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">The real issue is lack of scale and how geographically large north America is. This is not nearly the same issue in central Europe with higher population and especially EV use density.
+
+At the moment only tesla has a network dense enough to have dedicated staff and spare parts to keep their systems functional. Supporting one brand of car/payment method is also significantly easier if you do not have to rely on 100% cell network uptime.
+
+Politically North America has slept on large EV infrastruct...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Would be amazing, the more of these on the roads, at tailgates and hanging out at Walmart parking lots, the better. So stupid EVs got politicized in the first place.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">I call it magic wand thinking; the idea that all a government has to do to replace fossil fuels with “green” alternatives is wave a magic wand (and a few trillion dollars) and – presto! – the world will have a low-carbon future.
+
+Whatever one thinks of the climate change/global warming theory (and I don’t think much of it), the practical problem of converting developing countries to low-carbon (or net-zero) economies is far more daunting than eco-obsessed politicians such as Prime Minister Justi...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Wow. Germany isn't in an economic crisis. It's on the same trajectory since we've been before corona.
+
+Especially if anybody would fact you, it would be clear that there is a massive amount of false information.
+
+https://www.destatis.de/DE/Themen/Branchen-Unternehmen/Unternehmen/Gewerbemeldungen-Insolvenzen/Tabellen/lrins01.html#242428
+
+So insolvency are still quite low, compared to the years pre corona and the number are 17 814 for companies.
+Only 2020-2022 had less and anything before 1994.
+
+&gt;...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Yes this is the answer!  Cover every roof on the planet with solar panels and then take up thousands if not millions of acres with them also to produce all of our electricity. Do you idiots have any idea the heat reflection off of solar panels?  You climate change people are all dipshits that have no clue what you are talking about.</div></div>
 </div></div>
-</div>
-<div class="question-section"><div class="question-title">Perceived reference stance</div>
+</div></details>
+<details class="question-section"><summary>Perceived reference stance</summary>
+<div class="question-content">
 <details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>
 <div class="prompt-box">
-<div class="prompt-text">What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pushing for.</div>
+<div class="prompt-text">What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pro.</div>
 <div class="choices-label">Valid choices:</div>
 <ul class="choices-list">
 <li>against</li>
 <li>neither/mixed</li>
-<li>pushing for</li>
+<li>pro</li>
 </ul>
 </div>
 </details>
 <div class="category-group"><div class="category-title">against</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">You’re trying to argue that one way is better than any other ways. Your argument isn’t new or original. The pick me vegans have been crying about angry vegans and coddling carnists all along. I said it takes all types. All forms of activism reach a certain type of person. I’m not interested in debating a vegan about this. The end.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">What I don't understand is yes people have different ideas and will have discussions or even arguments but OP purposefully attacks Tesla and skews information. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">You're the one who's vocal about BS. As a matter of fact, you started bitching about your 'vegan friends':
 
-Why don't mods ban?</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Doesn't seem worth it. 
+&amp;gt; my vegan friends have another hour long talk why they think they are better people.
 
-11,000 kwh per year means about 900 kwh per month. 
+Remember?
 
-Electricity in Texas is about $0.12 per kwh. So you're paying $116 per month to generate $108 worth of electricity per month at best. 
+Find better friends if you don't like them. Why are you even friends with them? Just so that you can whine about it on Reddit?</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">I will never let my money go directly to funding animal suffering. It will always indirectly go to animal agriculture but I don't have a choice in that (did you know the byproduct of tofu goes to livestock feed? Ugh). Anyway, I refuse to pay for someone's uneducated habits, and I will explain that if they ask me.
 
-And this assuming you're able to use every single kwh generated or find a net-metering plan that offers 1 to 1 net metering. I am not sure those are still available in Texas without a minimum fee or without capping you on how much you can send back. 
+&amp;gt; Treating someone out to a meal at a restaurant.
 
-You probably won't get your money'...</div></div>
+I never pay for a meal with animal products in it. If they're eating out with me, we'll go somewhere vegan or order vegan off the ...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I myself find animal liberation by Peter singer one of the best books on animal ethics. Do you think someone who wants all sentient life to do well, and wants to avoid harm to all sentient beings, and avoid animal products for that reason, could not be vegan if they do not believe in rights?
+
+The reason I find rights suspects as a fundamental ethical construct is that I really cannot be outweighed by significant consequences if the consequences are large enough. This goes for animals and humans....</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Want this originally what Tesla was going to do? I treatment watching a dog and pony show on YT with Musk about how swapping was faster than filling up a car. They were going to use the same machines that installed the batteries in the factory.
+
+They went the charging route because it's easier.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">That might have nothing to do with Tesla. 
+
+Not saying these reasons are rational: only man actively trying to prolong the species with planetary exploration. Hated by both political parties. Gets hands dirty.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Agree with you 100%
+EVs are here to save the car industry, not the climate.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">&amp;gt;My solar integrator said that Tesla inverters only work with Tesla panels (or Solar Roof), and that instead we'll be using Fronius inverters. Is that correct?
+
+This is like saying you need to use a certain *brand* of gasoline in your ICE car...
+
+Giving them some charity first - what they could mean by &quot;work&quot; is that the connectors are different (unlikely) the voltages and currents are unusual and more suited to the Tesla inverter (unlikely) or that they won't &quot;work&quot; in terms of being a suppo...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">A LOT of coal is used to make solar panels, directly or indirectly. A LOT of it.  
+But facts never enter your brain, you're blissful in your ignorance.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Who is your power with in NC? Duke wipes credits in may I believe so be careful if someone tells you they can offset 100% or more of your bill. Do your research with your utility to make sure you understand what the net metering and minimum connection charges and everything else actually will result in.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">neither/mixed</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Exactly what I was going to say. Good old VHS cleaner lol. As to the other part I don't agree or disagree. There's good and bad to everything. Including veganism</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I mostly don't see how it applies.  For most people, their commutes take the EV away from the their home during the solar production hours.  The EV doesn't really add any value in this case.  EVs may be the cheapest way to buy a battery, but they don't always benefit a solar system.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Cross posting from the Tesla forum 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">I've donated three times (twice before going vegan), and every time it's the worst experience of my life. I passed out the second time and the recent one felt like I was perpetually about to throw up. I really want to donate regularly but it's so hard for me :(</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">I live near Tokyo too! Yay :)
 
-Solar Roof v3 - how accurate is the quote?
+Edit: My flair says flexitarian but I'm vegan.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I randomly found the book &quot;Eating Animals&quot; by Jonathan Safran Foer in my school library when I was thirteen-ish and decided to pick it up on a whim. Really opened my eyes to everything that's going on. Immediately went vegetarian, and then vegan a few years later.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">One of the big reasons I'm going with the ID.4 is that the body is more along the lines of a RAV4/CRV.  Slightly higher ride height with a square back and roof rails.  The Volvo XC40 is also in that general ballpark.  
 
-Current: 4.2 kW solar panel installation on the roof (previous owner) 
+The Ioniq seems to be more along the lines of the Mach E and Model Y.  No roof rails, sexier body style, lower, more emphasis on performance.  Not a bad thing at all, but less of an SUV.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">You can manually activate a Supercharger using the app if you have a whitelisted Ford or Rivian vehicle and plug and charge doesn’t work. So this capability already exists today on all NACS (V3 and up) superchargers, just like it does in Europe. If the delay was because of complications of supporting plug and charge Tesla could enable access today using the app.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Unfortunately, electricity generated from fossil fuels is only done at 50-65% efficiency, depending on the age of the power station. Combined cycle gas is the most efficient around 65. Plenty of the old plants were as low as 40%.
 
-Problem: The roof needs a replacement in the next year or two with $1500 worth of immediate work needed (northern CA = $$)
+Transmission losses in power lines are also upwards of 10%.  Charging losses another 5% and standing losses from the battery too.
 
-**Asphalt option:** Take the panels off + replace with 25-30 year shingles + put the panels back (&quot;nah, we don't need permits&quot; - not sure if I can palette this) + 5 year weatherization warranty = **$23.5K + cost of repairin...</div></div>
+So it's definitely not looking great for electric against diesel for highway cruising. Around town, it's for sure better due to the Regen ...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">A question to people who have solar and battery storage installed at their homes.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Ohio is the 9th largest State for Tesla auto sales yet, their energy products are nowhere to be found. They do have 2 certified installers of Powerwall that can do turnkey solar at the same time. I'm going through that process with one if them right now if you have any questions.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I am a bit cautious about plugin solar panels, way too easy to screw things up.
+
+As for renters, virtual net metering is a great answer for that.  Many areas have this capability, and what a terrific investment for yourself.  Can't afford a house or plan on getting married in a few years and getting a house, well you can buy 5kW of panels in a managed solar park to offset your apartment bill.   When you get a house you can use it there as well, and even sell it to someone else latter for a downp...</div></div>
 </div></div>
-<div class="category-group"><div class="category-title">pushing for</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">This is a debate I've been having internally, and with a close friend who's vegan for environmental reasons for quite a while too. I should really do some good reading on the topic</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Carmakers historically have had to be very conservative to survive. It's a cut-throat market. Every new automaker (until Tesla) in the past 50+ years has gone out of business. The only &quot;innovative&quot; ones like the performance carmakers were small scale, and after a while the technology from those would bleed into the mass-produced stuff. Carmakers that have tried to go &quot;all in&quot; on a new technology have been burned badly before. Mazda almost went bankrupt in the 70s because of it. Many went heavily...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I'm not a Sunpower dealer but have been in the industry for some time now as one of Sunpowers biggest competitors. 
+<div class="category-group"><div class="category-title">pro</div><div class="sectors-row">
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">I have never watched it and been vegan for almost 5 years. Im just too disgusted and dont feel like watching my babies suffering. Im saving it to watching it with someone I know I can turn vegan, though, meat eaters really should see all the documentaries</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Good for you! I was a cheese addict pre-veganism and.... not much has changed. There is SO MUCH good vegan cheese. For melty purposes, Chao and Violife are tops (the violife cheddar is amazing, the mozzarella is not great), Miyoko's is the absolute best aged cheese. The Black Ash, Smoked Farmhouse, and Herbs de Provence are my three favorites (so tangy!), but they're honestly all amazing. Miyoko's mozzarella is the absolute best pizza cheese around. It bubbles and browns and just had the best fl...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Not really. The point is that for almost everyone reading this, meat is factory farmed and awful for the environment and the climate. Because a few people eat extremely land intensive grass fed beef doesn’t really change that fact. It’s not scalable and never will be.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">The depreciation is bad if you look at MSRP, but not that awful if you look at what people are actually paying, especially with leases. 
 
-An organization like Sunpower is multi state, has compliance departments, has extensive training and development programs. 
 
-Every contract signed by Sunpower and a customer impacts the entire multi state organization. 
+Considering that a base 2019 i3 is $44,450, you get the $7500 tax credit right off the bat, regardless of anything else. Then, BMW offers a massive $10k for their fleet program, either through your company, USAA, or Costco. Then if you're in a state with EV credits, take another $2500-5000 off. Now you're at under $25k for a very nice EV with 150+mi of range,...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">I've also driven EVs for 7 years. I never had to wait on a charger until earlier this year. It's happened 3 times total, and all of them were this year. One of those times was because the EA stalls were in a mall parking lot that didn't enforce any kind of rules so there was a plug in hybrid and a Tesla blocking two of the stalls without being plugged in. But still twice now that all the stalls were legitimately being used and I had to wait, or hope I could make it to the next chargers. This is ...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">You've answered your own question there:
 
-When measuring an installer on price per watt for a &quot;cheaper price&quot; understand that the cheaper the price the less money the installer has to hire and develop and...</div></div>
+&amp;gt; For example one Tesla Supercharger stall uses 12 (twelve) universal rectifier racks to serve just one car with full power DC and another with reduced power DC. In contrast, Tesla cars have a single rectifier rack of the same type onboard (rarely two, with an extra priced option). 
+
+...Or to look at it the other way: Everything about the car is ready to receive power at 120Kw, *except* the on-board rectifier(s) which will only cope with ~15KW each. 
+...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">In one hour, the sun puts out enough energy to power the entire planet for one year. New Wave of Solar Panels Could Mean &quot;Net-Zero&quot; Homes Within the Decade</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">I don't think we should ignore Nuclear, especially with talks (which I hate, because I have Solar Panels) of pushing particles into the air to deflect some sunlight.  
+
+
+Beyond that, there will be other applications for nuclear, such as using the reactors that can use reprocessed nuclear waste, which can then be reprocessed over and over and over until the left over bits are practically inert. It would prove to be a solution to the problem of nuclear waste.   
+
+
+There's also by products, such as...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Cobalt and lithium mining is dirty. Look up the chemical runoff of lithium. 
+
+The US still operates on coal plants that are charging EVs
+
+Disposal of batteries and solar panels is still an issue. Will have to find the article but seen there are a lot of solar panels in land fills. Again, don't know percentage or how true, but going green isn't the be all, end all its cracked up to be. Sure politicians, leaders, and elites on both sides pushing the green agenda have an investment to green energy ...</div></div>
 </div></div>
-</div>
-<div class="question-section"><div class="question-title">Descriptive norm</div>
+</div></details>
+<details class="question-section"><summary>Descriptive norm</summary>
+<div class="question-content">
 <details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>
 <div class="prompt-box">
 <div class="prompt-text">Does the text express a descriptive norm (what people do / how common something is)? Answer with exactly one of: none, implied, explicit.</div>
@@ -372,42 +646,87 @@ When measuring an installer on price per watt for a &quot;cheaper price&quot; un
 </div>
 </details>
 <div class="category-group"><div class="category-title">explicit</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">You're in the UK right? Most bread here is vegan. Hovis and Kingsmill actually label &quot;suitable for vegans&quot;.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">With $15k to $25k EVs, in 15 years very very few people will be fueling their cars with gasoline or diesel.  And road transportation makes up about 65% of oil use.  EV sales are at 16% of total vehicle sales.  And EV sales are increasing at 40% per year.  In just four years EVs will outsell ICE vehicles.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I'm not a Sunpower dealer but have been in the industry for some time now as one of Sunpowers biggest competitors. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">They are rubbish sources of protein, it would be hard to conceive of a less efficient way of producing protein. We can easily get all the proteins that we need from plants but currently we are wasting ridiculous amounts of quality plant proteins that could be feeding the world by feeding them en masse to other animals then killing and eating the other animals instead of the plants. [The latest study in PNAS is very clear:](http://www.pnas.org/content/115/15/3804)
+
+&amp;gt;**The opportunity cost of a...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Israel's processed meat consumption plunges 30 percent</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Most of them are in my area. I just look it up online on a restaurant by restaurant basis. They’re vegan at like 85% of restaurants near me.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">In 2019, electric car chargers grew by 60% as EV sales rose just 6%</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">&amp;gt; Really they need to cheaper than the model 3 
+
+It is, much cheaper. The long range ID.3 is 7000 Euros cheaper than the short range Model 3.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Statements like &quot;Three Months of EV Ownership:  They Aren't Ready For Road Trips&quot; drive me absolutely insane.
+
+I accept the car being referenced isn't appropriate for the use case that is outlined.  But that does NOT mean EVs as a whole are not ready for road trips.
+
+The ICE equivalent would be &quot;Well....my Porsche 911 can't handle hauling firewood.  Therefore, ICE cars aren't ready for hauling stuff.&quot;
+
+In the last 12 months we've taken 4 road trips....totaling 13,000 miles across 21 states.  In ...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">I'm not a Sunpower dealer but have been in the industry for some time now as one of Sunpowers biggest competitors. 
 
 An organization like Sunpower is multi state, has compliance departments, has extensive training and development programs. 
 
 Every contract signed by Sunpower and a customer impacts the entire multi state organization. 
 
 When measuring an installer on price per watt for a &quot;cheaper price&quot; understand that the cheaper the price the less money the installer has to hire and develop and...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Hahaha they know.... 90% for first 10 years and 80% for 20-25 years is how most are structured, even SunPower.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I lived in Vietnam, as a solar installer, and the average price I offered to my clients is about 0.3$/Wp. Yes 0.3, not 3. So a 10kWp solar system (sungrow string inverter +JA, Jinko, Canadian pv...) cost \~ 3k$</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">implied</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Always vegan! Anything else is failing non-human animals socially and as a consumer. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">I'm honestly surprised this is a question in a vegan-dominated sub.  
+Oysters, clams, and mussels are living creatures, their sentience is not understood fully, and because we just don't know with certainty, we must remember they are alive. 
 
-If the vegan equivalent of their favourite item isn't what they want, I would just figure out another gift!</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Carmakers historically have had to be very conservative to survive. It's a cut-throat market. Every new automaker (until Tesla) in the past 50+ years has gone out of business. The only &quot;innovative&quot; ones like the performance carmakers were small scale, and after a while the technology from those would bleed into the mass-produced stuff. Carmakers that have tried to go &quot;all in&quot; on a new technology have been burned badly before. Mazda almost went bankrupt in the 70s because of it. Many went heavily...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Matt's conclusion is that NM is a good thing...
+“Clams and scallops have simple eyes and chemosensory organs located along the periphery of the mantle and if they detect a threat, they escape by swimming in the opposite direction. Also, all bivalves close their shells when they detect danger and open the...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Looks great, we had a vegan lasagna on Christmas Eve!</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I have this one: [India's Vegetarian Cooking](http://www.amazon.co.uk/Indias-Vegetarian-Cooking-Monisha-Bharadwaj/dp/185626792X/ref=sr_1_1?ie=UTF8&amp;amp;qid=1369741383&amp;amp;sr=8-1). It's amazing. I just substitute oil for the ghee, oat/soy cream for dairy cream, and plain tofu for paneer. A lot of the recipes are vegan already tho.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Every now and then someone mentions it in r/trains when it comes up.
 
-Practical example, I have a PV system. I also have a community solar subscription. My utility doesn't get to mark up the energy I get from the solar farm. Our kWh charge is lower for the solar farm then from the utility. I do pay for delivery and some connection charges, which makes sense.. Functionally, which doesn't necessarily mean equal price, this works the same way that my solar surplus during the summer works.
+The two issues are cost and space.
 
-Energy storage has to happen....</div></div>
+Space, first. Putting wires over the tracks means that bridges and tunnels all need to be slightly higher. In a lot of the east coast, for example, they're already using train cars that are designed around the size of the tunnels that were built almost 100 years ago. The railroads would need to dig deeper, in many cases causing massive multi-year disruptions, under cities and under rivers, i...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Modern electric railway motors (locomotives) generally have dynamic braking just like diesel-electrics because regenerating into the power line is not practical. Back when electric motors had regenerative braking if there was no other motor that could use the power it went into giant electric heaters on racks next to the substation for the overhead wire section. It became dynamic braking, just not on the motor itself.
+EVs could have much stronger regen/dynamic braking if the re-generated power t...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Seems like you’re missing the point that consumers voting with their wallet is basically the loudest voice they have. In a world where Tesla is just one producer in a market of EV choice, why shouldn’t a consumer feel free to spend their money elsewhere is they consider Musk a negative force in our politics?</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">A couple of years I was wondering how older neighborhoods getting densified would handle ever increasing peaks on the grid and the transition to EVs without spending huge sums on grid upgrades.  
+
+The answer turns out to be highly distributed grid level battery storage.  Local gas stations will morph into mini supermarkets with attached fast food outlet and chargers instead of pumps.  They have the room to install a stack of Megapacks, think a Jenga Tower of Batteries, to power those chargers an...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">As might be floating solar farms, but still work out economically in some instances. Some municipal authorities have said they choose solar arrays as one way to convert to non-public use inexpensively while still creating and bottom line positive revenue. The real incremental costs for the solar installation on such land don't change that calculation.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">What’s your profit margin looking like? I can’t help but feel like community solar is less profitable than full utility, and you’re being paid because of that. The other thing is what other skills do you have or previous experience that isn’t explicitly solar?
+
+You’re also likely comparing your salary to companies based in CA or NY, that have to pay more due to HCOL. 
+
+So I would do some digging, get some data to back yourself up, and then say this is where you feel your value is, and ask what y...</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">none</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">This is a debate I've been having internally, and with a close friend who's vegan for environmental reasons for quite a while too. I should really do some good reading on the topic</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I mostly don't see how it applies.  For most people, their commutes take the EV away from the their home during the solar production hours.  The EV doesn't really add any value in this case.  EVs may be the cheapest way to buy a battery, but they don't always benefit a solar system.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Cross posting from the Tesla forum 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">When does it even mention &quot;vegetarians&quot;? I only read &quot;vegetarianism.&quot;
 
-Solar Roof v3 - how accurate is the quote?
+I don't know why animal people are so passionate about vegetarianism. The truth hurts folks, vegetarianism hurts. I didn't take this fact personally when I was vegetarian. I went vegan.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Yeah I was mildly deficient even before.going vegan, and then I found out it was possible.to over do it, so it's been a bit of a balancing act for me. Plus there's also the fact that what you intake isn't necessarily what you absorb, and then again a lot of vegan foods and plant based milks etc may be fortified with extra stuff, so it can be hard to keep track.
 
-Current: 4.2 kW solar panel installation on the roof (previous owner) 
+(moral of the story for OP and anyone else reading - if in doubt, see if you can get your levels checked and consult a doctor/nutrition...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Unless I saw a supermodel or pornstar with a vegan tattoo I don't think I'd have cared. Before I was a convert.
 
-Problem: The roof needs a replacement in the next year or two with $1500 worth of immediate work needed (northern CA = $$)
+Kinda seems like voluntary subjection to 1000sbof unwanted conversations, kids throwing rocks at you, etc..</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Tesla can compete fine against the other American EV manufacturers, and pretty well against American ICE manufacturers, and state governments will still help EVs with apartment charging etc. Tesla is more American made than others so the tariffs hurt Tesla the least, creating profit when someone needs to buy a car.
 
-**Asphalt option:** Take the panels off + replace with 25-30 year shingles + put the panels back (&quot;nah, we don't need permits&quot; - not sure if I can palette this) + 5 year weatherization warranty = **$23.5K + cost of repairin...</div></div>
+Tesla can't compete with Chinese EV makers. See the new models coming out in Australia for example and maybe follow the electric Viking on YouTube. The tariffs are all that is stoppi...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">More like Tesla marketing trying to project they have an unassailable monopoly to justify their valuation.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">&amp;gt; I need a new car and I want it to be electric, or maybe a hybrid. I'm not sure what the difference is other than one uses gas sometimes.
+
+Let's start here!  We've got three main categories.
+
+An &quot;electric car&quot; that's entirely battery powered is also known as an EV or BEV (Battery Electric Vehicle).  The only way to make it run is by plugging it in and charging it up.  I think it's safe to say, this is what most of us on this sub love the most, but it can be awkward if you aren't able to char...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">SE home Battery can export to the grid via the app. Not sure on other SE batteries.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">China Uses Slaves to Make Solar Panels - Biden Wants To Make a Climate Deal Anyway</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I'm planning to in the near future.  I live in Arizona, where solar panels are effective nearly 360 days a year.
+
+I intend to put PV panels on a house and then buy a Tesla or other electric car.  I'll charge it with my solar array.
+
+I will still keep a gasoline car for long hauls.  However, a Tesla would be fine for 95% of the driving I do.</div></div>
 </div></div>
-</div>
-<div class="question-section"><div class="question-title">Injunctive norm</div>
+</div></details>
+<details class="question-section"><summary>Injunctive norm</summary>
+<div class="question-content">
 <details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>
 <div class="prompt-box">
 <div class="prompt-text">Does the text express an injunctive norm (what people should do / approval or disapproval)? Answer with exactly one of: none, implied approval, implied disapproval, explicit approval, explicit disapproval.</div>
@@ -422,68 +741,102 @@ Problem: The roof needs a replacement in the next year or two with $1500 worth o
 </div>
 </details>
 <div class="category-group"><div class="category-title">explicit approval</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">I would never stop being vegan of course 😊 i will never ever support the  slaughter and exploitation of animals. I will never ever eat dairy eggs or meat again, i dont see any reason to plus i feel so much better on a vegan diet and its a lot healthier, being vegan is a lot better for the environment. Veganism is the way to go, the point of my post is that the world will always be full of evil and yes a vegan world will be far better theres no comparison, but it wont be perfect and we will still...</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Every now and then someone mentions it in r/trains when it comes up.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">I would never stop being vegan of course 😊 i will never ever support the  slaughter and exploitation of animals. I will never ever eat dairy eggs or meat again, i dont see any reason to plus i feel so much better on a vegan diet and its a lot healthier, being vegan is a lot better for the environment. Veganism is the way to go, the point of my post is that the world will always be full of evil and yes a vegan world will be far better theres no comparison, but it wont be perfect and we will still...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Every now and then someone mentions it in r/trains when it comes up.
 
 The two issues are cost and space.
 
 Space, first. Putting wires over the tracks means that bridges and tunnels all need to be slightly higher. In a lot of the east coast, for example, they're already using train cars that are designed around the size of the tunnels that were built almost 100 years ago. The railroads would need to dig deeper, in many cases causing massive multi-year disruptions, under cities and under rivers, i...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Why are you skeptical.  Solar panels help the customer and also help the utility and the grid as well.  Certainly the utility is not doing this out of the kindness of their own heart simply because they want to help poor people.  The utility is likely mandated through legislation to do something along the lines and they also see a value in doing it.  But they are not doing it for nefarious reasons.
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Can you state one problem that the spec has, I just want an example because, what is considered a problem?
+
+Unlike a gas car, where the gas tank is in the same general location, the charge port can vary based on the architecture and location of the inverters and motors. For example, it wouldn't make sense for a FWD EV to have the charge port at the back because that is poor packaging and more use of cable for no good reason.
+
+I agree that ISO 15118 should be mandatory on all EVs and charging pro...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Why are you skeptical.  Solar panels help the customer and also help the utility and the grid as well.  Certainly the utility is not doing this out of the kindness of their own heart simply because they want to help poor people.  The utility is likely mandated through legislation to do something along the lines and they also see a value in doing it.  But they are not doing it for nefarious reasons.
 
 &amp;amp;#x200B;
 
 It baffles me that there are still people out there that do not trust solar panels....</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">—</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">explicit disapproval</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">wow you fucking suck. Go to hell vegan loser</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Tesla should fuck off from Grünheide, they're already breaching countless environmental laws, their factory will run the local water supply dry and there's a housing shortage all around Berlin anyway.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">No examples</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">&amp;gt; **Please please please do not raise your child vegan.** If he or she wants to be vegan when they are an adult then that's fine and they can make that decision for themselves. 
+
+[...]
+&amp;gt; Saying children could decide to eat animal products when they are old enough is like saying you should circumcise and the they can choose to try to restore their foreskin when they are an adult **instead of leaving them in their natural, default, healthy state** and allowing them to choose to modify themse...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">wow you fucking suck. Go to hell vegan loser</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">All posts must be directly related to plug-in electric vehicles — BEVs or PHEVs. No posts regarding HEVs or FCEVs are permitted. No posts regarding combustion vehicle or petroleum production is permitted. 
+
+General automotive news is allowed if there is an obvious connection to electric vehicles.
+
+Not all stories that involve or mention an EV are EV-related.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Tesla should fuck off from Grünheide, they're already breaching countless environmental laws, their factory will run the local water supply dry and there's a housing shortage all around Berlin anyway.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">—</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">—</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">implied approval</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Always vegan! Anything else is failing non-human animals socially and as a consumer. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Oh yeah! My husband is vegan so I've never had to worry about the whole kissing-meat-mouth thing (we went vegan at the same time). I'd definitely want someone to have brushed their teeth after they ate meat before I kissed them, same way I wouldn't kiss a smoker after a cigarette. 
 
-If the vegan equivalent of their favourite item isn't what they want, I would just figure out another gift!</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Don't underestimate the monetary effect of paying no gas. Where I live in WA the scooter is costing me $0.03 a mile after I factor in its purchase price along with the power costs.
+Definitely a good idea to skip the meat if you're looking for a romantic first kiss in which she's not thinking, &quot;Oh god, can I taste the meat? I CAN TASTE THE MEAT!&quot; Haha -_-</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">They embraced vegan-food for the upcoming Olympics.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Pick one, and stick with it.  After about 10 days or so, you will find that you really like it.
 
-I no longer drive my SUV for an accurate test of its costs but it's got to be at least 25 cents and mile.  Last year I refilled the tank once.
-
-And if carrying capacity is a concern also consider one day adding a folding cargo e-bike to your collection.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Matt's conclusion is that NM is a good thing...
-
-Practical example, I have a PV system. I also have a community solar subscription. My utility doesn't get to mark up the energy I get from the solar farm. Our kWh charge is lower for the solar farm then from the utility. I do pay for delivery and some connection charges, which makes sense.. Functionally, which doesn't necessarily mean equal price, this works the same way that my solar surplus during the summer works.
-
-Energy storage has to happen....</div></div>
+The biggest mistake non-vegans and new vegans make is thinking that their tastes will never change.  Our tastebuds are literally replaced every 10 days or so.  And it takes something like 15 tries before a person starts to appreciate a new taste.  I have found, with a variety of foods, that if I eat it consistently for about a week, I start to like it.  At one point, I was even having plain brown ric...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">the workplace is incentivizing you to drive to work emission free. an old nissan leaf with 70 miles of range can be had for a few grand and would fit a majority of people's commute (considering the average commute in america is something like 30 miles)</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Switzerland has a super high age requirements for e-bike usage. 14 years old if you have a moped license and 16 otherwise. As a mountain bike instructor I wish they lowered a few years, even if it requires a short license. Even at 10 we have kids that fly down downhill trails. E-bike just makes going uphill more democratic without using any lifts/shuttles.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Seems like you’re missing the point that consumers voting with their wallet is basically the loudest voice they have. In a world where Tesla is just one producer in a market of EV choice, why shouldn’t a consumer feel free to spend their money elsewhere is they consider Musk a negative force in our politics?</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">[BP popularized the concept of a personal carbon footprint with a US$100 million campaign as a means of deflecting people away from taking collective political action in order to end fossil fuel use](https://www.researchgate.net/publication/305209345_Where_has_all_the_oil_gone_BP_branding_and_the_discursive_elimination_of_climate_change_risk), and [ExxonMobil has spent decades pushing trying to make individuals responsible, rather than the fossil fuels industry](https://www.vox.com/22429551/clim...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">You should find out if your Time of Use rate schedule will reward you from having west facing solar panels.  In my area PG&amp;amp;E pays higher for electricity sold in the afternoon so even tho production of east versus west is identical... its more financially beneficial to install west facing.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Not all solar is created equal. Check out SunPower.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">implied disapproval</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">But perhaps the perceived rigor of being vegan will dissuade a relative from becoming a vegan themself. It’s not clear cut. Maybe I’m wrong. But nobody should confidently say I’m wrong.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">What I don't understand is yes people have different ideas and will have discussions or even arguments but OP purposefully attacks Tesla and skews information. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">there is nothing about the vegan philosophy that relates to how someone should look. if your weight as an individual was the deciding factor for some omni person to go vegan or not, they were never really interested in going vegan in the first place. they’re just grasping for even the most microscopic validation in their decision to live in cognitive dissonance.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Vegnews posted they'd be going Nationwide this year but I don't think they list a source. And now I'm skeptical since they misreported an unsourced Pizza hut vegan cheese story.
 
-Why don't mods ban?</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Doesn't seem worth it. 
+https://vegnews.com/2019/4/burger-king-expands-impossible-whopper-to-more-than-7000-locations</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I'd say this is a criticism of ad platforms than anything else. We can't have it both ways, we can't bemoan the fact that &quot;holistic health love and light&quot; people are not vegan, then when they are criticise them for it.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Before I answer your first question I want to make it quite clear that the parking lot I was in had 10 Superchargers, and two CCD/CHAdeMO chargers.
 
-11,000 kwh per year means about 900 kwh per month. 
+I'm saying that when there is high congestion, teslas should wait for superchargers they can access, not clog up a CHAdeMO/CCS charger just because they don't want to wait. I was blocked by two Model 3s. And that was only because they didn't want to wait an hour for the supercharger located in the same parking lot. Those two model 3s prevented multi...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Yes, but actually no. Toyota is hardcore hydrogenheads. The rest are lowkey investing in the tech in case it turns out to be something there.
 
-Electricity in Texas is about $0.12 per kwh. So you're paying $116 per month to generate $108 worth of electricity per month at best. 
+I'd not mind if Porsche invests in combusting hydrogen, babies, or whatever else they want but right now (this decade) that approach only legitimizes EV-bashers. (Kinda how Mazda spent a lot of money on a more efficient engine when they could have spent it on EVs.)</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Why do British people just keep repeating the same obvious point without getting to WHY they keep making that point? Yes, she's using his charger. We established that in the second response. She obviously thinks it's a good thing, and he thinks it's a bad thing. She makes a few weak arguments in support of her position, and he just keeps repeating &quot;You're using my charger&quot;. This conversation will get absolutely nowhere unless he tells her WHY her use of his charger is a bad thing. Let's make a l...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Submission statement:
 
-And this assuming you're able to use every single kwh generated or find a net-metering plan that offers 1 to 1 net metering. I am not sure those are still available in Texas without a minimum fee or without capping you on how much you can send back. 
+Vehicle to House is the term for being able to power your household off of an EV battery if the grid goes down (as opposed to Vehicle to Grid, which uses EV batteries for smart load demand by charging at off-peak times and backfeeding the grid at peak times)
 
-You probably won't get your money'...</div></div>
+It's a shame that most EV manufacturers don't have V2H capability. At best, they have a 1-2 kW DC to DC converter to run the 12v electrical system, which can be used with an inverter for a few key appliances. The main...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">no, temperature changes are not equilibrium.  there is no equilibrium temperature.  there does not need to be an equilibrium temperature for the earth not to explode.  there is just heating and cooling over a range.  the water level in your sink would go up and down as you turn on and turn off the water, but again that's a bad example as the water level is not a good analogy for the unequal distribution of solar power.  again, your dilution of solar power means that your cold sun cannot melt ice...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I hate it in the fall when solar panels run out in front of my car.</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">none</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">This is a debate I've been having internally, and with a close friend who's vegan for environmental reasons for quite a while too. I should really do some good reading on the topic</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I mostly don't see how it applies.  For most people, their commutes take the EV away from the their home during the solar production hours.  The EV doesn't really add any value in this case.  EVs may be the cheapest way to buy a battery, but they don't always benefit a solar system.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Cross posting from the Tesla forum 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">I don't know of any good vegan yogurt alternatives personally. Maybe someone else on the sub can help?
 
-Solar Roof v3 - how accurate is the quote?
+So I looked up 50 grams of protein in 500 grams of food. Looking at boiled lentils at 9 grams per 100 grams, that would scale up to 45 grams of protein per 500 grams. Then if you really want to surpass that, add some other protein source too.
 
-Current: 4.2 kW solar panel installation on the roof (previous owner) 
+I'm sorry about that :( I'm not very sure of the products available in Switzerland either but possibly a search on this subreddit for swiss products cou...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">If you don't have allergies to worry about, buying [nutritional yeast](https://www.healthline.com/nutrition/nutritional-yeast#TOC_TITLE_HDR_2) in bulk would probably be the cheapest way to get all your B vitamins (otherwise buy it in containers to avoid cross contamination) - it's kinda cheesy with mild umami which makes it great for making cheez sauces with or just sprinkling on foods like tacos or spaghetti. [Marmite is also high in B vitamins](https://en.wikipedia.org/wiki/Marmite) (unfortuin...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I have this one: [India's Vegetarian Cooking](http://www.amazon.co.uk/Indias-Vegetarian-Cooking-Monisha-Bharadwaj/dp/185626792X/ref=sr_1_1?ie=UTF8&amp;amp;qid=1369741383&amp;amp;sr=8-1). It's amazing. I just substitute oil for the ghee, oat/soy cream for dairy cream, and plain tofu for paneer. A lot of the recipes are vegan already tho.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Model 3 is a much better value due to the charging network</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">I got to say, after driving this. I still feel that my tesla is better. But the car itself is still very cool. Very reliable solution.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">Yep. I expect depreciation to be major on these things. 2-year-old EVs are some of the best bargains going right now.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">I think the performance of the Q.CELLS is fine. SolarEdge is also very good. Sunpower uses repackaged premium equipment from REC and Enphase which are a step up, but won’t impact your performance $3000+ worth. It seems like your main goal is to get this done for a good price. 
 
-Problem: The roof needs a replacement in the next year or two with $1500 worth of immediate work needed (northern CA = $$)
-
-**Asphalt option:** Take the panels off + replace with 25-30 year shingles + put the panels back (&quot;nah, we don't need permits&quot; - not sure if I can palette this) + 5 year weatherization warranty = **$23.5K + cost of repairin...</div></div>
+Personally I would be going for your second quote. Sunpower is sold through dealers and while I think Sunpower will be around, I wouldn’t bet on them always coming through if your dealer gets out of the business. I meet a...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">A question to people who have solar and battery storage installed at their homes.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Sunpower A vs M series</div></div>
 </div></div>
-</div>
-<div class="question-section"><div class="question-title">Mechanism</div>
+</div></details>
+<details class="question-section"><summary>Mechanism</summary>
+<div class="question-content">
 <details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>
 <div class="prompt-box">
 <div class="prompt-text">What mechanism is used to convey the norm or social pressure? Answer with exactly one of: blame/shame, community standard, identity/status signaling, other, praise, rule/virtue language, social comparison.</div>
@@ -500,77 +853,200 @@ Problem: The roof needs a replacement in the next year or two with $1500 worth o
 </div>
 </details>
 <div class="category-group"><div class="category-title">blame/shame</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">But perhaps the perceived rigor of being vegan will dissuade a relative from becoming a vegan themself. It’s not clear cut. Maybe I’m wrong. But nobody should confidently say I’m wrong.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">What I don't understand is yes people have different ideas and will have discussions or even arguments but OP purposefully attacks Tesla and skews information. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">When car shopping with my vegan boyfriend I kept making jokes about the fake leather interiors and all the naugahs that were slaughtered to make them,</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Just desperate clinging then.  In that situation their diet would be pretty much vegan anyway, I don't see the need to defend at all costs eating a bit of some cow a couple of times a week.  You rattled their cage for sure here.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Just minding my vegan ass business</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Why had Biden snubbed Tesla?  It is the real reason for this huge move to electric.  If you downvote, it means you support climate change…</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">If you can prove that being in a union is better for you, then you could make the case. If the unionized workforce is making less money, then it is the definition of unfair to benefit it.
 
-Why don't mods ban?</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Where did you get that info from? did you factor in the prevailing winds that the yacht has to consider if they were going to make the trip around 2 weeks? 
-They claim its zero-carbon but how much more further did you investigate? or did you just threw up your hands after reading &quot;zero-carbon&quot; and bowed down to Greta?
+This is proof they want to maintain status quo of obsolete automakers pumping millions of ice cars because the newcomers like Rivian and Lucid won't be able to compete at the same level. Besides, GM doesn't sell any EVs right now. They halted production</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">In Finland model 3 starts just below 50k€ if you choose any extra price goes over 50k and you are not eligble for 2000€ bonus from government… just bs! I would love to buy one with German pricing😃</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">A few things.
 
-https://www.thegatewaypundit.com/2019/12/figures-green-teen-greta-thunbergs-yacht-used-more-fuel-to-cross-atlantic-than-if-she-flew-from-new-york-to-madrid/
+1. &quot;Was told the payments may not be approved because I got a roof too.&quot; -- a new roof is generally excluded from the tax incentive so just be aware that you may have tax complications if you were expecting that you will get 30% back on that cost.
+2. &quot;Neutral bars in MSP were not bonded together&quot; -- Unless you got a new MSP this would have been a pre-existing fault.
+3. All-in was 4 months from solar installation to PTO which doesn't seem horrible.
 
-And even if what your...</div></div>
+I spent about a month going roun...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Protective tariffs are always dodgy. Allowing one country to corner the market for something like solar panels is also bad. They're not the boogeyman that conservatives make them out to be but they definitely pull strategic moves like, for instance, trying to make the whole world beholden to them for important products and commodities.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">This is so dumb.  Less.  Solar panels require less mines and don't require constant mining to provide fuel.  Fuck this is dumb. 🤡🌎</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">community standard</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">This is a debate I've been having internally, and with a close friend who's vegan for environmental reasons for quite a while too. I should really do some good reading on the topic</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Recommendation, sure. But how do I test drive a car or get a recommendation/opinion about one that none of my friends own? When I bought my Leaf, the only friend I knew IRL with an EV was a Chevy Bolt owner. I'd driven that, thanks to them, but I'm not sure how that helps me decide how it compares to other EVs.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Kroger had the 8 pack beyond burgers four $4.99 a week or two ago.  Look for deals and stock up is my only tip as there are no mainly vegan places near me.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Good for you for not forcing your beliefs on your kids. Creating vocal non-vegans is not good for the movement long-term. 
 
-And that's now, when there's only a dozen or so choices available in the US. What about 5-10 years from now when there's several dozen choices? I don't have that many friends! :)</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Cross posting from the Tesla forum 
+When I first met my husband,  he was not vegan. I told him that he could buy deli meat and keep around but I didn't want to cook meat in the house. He could order it when we went out to eat. So, just set some clear boundaries. You eat plant-based at home, eat whatever you want when you're the one buying it. You can have meat at home once per week but that's it. Negotiate wi...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I still have a pair of leather boots. I rarely wear them unless I'm doing some tough hiking, but I figure I won't do anything for the animals by tossing out a perfectly functioning pair of boots. Most vegans are like that.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">They have the same problem of ICE cars of taking up a large amount of space; being lower capacity, having a huge cost barrier to ownership and causing a massively disproportionate number of transit fatalities.
 
-Solar Roof v3 - how accurate is the quote?
+Additionally they can't be powered by overhead power lines, require batteries and have a lower lifespan.
 
-Current: 4.2 kW solar panel installation on the roof (previous owner) 
+As stated, they have a place, but if you're traveling from an urban area to another urban area there are better more eco-friendly options.
 
-Problem: The roof needs a replacement in the next year or two with $1500 worth of immediate work needed (northern CA = $$)
+(I'm not saying there are better, more eco-...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">It’s not an enticing proposition as an EV driver. People are either going to charge at home/work, or use a DC fast charger for a quick top up.
 
-**Asphalt option:** Take the panels off + replace with 25-30 year shingles + put the panels back (&quot;nah, we don't need permits&quot; - not sure if I can palette this) + 5 year weatherization warranty = **$23.5K + cost of repairin...</div></div>
+I can’t fathom anyone using a random L2 home charger.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">I was going *across* Vermont and wanted to charge. I stopped at the Chevy dealership in Enosburg Falls. No charger. Owner refused to sell EVs because &quot;nobody wants them&quot;...you jackass. Maybe if you had chargers, people would buy them.
+
+Meanwhile, if I shoot up to Cowansville in Quebec, the Chevy dealer there sells a bunch. He's got 3 L2 chargers and one L3 charger for free.
+
+Next dealer over in St-Jean also has a free L3 and L2 chargers. He's got a fuckton of Sparks from California for sale. 
+
+T...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">You should really have 3-4 powerwalls with a system that large on nem3</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">I guess you might be able to get an exception. [this](http://osfm.fire.ca.gov/training/pdf/photovoltaics/solarphotovoltaicguideline.pdf) is the code I'm referencing (it's not a code per say but pretty widely adopted). I'm not sure they'll let you go all the way up to the ridge but for the edges you could argue there's alternative access (street side too). They like access to the ridge to cut into to clear smoke. 
+
+Maybe ask your neighbor about his/her installation? I don't think the specifics of...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Not sure I'm following. This boils down to a lobby group asking FERC to make net metering a federal policy decision vs a state policy decision? Resulting in a single nation-wide net metering policy vs a different policy in each state?
+
+Yea, this seems like something that is best governed by states. Power utilities are largely state governed now, seems logical to govern power net metering the same way as the rest of the utility..</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">identity/status signaling</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Hunting, and by extension, meat-eating are activities that have for a long part of our history been masculine endeavors. Veganism is at polar ends with these practices and therefore it is more likely to be seen as feminine.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Got my Kia Niro PHEV just last Friday! I hope to keep it for as long as possible and get a BEV for my next vehicle.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">There are whole countries that choose better options, much poorer countries than the US. The US doesn´t sell hundreds of millions of gas guzzling SUVs because people NEED them, but because people like them. It´s not about convenience or being cheaper, it´s about consumer culture. And culture can change, but it´s hard and takes work and requires us acknowledging that there´s more to fixing the world than offing a dozen billionaires.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">Hi vegan, I'm dad!</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">but I chose vegan tho..</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I live near Tokyo too! Yay :)
+
+Edit: My flair says flexitarian but I'm vegan.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Got my Kia Niro PHEV just last Friday! I hope to keep it for as long as possible and get a BEV for my next vehicle.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">First 24kwh Nissan leaf (wife’s)- second 2015 Tesla S (85d) (mine) now wife has Kia Niro- I still have the S - next???? Probably a Tesla Y awd performance or a late model S -</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">How about we let people buy what they want? As for myself, I an on buying an F150 Lightning, as it checks all the relevant boxes for me in a much better way than the CT and without the minimalist touchscreen-dependent interior that Tesla loves.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">At least on residential roofs, solar panels have become a fashion accessory, at least in California.  People pay more for black panels, for the latest-greatest look.  Nobody would keep their pricey panels looking dusty any more than they would drive a dirty car.  There are companies which come clean your panels.  They likely charge more for 2+ story houses with steep roofs.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">There are whole countries that choose better options, much poorer countries than the US. The US doesn´t sell hundreds of millions of gas guzzling SUVs because people NEED them, but because people like them. It´s not about convenience or being cheaper, it´s about consumer culture. And culture can change, but it´s hard and takes work and requires us acknowledging that there´s more to fixing the world than offing a dozen billionaires.
 
 If people´s problems are projecting status and importance (whic...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Starting a Photovoltaics company</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">other</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">I buy my food at the grocery store and I get an Imperfect Produce box delivered weekly. I'm lazy with cooking so I don't try a ton of different recipes, but I do like to make different things if I can. I make bean chili about one a month at least, though, (a huge pot that lasts a week) because I love it. I eat it with garlic bread. I also love bean burritos, noodles, rice+beans, and potatoes. I always eat veggies with dinner, and fruit all day and for dessert. I drink Soylent for lunch at work o...</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I mostly don't see how it applies.  For most people, their commutes take the EV away from the their home during the solar production hours.  The EV doesn't really add any value in this case.  EVs may be the cheapest way to buy a battery, but they don't always benefit a solar system.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">Since you don't mention a battery backup, don't forget you may still have a electricity usage during dark hours. Of course, if your utility company has net metering or give you some credit for excess wattage produced during the day, it may work out.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">How is the status on eating the rich? It’s definitely vegan but what about the FDA</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">What's unhealthy about fish? Fish and red meat are very different</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">How about that lab grown meat?  It will be interesting to see the initial marketing around such a product since I feel a vegan label is confusing.  Possibly new words will be added to our restaurant vocabulary.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">No way dude lol. The macan already exists in gas form they just have the body lines camouflaged for testing but I doubt this would stray very far from the ICE version. zero model Y resemblance in these pics</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Seems unlikely.
+
+That 100k number is from a report last year that cited a document where Tesla claimed production capacity of &quot;100k or more&quot;. That same report also said Tesla abandoned plans for on-site battery production. However, since then, Tesla has broken ground on their on-site battery production facility. And clearly the factory being built is designed for far more than 100k cars/yr, [it's huge](https://youtu.be/ZHMNEzhHVSA). It's just as big as the first phase of their China plant.
+
+Of c...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">&gt;They're saying that PHEVs are a better use of a limited supply of batteries than BEVs, and then again HEVs are again a better use of a limited supply of batteries than PHEVs.
+
+
+If they don't have enough cells, then they have failed to organize production, due to either lack of interest or incompetence.
+
+I recall JB Strable being perplexed over the failure of other OEMs to get their supply chain sorted.
+
+The chemistries of hybrid cells and PH cells and EV cells have different chemistries, and wh...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Solar Panels &amp; Roof Warranties What You Need To Know, Can Solar Panels Void Roof Warranty?</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">Solar panels on the roof would be so much better than wind farms on previously open land. I wonder what that land was used for before in the US though</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">I do have two inverters. Both are showing the same grid failure message. Not sure if that makes a difference at all. There is only one breaker box near the solar panels and pretty sure it ties to the one on the exterior of the house because that's where the eGauge is located. Would the eGauge have anything to do with the grid failure?</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">praise</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">Hi, one tip I'd give you is that the more normal the meals seem to your family the less flak you will get over the week. What does your family eat for breakfast? If it's cereal like mine, try to find some vegan muesli or oats and have it with rice milk or almond milk (rice milk is cheaper usually and really tasty - plus it isn't soy). If they prefer toast, then that's even easier for you. Do your parents take sandwiches to work? Take some peanut butter and jelly sandwiches to school with some ot...</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">I understand why we use kWH/100 miles etc and will completely agree.,. Once we all have EVs. But right now it’s about demonstrating to ICE owners how much they can save with an EV, and MPGe does a much better job of that</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">I've bern driving an EV since 2015. Started with a LEAF, moved to a Model 3 for five years and recently picked up a Model Y LR. Tesla has the only charging network that covers the areas where I drive mostly in WV and over into DE with a little into VA, PA, MD, OH, and KY. The Supercharger network is the gold standard charging network that has never let me down.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">I had an advantage when I went vegan because I'd never consumed dairy products in my life, just meat.  Giving up meat was easy for me and I did it overnight as well.  It really isn't as hard to go vegan as people make it out to be.  If you believe in the tenets of veganism, it should be entirely possible.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Do you care about any animals, like a dog or a cat? Then you can place your distaste for their suffering onto other non-human animals as logically they are equal. Maybe watch &quot;A meat eaters argument for veganism&quot; as he fully explains why we should care about animals.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Not bad. I was pescatarian for 4 years before I was vegan. Now vegan almost 2. (I Will never go back) You need to do what’s best for you physically and mentally. If I went vegan a while ago I prob would’ve quit tbh</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">&amp;gt; This is my curated list of drawbacks:
 
-I installed my level 2 home EVSE myself by plugging it into a NEMA 14-50 that I had an electrician install while my rooftop solar array...</div></div>
+I believe some of these are wrong in some cases; specifics below.
+
+&amp;gt; * Traction control, stability control work better when primarily controlled by an electric motor.
+
+Possibly true but some PHEV control all the wheels with electric motors.
+
+&amp;gt; * Can't fast charge a phev because the battery is not large enough to take high power levels.
+
+Depending on what power level you mean, this is either moot or inaccurate.  My PHEV charges to 80% in 15 minute...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">Enjoy giving Tesla that interest free loan. If you had invested that 1000 in Tesla stock instead, today you would have about $100,000 worth.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">15,000 survey is too small TBH.  Lots of battery degradation paths in current batteries.
+
+Probably depends on experience.
+
+Tesla makes battery replacement a cinch so fewer complains while under warranty, only issue I think is WRT quality of the remanufactured packs.
+
+Lots of YT people have had multiple replacement batteries during the warranty period.
+
+TBH if batteries lasted 16 years minimum, we wouldn't see depreciation like a falling rock.   Only Tesla seems to provide battery replacements at...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">Agree with pretty much most of what you said. Ultimately it’s up to you in what you want to achieve. ROI vs independence and protection from grid failure/blackout. We install in CT and rarely have customers want solar + battery. Most want to save as much money as they can and net metering helps that. Also, most of the customers we’ve installed didn’t really have much worry about blackouts in their area. 
+Keep in mind, batteries are only warrantied for approx 12-15 years and will need replacing s...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">I feel like there are a lot of motivated arguments against NEM3, and I know that it caused me to at a delay installing solar at a minimum. Also, I don't have the ambition to do sufficient research to properly evaluate if NEM3 is good or not, but I have done enough to know that rooftop solar is vastly less cost-efficient than utility scale solar.
+
+So whatever policy we employ, it should encourage the largest number of watts generated per subsidized dollar spent. If NEM3 is doing that, then it's g...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Aptera will not confirm pricing until they know there costs, which is months off yet - perhaps you didn't see how Rivian shot themselves in the foot.
+
+Aptera's CEO is also acting CFO.  What you are pointing out is that they are fully compliant with the law, and being financially responsible - using the most biased words you can to hide the truth.
+
+Aptera has an awarded patent in addtion to the factory equipment producing prototype panels - and the equipment has been ordered:
+
+&gt;Solar panel plant ...</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">rule/virtue language</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">yeah on this sub we only allow circlejerks and advertisements for expensive vegan cheeses and meats. The &quot;discuss&quot; flair that is available to all posters is actually just a fluke.
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">? No where did I say animal suffering doesn't matter. I'm going to guess that I've been vegan longer than you've been alive. Veganism is not morally better or worse because I do not gauge morality in terms of better or worse.</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">Can you bring any supplies with you? You're going to need more protein rich food than just vegetables. Dry and tinned beans are shelf stable, as is TVP(also cheap and easy to prepare). Peanut butter is another good, shelf stable food to bring. 
 
-Personally I went vegan from a combination of learning about the intelligence of pigs and the capacity of farm animals for feeling pain, and feeling guilty when getting them at the cafeteria, and from reading about the effects that cattle farming has on local environments and ultimately contributing to climate change....</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">Carmakers historically have had to be very conservative to survive. It's a cut-throat market. Every new automaker (until Tesla) in the past 50+ years has gone out of business. The only &quot;innovative&quot; ones like the performance carmakers were small scale, and after a while the technology from those would bleed into the mass-produced stuff. Carmakers that have tried to go &quot;all in&quot; on a new technology have been burned badly before. Mazda almost went bankrupt in the 70s because of it. Many went heavily...</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">save money, generate revenue... all the same ..financial benefits.  Solar PV does not provide any occupant or utilitarian benefit by itself.
+Deva makes an inexpensive vegan multivitamin, you can order from iherb.com 
 
-We are talking within the context of this project here. Giant water Solar PV Farm... is this cheaper than Nuclear or Wind.. or energy savings program within the city... there may be a lot more viable option, when you start true uping the actual additional O&amp;M and R&amp;R cost.</div></div>
+For scurvy specifically, tetra packed long life orange juice is an option. Your multivitamin should have vitamin C anyway though. 
+
+Just make sure you get enough calories, fats,...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">Yes. Doesn’t sound normal or even so plausible. All things being equal, there’s little reason why eating a plant-based diet for a month would physically result in what s described, especially going from vegetarian.
+
+Opening post should probably follow some structured vegan diet plan, like McDougall or whoever has one out these days; maybe a plan by a vegan fitness person. There’s probably an app or website even, though will need to pay for a book or subscription.
+
+For more structured personal a...</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Curious where it was built.  
+And the Y, regardless of where it is built, is the latest iteration of their manufacturing process. It makes sense that  it would be the best, as long as Tesla is improving.  
+It is when companies get worse, and then keep getting worse, that you really have to worry.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">ICE cars are pretty loud even when idling let alone at normal car speeds e.g. 60km/h.
+
+And I don't think governments around the world are going to wait until a statistically significant number of pedestrians are killed by EVs in order to get the data to make a decision.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">heh, I imagine Musk though doesn't want to see *Carbon Credits* go away. that's how Tesla stayed afloat for quite a while.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">I was saying &quot;exclusively&quot;, meaning if we keep doing it (1:1 net metering) until every household has solar, the only source of revenue for the utility companies are from government with our tax money. 
+
+At this moment, it makes sense to certain degree that government should step in to pay some of the difference as incentive to boost the adaptation of solar panel, but it is different from just paying to straight paying to company.
+
+This is exactly what they do, because solar incentive still exist...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">&amp;gt;Do you have off street parking where you can charge at home or at work, it's your commute short enough to do a round trip on a single charge /half a charge,
+
+where i live, there are chargers at target, walmart, etc.. so you get some juice *while* you shop for other things.. reduces, if not negates the need for dedicated trips anywhere for fuel.
+
+&amp;amp;#x200B;
+
+&amp;gt;A lot of people went be able to afford them and an even smaller number of people will be able to afford them and have lifestyles t...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Because that would be a useless waste of money.
+
+	• Solar energy influx/m2 is so low &amp; the available surface so small that it adds NEXT TO NOTHING in energy
+	• Position of the panels would be suboptimal, reducing the energy delivered even further
+	• Solar panels are heavy, adds weight in the worst location (high up, raising the center of gravity)
+	• Solar panels are pretty fragile; not up to all the vibrations, bumps, stones, etc.
+	• Solar panels add cost &amp; complexity, especially complex curved ...</div></div>
 </div></div>
 <div class="category-group"><div class="category-title">social comparison</div><div class="sectors-row">
-<div class="sector-column"><div class="sector-header">FOOD</div><div class="example-comment">I think it was half and half, like they said it with a side haha stupid vegan, but also with curiosity of my stance.</div></div>
-<div class="sector-column"><div class="sector-header">TRANSPORT</div><div class="example-comment">The biggest advantage of getting a stand up scooter over a sit down or e bike is visibility. 
+<div class="sector-column"><div class="sector-header">FOOD · 1</div><div class="example-comment">How much do you want to bet that this guy isnt a vegan?</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 2</div><div class="example-comment">&amp;gt; It would genuinely make a larger impact and switching from a gas to electric car is a more seamless transition than from steak and bacon to tofu burgers and seitan.
 
-Not only can you see more, you can also be seen more. 
+The primary driver for veganism is to stop animal cruelty, so environmental benefits really are like killing 2 birds with one stone.  I don't have data to confirm or refute your assertion that gas =&amp;gt; EV is a bigger impact than carnist =&amp;gt; vegan.  It very well might be.
 
-I would also recommend getting a second charger to leave at work. When the batteries die, they die hard. I charged my scooters at home over night, and while I was at work as well. 
+Gas =&amp;gt; EV is **not** at all a seamless transition ...</div></div>
+<div class="sector-column"><div class="sector-header">FOOD · 3</div><div class="example-comment">I think it was half and half, like they said it with a side haha stupid vegan, but also with curiosity of my stance.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 1</div><div class="example-comment">Tesla better hurry with the model y</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 2</div><div class="example-comment">They had Model Y SRs for under 40k in 2021 so I think your date is off a bit. Crazy price hikes are much more recent.</div></div>
+<div class="sector-column"><div class="sector-header">TRANSPORT · 3</div><div class="example-comment">My E-up literally has 82hp lol. It has 300km range and i beat the piss out of any combustion car under 250hp at the lights ( up to 60km/h or so lol )  IDK how this thing is geared but it's nearly identical in speed to my Model Y until it hits 60km/h.</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 1</div><div class="example-comment">I think the rumors were the not-yet-announced Powerwall 3 would be LFP. I thought the 1&amp;2 were already out and nickel?
 
-sidenote, people are remarkably worse drivers since covid.</div></div>
-<div class="sector-column"><div class="sector-header">HOUSING</div><div class="example-comment">&amp;gt;Who has the best solar panels
+I'm about to get solar+battery installed by a family friend who's a retiring solar installer in SoCal. My install will unfortunately be his first and last battery install, so I'm helping with the research.
 
-That is like asking &quot;who has the best car&quot;. Well, obviously Ferrari, right?
+I think there were some other disadvantages to the Tesla batteries, but I can't remember them right now. The inter-brand compatibility has generally sounded horrible for eve...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 2</div><div class="example-comment">I think the answer is in your daily breakdown. You can see that 95% or more of your usage is off peak hours. 
 
-From any objective measure, any name-brand panel will have roughly equal quality in terms of failures and lifetime. That should not be a major deciding factor.
+Looking at the bill, you can see that more than half of your bill, roughly $150 came from your energy usage off-peak hours. 
 
-Eliminating that, it's all about price/performance. SunPower focusses on watts/meter, and you pay for that. More traditional panels from LG will completely outperform it on a cost basis, and that is far more important in most c...</div></div>
+Quite simply your house uses a lot of electricity. I'm not sure because it's not listed but I estimate you probably use closer to 2000 kilowatt hours of electricity given that your panels are producing around 3 MW hrs a month and you only sold 2.3 MW back. 
+
+As o...</div></div>
+<div class="sector-column"><div class="sector-header">HOUSING · 3</div><div class="example-comment">Short term only. Long term Covid will make it worse.
+
+Governments will postpone any new green projects after all they money they're putting out. Companies AND people will have depleted or used a significant amount of their rainy day funds. Any improvements will be postponed here as well. Whether it's adding solar panels, changing single pane windows to double, adding a heat-pump for heating and/or boiler etc.
+
+Sure wealthy people will still buy electric, and maybe more than usual, but the bigger...</div></div>
 </div></div>
-</div>
+</div></details>
 </body>
 </html>

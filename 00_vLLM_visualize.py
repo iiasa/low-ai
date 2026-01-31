@@ -10,12 +10,15 @@ Input JSON format: { "food": [ { "comment_index", "comment", "answers": { "1.1_g
 
 import json
 import os
+import random
 from collections import defaultdict
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 # Map answer codes to display labels (dashboard and examples)
 CODE_TO_LABEL = {
     "1.1_gate": {"0": "No", "1": "Yes"},
+    "1.1.1_stance": {"pushing for": "pro"},
+    "1.3.1b_perceived_reference_stance": {"pushing for": "pro"},
     "1.2.1_descriptive": {"0": "none", "1": "implied", "2": "explicit"},
     "1.2.2_injunctive": {
         "0": "none",
@@ -42,12 +45,12 @@ QUESTION_TITLES = {
 # Exact prompt and choices sent to the LLM (mirrors 00_vLLM_hierarchical.NORMS_QUESTIONS for display)
 NORMS_PROMPTS = {
     "1.1_gate": {
-        "prompt": "Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no.",
+        "prompt": "Definitions: A social norm is a shared belief or expectation about what is typical or what is approved/disapproved. Descriptive norm = reference to what people typically do or how common something is (e.g. 'most people here drive EVs'). Injunctive norm = reference to what people should do, or explicit approval/disapproval (e.g. 'you should go vegan', 'eating meat is wrong'). Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no.",
         "options": ["yes", "no"],
     },
     "1.1.1_stance": {
-        "prompt": "What is the author's stance toward {sector_topic}? Answer with exactly one of: against, against particular but pro, neither/mixed, pushing for.",
-        "options": ["against", "against particular but pro", "neither/mixed", "pushing for"],
+        "prompt": "What is the author's stance toward {sector_topic}? Definitions: against = author opposes or rejects {sector_topic}. pro but lack of options = author is in favor of {sector_topic} but wants more options or complains that current options are insufficient; do NOT code this as against. Complaints that there are too few {sector_topic} options count as 'pro but lack of options', not 'against'. Examples: 'I wish there were more {sector_topic} options' → pro but lack of options. '{sector_topic} is stupid' → against. Answer with exactly one of: against, against particular but pro, neither/mixed, pro, pro but lack of options.",
+        "options": ["against", "against particular but pro", "neither/mixed", "pro", "pro but lack of options"],
         "sector_specific": True,
         "sector_topic": {"transport": "EVs", "food": "veganism or vegetarianism / diet", "housing": "solar"},
     },
@@ -60,12 +63,12 @@ NORMS_PROMPTS = {
         "options": ["none", "implied approval", "implied disapproval", "explicit approval", "explicit disapproval"],
     },
     "1.3.1_reference_group": {
-        "prompt": "Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, people like me, political tribe.",
-        "options": ["coworkers", "family", "friends", "local community", "neighbors", "online community", "other", "other reddit user", "partner/spouse", "people like me", "political tribe"],
+        "prompt": "Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.",
+        "options": ["coworkers", "family", "friends", "local community", "neighbors", "online community", "other", "other reddit user", "partner/spouse", "political tribe"],
     },
     "1.3.1b_perceived_reference_stance": {
-        "prompt": "What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pushing for.",
-        "options": ["against", "neither/mixed", "pushing for"],
+        "prompt": "What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pro.",
+        "options": ["against", "neither/mixed", "pro"],
     },
     "1.3.2_mechanism": {
         "prompt": "What mechanism is used to convey the norm or social pressure? Answer with exactly one of: blame/shame, community standard, identity/status signaling, other, praise, rule/virtue language, social comparison.",
@@ -101,14 +104,53 @@ def compute_counts(data: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Dict[str,
     return counts
 
 
+def compute_recheck_counts(data: Dict[str, List[Dict[str, Any]]]) -> Dict[str, Dict[str, int]]:
+    """Among comments labelled 'against' (1st pass) in author stance, count second-pass recheck labels per sector.
+    Returns recheck_counts[sector][recheck_label] = count. recheck_label in: against, frustrated but still pro, unclear stance.
+    """
+    recheck_counts: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for sector, items in data.items():
+        for rec in items:
+            ans = rec.get("answers") or {}
+            if answer_to_label("1.1.1_stance", str(ans.get("1.1.1_stance", "")).strip()) != "against":
+                continue
+            recheck = (ans.get("1.1.1_stance_recheck") or "").strip().lower()
+            if not recheck:
+                continue
+            # Normalize to display label
+            if "frustrated" in recheck and "pro" in recheck:
+                recheck = "frustrated but still pro"
+            elif "unclear" in recheck:
+                recheck = "unclear stance"
+            elif "against" in recheck:
+                recheck = "against"
+            else:
+                recheck = "unclear stance"  # fallback
+            recheck_counts[sector][recheck] += 1
+    return dict(recheck_counts)
+
+
 def _chart_id(qid: str, sector: str = "") -> str:
     """Safe HTML id and JS variable name: no dots (e.g. 1.1_gate -> 1_1_gate)."""
     safe_q = qid.replace(".", "_")
     return f"{safe_q}_{sector}" if sector else safe_q
 
 
-def build_dashboard_html(counts: Dict[str, Dict[str, Dict[str, int]]], out_path: str) -> None:
-    """Write dashboard HTML with Plotly charts (inline JSON + plotly.js)."""
+# Recheck (second pass) labels and colors for "against" author-stance recheck chart
+RECHECK_LABELS_ORDER = ["against", "frustrated but still pro", "unclear stance"]
+RECHECK_COLORS = {
+    "against": "#e74c3c",
+    "frustrated but still pro": "#3498db",
+    "unclear stance": "#95a5a6",
+}
+
+
+def build_dashboard_html(
+    counts: Dict[str, Dict[str, Dict[str, int]]],
+    out_path: str,
+    recheck_counts: Optional[Dict[str, Dict[str, int]]] = None,
+) -> None:
+    """Write dashboard HTML with Plotly charts (inline JSON + plotly.js). If recheck_counts is set, add bottom chart for against recheck."""
     sectors = ["food", "transport", "housing"]
     question_order = [
         "1.1_gate",
@@ -123,10 +165,11 @@ def build_dashboard_html(counts: Dict[str, Dict[str, Dict[str, int]]], out_path:
     colors = {
         "Yes": "#3498db",
         "No": "#9b59b6",
-        "pushing for": "#2ecc71",
+        "pro": "#2ecc71",
         "against": "#e74c3c",
         "against particular but pro": "#e67e22",
         "neither/mixed": "#f1c40f",
+        "pro but lack of options": "#3498db",
         "none": "#95a5a6",
         "implied": "#673ab7",
         "explicit": "#3f51b5",
@@ -144,7 +187,6 @@ def build_dashboard_html(counts: Dict[str, Dict[str, Dict[str, int]]], out_path:
         "political tribe": "#5d6d7e",
         "online community": "#95a5a6",
         "other reddit user": "#e91e63",
-        "people like me": "#16a085",
         "other": "#546e7a",
         # Mechanism
         "social comparison": "#5c6bc0",
@@ -172,13 +214,13 @@ def build_dashboard_html(counts: Dict[str, Dict[str, Dict[str, int]]], out_path:
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <style>
 html { background: #0d1117; }
-body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 16px; background: #0d1117; color: #e6edf3; min-height: 100vh; }
-h1 { text-align: center; color: #e6edf3; }
-h2 { margin-top: 32px; color: #c9d1d9; }
-.chart { margin: 16px 0; background: #161b22; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); padding: 12px; }
-.charts-row { display: flex; flex-wrap: nowrap; gap: 16px; margin: 16px 0; }
+body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 10px; background: #0d1117; color: #e6edf3; min-height: 100vh; font-size: 14px; }
+h1 { text-align: center; color: #e6edf3; font-size: 1.6em; margin: 0.4em 0; }
+h2 { margin: 6px 0 4px; color: #c9d1d9; font-size: 1.2em; }
+.chart { margin: 4px 0; background: #161b22; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); padding: 8px; }
+.charts-row { display: flex; flex-wrap: nowrap; gap: 10px; margin: 8px 0; }
 .charts-row .chart { flex: 1; min-width: 0; margin: 0; }
-a { color: #58a6ff; }
+a { color: #58a6ff; font-size: 0.9em; }
 </style>
 </head>
 <body>
@@ -195,41 +237,42 @@ a { color: #58a6ff; }
 
         c = counts[qid]
         if qid == "1.1_gate":
-            # Build all three donuts, then output divs then scripts so all containers exist before any Plotly runs
-            gate_figs = []
-            for sector in sectors:
+            # One figure with 3 donuts (domains) and a single shared legend; bigger height
+            gate_traces = []
+            for i, sector in enumerate(sectors):
                 yes_count = c.get(sector, {}).get("Yes", 0) + c.get(sector, {}).get("1", 0)
                 no_count = c.get(sector, {}).get("No", 0) + c.get(sector, {}).get("0", 0)
-                sector_title = SECTOR_DISPLAY.get(sector, sector)
-                layout = {
-                    "title": {"text": sector_title, "font": {"color": "#e6edf3"}},
-                    "showlegend": True,
-                    "height": 360,
-                    "paper_bgcolor": "#161b22",
-                    "plot_bgcolor": "#161b22",
-                    "font": {"color": "#e6edf3"},
-                }
-                fig = {
-                    "data": [{
-                        "labels": ["Yes", "No"],
-                        "values": [yes_count, no_count],
-                        "type": "pie",
-                        "hole": 0.5,
-                        "marker": {"colors": [colors.get("Yes", "#3498db"), colors.get("No", "#9b59b6")]},
-                        "customdata": [[sector, "1"], [sector, "0"]],
-                    }],
-                    "layout": layout,
-                }
-                cid = _chart_id(qid, sector)
-                gate_figs.append((cid, fig))
-            html_parts.append('<div class="charts-row">\n')
-            for cid, _ in gate_figs:
-                html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
-            html_parts.append('</div>\n')
-            for cid, fig in gate_figs:
-                html_parts.append(
-                    f'<script>var fig_{cid} = {json.dumps(fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
-                )
+                x0, x1 = i / 3, (i + 1) / 3
+                # Shrink donut vertically (y domain) so sector titles sit above with clear gap
+                gate_traces.append({
+                    "labels": ["Yes", "No"],
+                    "values": [yes_count, no_count],
+                    "type": "pie",
+                    "hole": 0.5,
+                    "marker": {"colors": [colors.get("Yes", "#3498db"), colors.get("No", "#9b59b6")]},
+                    "domain": {"x": [x0, x1], "y": [0.18, 0.92]},
+                    "showlegend": i == 0,
+                })
+            cid = _chart_id(qid)
+            annotations = [
+                {"text": SECTOR_DISPLAY.get(s, s), "x": (i + 0.5) / 3, "y": 1.04, "showarrow": False, "xanchor": "center", "font": {"color": "#e6edf3", "size": 11}}
+                for i, s in enumerate(sectors)
+            ]
+            gate_layout = {
+                "height": 380,
+                "paper_bgcolor": "#161b22",
+                "plot_bgcolor": "#161b22",
+                "font": {"color": "#e6edf3", "size": 11},
+                "showlegend": True,
+                "legend": {"orientation": "h", "yanchor": "top", "y": -0.08, "xanchor": "center", "x": 0.5, "font": {"size": 10}},
+                "margin": {"t": 44, "b": 32, "l": 8, "r": 8},
+                "annotations": annotations,
+            }
+            gate_fig = {"data": gate_traces, "layout": gate_layout}
+            html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
+            html_parts.append(
+                f'<script>var fig_{cid} = {json.dumps(gate_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
+            )
         else:
             labels_seen = set()
             for sector in sectors:
@@ -266,15 +309,15 @@ a { color: #58a6ff; }
                     "data": traces,
                     "layout": {
                         "barmode": "stack",
-                        "height": 280,
-                        "margin": {"l": 100},
-                        "xaxis": {"title": "Count", "color": "#e6edf3", "gridcolor": "#30363d"},
-                        "yaxis": {"color": "#e6edf3", "gridcolor": "#30363d"},
+                        "height": 240,
+                        "margin": {"l": 85, "t": 20, "b": 28},
+                        "xaxis": {"title": "Count", "color": "#e6edf3", "gridcolor": "#30363d", "titlefont": {"size": 11}, "tickfont": {"size": 10}},
+                        "yaxis": {"color": "#e6edf3", "gridcolor": "#30363d", "tickfont": {"size": 10}},
                         "showlegend": True,
                         "paper_bgcolor": "#161b22",
                         "plot_bgcolor": "#161b22",
-                        "font": {"color": "#e6edf3"},
-                        "legend": {"font": {"color": "#e6edf3"}},
+                        "font": {"color": "#e6edf3", "size": 11},
+                        "legend": {"font": {"color": "#e6edf3", "size": 10}},
                     },
                 }
                 cid = _chart_id(qid)
@@ -282,6 +325,56 @@ a { color: #58a6ff; }
                 html_parts.append(
                     f'<script>var fig_{cid} = {json.dumps(fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
                 )
+
+    # Bottom section: "against" (1st pass) second-pass recheck percentages and chart
+    if recheck_counts:
+        recheck_traces = []
+        labels_order = [l for l in RECHECK_LABELS_ORDER if any(recheck_counts.get(s, {}).get(l) for s in sectors)]
+        for label in labels_order:
+            x_vals = [recheck_counts.get(s, {}).get(label, 0) for s in sectors]
+            if any(x_vals):
+                recheck_traces.append({
+                    "x": [SECTOR_DISPLAY.get(s, s) for s in sectors],
+                    "y": x_vals,
+                    "name": label,
+                    "type": "bar",
+                    "marker": {"color": RECHECK_COLORS.get(label, "#95a5a6")},
+                    "text": [str(v) for v in x_vals],
+                    "textposition": "inside",
+                })
+        if recheck_traces:
+            html_parts.append('<h2>Against (1st pass) — second-pass recheck</h2>\n')
+            # Summary line: Of N against (per sector): X% confirmed, Y% frustrated but still pro, Z% unclear
+            summary_parts = []
+            for sector in sectors:
+                total = sum(recheck_counts.get(sector, {}).values())
+                if total == 0:
+                    continue
+                pct_against = 100 * recheck_counts.get(sector, {}).get("against", 0) / total
+                pct_frustrated = 100 * recheck_counts.get(sector, {}).get("frustrated but still pro", 0) / total
+                pct_unclear = 100 * recheck_counts.get(sector, {}).get("unclear stance", 0) / total
+                summary_parts.append(
+                    f"{SECTOR_DISPLAY.get(sector, sector)}: of {total} &quot;against&quot; → {pct_against:.0f}% confirmed against, {pct_frustrated:.0f}% frustrated but still pro, {pct_unclear:.0f}% unclear"
+                )
+            if summary_parts:
+                html_parts.append(f'<p style="font-size: 0.95em; color: #c9d1d9;">{" | ".join(summary_parts)}</p>\n')
+            recheck_layout = {
+                "barmode": "stack",
+                "height": 240,
+                "margin": {"l": 85, "t": 20, "b": 28},
+                "xaxis": {"title": "Sector", "color": "#e6edf3", "gridcolor": "#30363d", "titlefont": {"size": 11}, "tickfont": {"size": 10}},
+                "yaxis": {"title": "Count", "color": "#e6edf3", "gridcolor": "#30363d", "tickfont": {"size": 10}},
+                "showlegend": True,
+                "paper_bgcolor": "#161b22",
+                "plot_bgcolor": "#161b22",
+                "font": {"color": "#e6edf3", "size": 11},
+                "legend": {"font": {"color": "#e6edf3", "size": 10}},
+            }
+            recheck_fig = {"data": recheck_traces, "layout": recheck_layout}
+            html_parts.append('<div class="chart" id="chart_stance_recheck"></div>\n')
+            html_parts.append(
+                f'<script>var fig_stance_recheck = {json.dumps(recheck_fig)}; Plotly.newPlot("chart_stance_recheck", fig_stance_recheck.data, fig_stance_recheck.layout);</script>\n'
+            )
 
     html_parts.append("</body>\n</html>")
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
@@ -302,18 +395,58 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str) ->
         "1.2.2_injunctive",
         "1.3.2_mechanism",
     ]
-    # Collect by (qid, label, sector) -> first comment text
-    by_cat: Dict[str, Dict[str, Dict[str, str]]] = defaultdict(lambda: defaultdict(dict))
+    # Collect by (qid, label, sector) -> list of comment texts, then pick one at random per slot
+    by_cat: Dict[str, Dict[str, Dict[str, List[str]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for sector, items in data.items():
         for rec in items:
             comment = (rec.get("comment") or "").strip()
             if not comment:
                 continue
+            text = comment[:500] + ("..." if len(comment) > 500 else "")
             ans = rec.get("answers") or {}
             for qid, val in ans.items():
                 label = answer_to_label(qid, str(val).strip())
-                if sector not in by_cat[qid][label]:
-                    by_cat[qid][label][sector] = comment[:500] + ("..." if len(comment) > 500 else "")
+                by_cat[qid][label][sector].append(text)
+    # Up to 3 random samples per (qid, label, sector) for display
+    N_EXAMPLES = 3
+    samples: Dict[str, Dict[str, Dict[str, List[str]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for qid in by_cat:
+        for label in by_cat[qid]:
+            for sector in by_cat[qid][label]:
+                cands = by_cat[qid][label][sector]
+                if cands:
+                    n = min(N_EXAMPLES, len(cands))
+                    samples[qid][label][sector] = random.sample(cands, n)
+
+    # Against recheck (2nd pass): (recheck_label, sector) -> list of comment texts (author stance was "against")
+    recheck_by_cat: Dict[str, Dict[str, List[str]]] = defaultdict(lambda: defaultdict(list))
+    for sector, items in data.items():
+        for rec in items:
+            ans = rec.get("answers") or {}
+            if answer_to_label("1.1.1_stance", str(ans.get("1.1.1_stance", "")).strip()) != "against":
+                continue
+            recheck_raw = (ans.get("1.1.1_stance_recheck") or "").strip().lower()
+            if not recheck_raw:
+                continue
+            if "frustrated" in recheck_raw and "pro" in recheck_raw:
+                recheck_label = "frustrated but still pro"
+            elif "unclear" in recheck_raw:
+                recheck_label = "unclear stance"
+            elif "against" in recheck_raw:
+                recheck_label = "against"
+            else:
+                recheck_label = "unclear stance"
+            comment = (rec.get("comment") or "").strip()
+            if comment:
+                text = comment[:500] + ("..." if len(comment) > 500 else "")
+                recheck_by_cat[recheck_label][sector].append(text)
+    recheck_samples: Dict[str, Dict[str, List[str]]] = defaultdict(lambda: defaultdict(list))
+    for recheck_label in recheck_by_cat:
+        for sector in recheck_by_cat[recheck_label]:
+            cands = recheck_by_cat[recheck_label][sector]
+            if cands:
+                n = min(N_EXAMPLES, len(cands))
+                recheck_samples[recheck_label][sector] = random.sample(cands, n)
 
     html_parts = [
         """<!DOCTYPE html>
@@ -324,26 +457,31 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str) ->
 <style>
 * { box-sizing: border-box; }
 html { background: #0d1117; }
-body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 16px; background: #0d1117; color: #e6edf3; min-height: 100vh; }
-h1 { text-align: center; color: #e6edf3; }
-.back-link { text-align: center; margin-bottom: 24px; }
+body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 12px; background: #0d1117; color: #e6edf3; min-height: 100vh; font-size: 13px; }
+h1 { text-align: center; color: #e6edf3; font-size: 1.28em; margin: 0.4em 0; }
+.back-link { text-align: center; margin-bottom: 14px; font-size: 0.8em; }
 .back-link a { color: #58a6ff; }
-.question-section { max-width: 1400px; margin: 0 auto 40px; background: #161b22; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); padding: 24px; }
-.question-title { font-size: 18px; font-weight: 600; color: #c9d1d9; margin-bottom: 20px; border-bottom: 2px solid #30363d; padding-bottom: 10px; }
-.category-group { margin-bottom: 24px; }
-.category-title { font-weight: 600; font-size: 14px; margin-bottom: 12px; padding: 8px 12px; border-radius: 6px; display: inline-block; color: #e6edf3; }
-.sectors-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-.sector-column { display: flex; flex-direction: column; }
-.sector-header { font-weight: 600; font-size: 12px; color: #8b949e; margin-bottom: 8px; text-transform: uppercase; }
-.example-comment { padding: 14px; border-radius: 8px; font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; border-left: 4px solid #58a6ff; background: #0d1117; color: #e6edf3; }
-.prompt-dropdown { margin-bottom: 20px; }
-.prompt-dropdown summary { cursor: pointer; color: #58a6ff; font-size: 14px; user-select: none; }
+.question-section { max-width: 1400px; margin: 0 auto 10px; background: #161b22; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.question-section summary { font-size: 14px; font-weight: 600; color: #c9d1d9; padding: 12px 18px; cursor: pointer; list-style: none; border-bottom: 2px solid transparent; }
+.question-section summary::-webkit-details-marker { display: none; }
+.question-section summary::before { content: "▶ "; color: #58a6ff; font-size: 10px; }
+.question-section[open] summary::before { content: "▼ "; }
+.question-section[open] summary { border-bottom-color: #30363d; }
+.question-content { padding: 18px; padding-top: 10px; }
+.category-group { margin-bottom: 14px; }
+.category-title { font-weight: 600; font-size: 11px; margin-bottom: 8px; padding: 6px 10px; border-radius: 0; display: inline-block; color: #e6edf3; }
+.sectors-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px; }
+.sector-column { display: flex; flex-direction: column; min-width: 0; }
+.sector-header { font-weight: 600; font-size: 9px; color: #8b949e; margin-bottom: 4px; text-transform: uppercase; }
+.example-comment { padding: 6px 8px; border-radius: 0; font-size: 9.5px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; border-left: 3px solid #58a6ff; background: #0d1117; color: #e6edf3; }
+.prompt-dropdown { margin-bottom: 14px; }
+.prompt-dropdown summary { cursor: pointer; color: #58a6ff; font-size: 11px; user-select: none; }
 .prompt-dropdown summary:hover { text-decoration: underline; }
-.prompt-box { margin-top: 12px; padding: 14px; border-radius: 8px; background: #0d1117; border: 1px solid #30363d; font-size: 13px; }
-.prompt-box .prompt-text { color: #e6edf3; line-height: 1.6; margin-bottom: 12px; }
-.prompt-box .choices-label { color: #8b949e; font-weight: 600; margin-bottom: 6px; }
-.prompt-box .choices-list { color: #c9d1d9; list-style: none; padding-left: 0; }
-.prompt-box .choices-list li { margin: 4px 0; }
+.prompt-box { margin-top: 10px; padding: 10px; border-radius: 0; background: #0d1117; border: 1px solid #30363d; font-size: 10.4px; }
+.prompt-box .prompt-text { color: #e6edf3; line-height: 1.5; margin-bottom: 8px; }
+.prompt-box .choices-label { color: #8b949e; font-weight: 600; margin-bottom: 4px; font-size: 10.4px; }
+.prompt-box .choices-list { color: #c9d1d9; list-style: none; padding-left: 0; font-size: 10.4px; }
+.prompt-box .choices-list li { margin: 2px 0; }
 </style>
 </head>
 <body>
@@ -353,10 +491,11 @@ h1 { text-align: center; color: #e6edf3; }
     ]
 
     for qid in question_order:
-        if qid not in by_cat:
+        if qid not in samples:
             continue
         title = QUESTION_TITLES.get(qid, qid)
-        html_parts.append(f'<div class="question-section"><div class="question-title">{title}</div>\n')
+        html_parts.append(f'<details class="question-section"><summary>{html_escape(title)}</summary>\n')
+        html_parts.append('<div class="question-content">\n')
         # Dropdown: exact prompt and choices sent to the LLM
         prompt_info = NORMS_PROMPTS.get(qid)
         if prompt_info:
@@ -374,16 +513,40 @@ h1 { text-align: center; color: #e6edf3; }
             for opt in prompt_info["options"]:
                 html_parts.append(f'<li>{html_escape(opt)}</li>\n')
             html_parts.append('</ul>\n</div>\n</details>\n')
-        for label in sorted(by_cat[qid].keys()):
+        for label in sorted(samples[qid].keys()):
             html_parts.append(f'<div class="category-group"><div class="category-title">{label}</div><div class="sectors-row">\n')
             for sector in sectors:
-                text = by_cat[qid][label].get(sector, "No examples")
-                html_parts.append(
-                    f'<div class="sector-column"><div class="sector-header">{SECTOR_DISPLAY.get(sector, sector)}</div>'
-                    f'<div class="example-comment">{html_escape(text)}</div></div>\n'
-                )
+                texts = (samples[qid][label].get(sector) or [])[:N_EXAMPLES]
+                while len(texts) < N_EXAMPLES:
+                    texts.append("")
+                sector_name = SECTOR_DISPLAY.get(sector, sector)
+                for i, text in enumerate(texts):
+                    header = f"{sector_name} · {i + 1}"
+                    html_parts.append(f'<div class="sector-column"><div class="sector-header">{header}</div>')
+                    html_parts.append(f'<div class="example-comment">{html_escape(text) if text else "—"}</div></div>\n')
             html_parts.append("</div></div>\n")
-        html_parts.append("</div>\n")
+        html_parts.append("</div></details>\n")
+
+    # Against recheck (2nd pass) examples: comments labelled "against" (1st pass) and their recheck label
+    if recheck_samples:
+        html_parts.append('<details class="question-section"><summary>Against recheck (2nd pass)</summary>\n')
+        html_parts.append('<div class="question-content">\n')
+        html_parts.append('<p style="font-size: 11px; color: #8b949e; margin-bottom: 12px;">Comments that were labelled &quot;against&quot; in Author stance (1st pass) and re-labelled in a stringent second LLM pass.</p>\n')
+        for recheck_label in RECHECK_LABELS_ORDER:
+            if recheck_label not in recheck_samples:
+                continue
+            html_parts.append(f'<div class="category-group"><div class="category-title">{html_escape(recheck_label)}</div><div class="sectors-row">\n')
+            for sector in sectors:
+                texts = (recheck_samples[recheck_label].get(sector) or [])[:N_EXAMPLES]
+                while len(texts) < N_EXAMPLES:
+                    texts.append("")
+                sector_name = SECTOR_DISPLAY.get(sector, sector)
+                for i, text in enumerate(texts):
+                    header = f"{sector_name} · {i + 1}"
+                    html_parts.append(f'<div class="sector-column"><div class="sector-header">{header}</div>')
+                    html_parts.append(f'<div class="example-comment">{html_escape(text) if text else "—"}</div></div>\n')
+            html_parts.append("</div></div>\n")
+        html_parts.append("</div></details>\n")
 
     html_parts.append("</body>\n</html>")
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
@@ -404,7 +567,7 @@ def html_escape(s: str) -> str:
 def main():
     import argparse
     p = argparse.ArgumentParser(description="Build norms dashboard and examples from norms_labels.json")
-    p.add_argument("--input", default="paper4data/norms_labels.json", help="Input JSON from 00_vLLM_hierarchical.py --norms")
+    p.add_argument("--input", default="paper4data/norms_labels.json", help="Input JSON from 00_vLLM_hierarchical.py --norms (default, used when omitted)")
     p.add_argument("--dashboard", default="00_dashboardv2.html", help="Output dashboard HTML path")
     p.add_argument("--examples", default="00_dashboard_examples.html", help="Output examples HTML path")
     args = p.parse_args()
@@ -416,7 +579,8 @@ def main():
 
     data = load_norms_labels(args.input)
     counts = compute_counts(data)
-    build_dashboard_html(counts, args.dashboard)
+    recheck_counts = compute_recheck_counts(data)
+    build_dashboard_html(counts, args.dashboard, recheck_counts=recheck_counts)
     build_examples_html(data, args.examples)
     print("Done.")
 
