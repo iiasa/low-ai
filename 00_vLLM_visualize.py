@@ -11,21 +11,29 @@ Input JSON format: { "food": [ { "comment_index", "comment", "answers": { "1.1_g
 import json
 import os
 import random
+import re
 from collections import defaultdict
 from typing import Dict, List, Any, Optional
+
+
+def _collapse_newlines(s: str) -> str:
+    """Collapse 2+ newlines to a single newline (for example comment display)."""
+    return re.sub(r"\n{2,}", "\n", s)
 
 # Map answer codes to display labels (dashboard and examples)
 CODE_TO_LABEL = {
     "1.1_gate": {"0": "No", "1": "Yes"},
     "1.1.1_stance": {"pushing for": "pro"},
     "1.3.1b_perceived_reference_stance": {"pushing for": "pro"},
-    "1.2.1_descriptive": {"0": "none", "1": "implied", "2": "explicit"},
+    "1.2.1_descriptive": {
+        "0": "absent", "1": "unclear", "2": "explicitly present",
+        "none": "absent", "implied": "unclear", "explicit": "explicitly present",
+    },
     "1.2.2_injunctive": {
-        "0": "none",
-        "1": "implied approval",
-        "2": "implied disapproval",
-        "3": "explicit approval",
-        "4": "explicit disapproval",
+        "0": "none", "1": "implied approval", "2": "implied disapproval",
+        "3": "explicit approval", "4": "explicit disapproval",
+        "none": "absent", "implied approval": "present", "implied disapproval": "present",
+        "explicit approval": "present", "explicit disapproval": "present",
     },
     "1.3.3_second_order": {"0": "none", "1": "weak", "2": "strong"},
 }
@@ -55,12 +63,12 @@ NORMS_PROMPTS = {
         "sector_topic": {"transport": "EVs", "food": "veganism or vegetarianism / diet", "housing": "solar"},
     },
     "1.2.1_descriptive": {
-        "prompt": "Does the text express a descriptive norm (what people do / how common something is)? Answer with exactly one of: none, implied, explicit.",
-        "options": ["none", "implied", "explicit"],
+        "prompt": "Descriptive norms refer to what people actually do or how common a behavior is (e.g. 'most people here drive EVs', 'I am a vegetarian'). They describe behavior or prevalence, not what people should do. Do NOT code as descriptive if the text prescribes or proscribes behavior (that is injunctive). Answer with exactly one of: explicitly present, absent, unclear.",
+        "options": ["explicitly present", "absent", "unclear"],
     },
     "1.2.2_injunctive": {
-        "prompt": "Does the text express an injunctive norm (what people should do / approval or disapproval)? Answer with exactly one of: none, implied approval, implied disapproval, explicit approval, explicit disapproval.",
-        "options": ["none", "implied approval", "implied disapproval", "explicit approval", "explicit disapproval"],
+        "prompt": "Injunctive norms are social rules about what behaviors are approved or disapproved—guiding what people should do (or avoid). They use language like should, must, have to, ought to, or express approval/disapproval (e.g. 'people should go vegan', 'I encourage everyone to go vegan'). Do NOT code as injunctive mere descriptions of how people act (e.g. 'I am a vegetarian' = describing one's own behavior, not a rule). Code as injunctive only when the text prescribes or proscribes behavior for others. Answer with exactly one of: present, absent, unclear.",
+        "options": ["present", "absent", "unclear"],
     },
     "1.3.1_reference_group": {
         "prompt": "Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.",
@@ -177,6 +185,11 @@ def build_dashboard_html(
         "implied disapproval": "#9b59b6",
         "explicit approval": "#34495e",
         "explicit disapproval": "#8e44ad",
+        # Descriptive / injunctive (new schema)
+        "explicitly present": "#3f51b5",
+        "absent": "#95a5a6",
+        "unclear": "#78909c",
+        "present": "#3498db",
         # Reference group (distinct per category)
         "family": "#2c3e50",
         "partner/spouse": "#9b59b6",
@@ -399,7 +412,7 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str) ->
     by_cat: Dict[str, Dict[str, Dict[str, List[str]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for sector, items in data.items():
         for rec in items:
-            comment = (rec.get("comment") or "").strip()
+            comment = _collapse_newlines((rec.get("comment") or "").strip())
             if not comment:
                 continue
             text = comment[:500] + ("..." if len(comment) > 500 else "")
@@ -436,7 +449,7 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str) ->
                 recheck_label = "against"
             else:
                 recheck_label = "unclear stance"
-            comment = (rec.get("comment") or "").strip()
+            comment = _collapse_newlines((rec.get("comment") or "").strip())
             if comment:
                 text = comment[:500] + ("..." if len(comment) > 500 else "")
                 recheck_by_cat[recheck_label][sector].append(text)

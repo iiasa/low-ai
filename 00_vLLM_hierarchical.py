@@ -228,6 +228,17 @@ def build_cache_from_csvs(csv_dir: str = CSV_DIR, cache_path: str = CACHE_PATH) 
                 sector_items[sector].append({"id": rid, "body": text})
             del chunk
 
+    # Dedupe per sector by body (keep first occurrence)
+    for sector in SECTOR_NAMES:
+        seen_bodies: set = set()
+        unique: List[Dict[str, str]] = []
+        for item in sector_items[sector]:
+            body = (item.get("body") or "").strip()
+            if body and body not in seen_bodies:
+                seen_bodies.add(body)
+                unique.append(item)
+        sector_items[sector] = unique
+
     os.makedirs(os.path.dirname(cache_path) or ".", exist_ok=True)
     with open(cache_path, "w", encoding="utf-8") as f:
         json.dump(sector_items, f, ensure_ascii=False, indent=0)
@@ -258,6 +269,15 @@ def build_sample_from_cache(
     sample: Dict[str, List[Dict[str, str]]] = {}
     for sector in SECTOR_NAMES:
         items = cache.get(sector, [])
+        # Dedupe by body (keep first) so sample has no duplicate comments
+        seen_bodies: set = set()
+        unique: List[Dict[str, str]] = []
+        for item in items:
+            body = (item.get("body") or "").strip()
+            if body and body not in seen_bodies:
+                seen_bodies.add(body)
+                unique.append(item)
+        items = unique
         if len(items) <= n_per_sector:
             sample[sector] = list(items)
         else:
@@ -342,15 +362,25 @@ NORMS_QUESTIONS: List[Dict[str, Any]] = [
     },
     {
         "id": "1.2.1_descriptive",
-        "prompt": "Does the text express a descriptive norm (what people do / how common something is)? Answer with exactly one of: none, implied, explicit.",
-        "options": ["none", "implied", "explicit"],
-        "map_to": {"none": "0", "implied": "1", "explicit": "2"},
+        "prompt": (
+            "Descriptive norms refer to what people actually do or how common a behavior is (e.g. 'most people here drive EVs', 'I am a vegetarian'). "
+            "They describe behavior or prevalence, not what people should do. Do NOT code as descriptive if the text prescribes or proscribes behavior (that is injunctive). "
+            "Answer with exactly one of: explicitly present, absent, unclear."
+        ),
+        "options": ["explicitly present", "absent", "unclear"],
+        "map_to": None,
     },
     {
         "id": "1.2.2_injunctive",
-        "prompt": "Does the text express an injunctive norm (what people should do / approval or disapproval)? Answer with exactly one of: none, implied approval, implied disapproval, explicit approval, explicit disapproval.",
-        "options": ["none", "implied approval", "implied disapproval", "explicit approval", "explicit disapproval"],
-        "map_to": {"none": "0", "implied approval": "1", "implied disapproval": "2", "explicit approval": "3", "explicit disapproval": "4"},
+        "prompt": (
+            "Injunctive norms are social rules about what behaviors are approved or disapproved—guiding what people should do (or avoid). "
+            "They use language like should, must, have to, ought to, or express approval/disapproval (e.g. 'people should go vegan', 'I encourage everyone to go vegan'). "
+            "Do NOT code as injunctive mere descriptions of how people act (e.g. 'I am a vegetarian' = describing one's own behavior, not a rule). "
+            "Code as injunctive only when the text prescribes or proscribes behavior for others. "
+            "Answer with exactly one of: present, absent, unclear."
+        ),
+        "options": ["present", "absent", "unclear"],
+        "map_to": None,
     },
     {
         "id": "1.3.1_reference_group",
