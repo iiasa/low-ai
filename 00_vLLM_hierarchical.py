@@ -395,12 +395,6 @@ NORMS_QUESTIONS: List[Dict[str, Any]] = [
         "map_to": None,
     },
     {
-        "id": "1.3.2_mechanism",
-        "prompt": "What mechanism is used to convey the norm or social pressure? Answer with exactly one of: blame/shame, community standard, identity/status signaling, other, praise, rule/virtue language, social comparison.",
-        "options": ["blame/shame", "community standard", "identity/status signaling", "other", "praise", "rule/virtue language", "social comparison"],
-        "map_to": None,
-    },
-    {
         "id": "1.3.3_second_order",
         "prompt": "Does the text express second-order normative beliefs (beliefs about what others think one should do)? Answer with exactly one of: none, weak, strong.",
         "options": ["none", "weak", "strong"],
