@@ -3,11 +3,23 @@
 
 1. Build sector_to_comments_cache from CSVs in paper4data/subreddit_filtered_by_regex/:
    - Only 3 sectors: transport, housing, food (aligned with sample_local_llm / notebook).
-   - Sector from matched_keyword column (keyword_to_sector) or from regex keyword match on text.
-   - body/title by type (comment vs submission); save id and body (text) per row.
+   - Sector from matched_keyword column (keyword_to_sector).
+   - Extract year from created_utc (Unix timestamp) for temporal analysis.
+   - body/title by type (comment vs submission); save id, body (text), and year per row.
+   - Deduplicate by body per sector (keep first occurrence).
 
-2. Load cache and label each item with vLLM (disagreement yes/no) via concurrent requests.
-   API config from local_LLM_api_from_vLLM.json (model key 5 = Qwen3-VL-4B on port 8006).
+2. Load cache and label each item with vLLM via hierarchical norms questions (IPCC social drivers):
+   - Multiple questions per comment: norm signal present (1.1_gate), author stance (1.1.1_stance), 
+     descriptive/injunctive norms (1.2.1, 1.2.2), reference group (1.3.1), perceived reference stance (1.3.1b),
+     second-order normative beliefs (1.3.3).
+   - Sector-specific prompts (EVs vs solar vs veganism/diet).
+   - Safety net: recheck "against" stance for "pro but lack of options" misclassification.
+   - Second-pass stringent recheck for "against" labels (against/frustrated but still pro/unclear stance).
+   - When limit_total is set, sample equally across years (2010+) for temporal analysis.
+   - Preserve year in output for temporal visualization.
+   - API config from local_LLM_api_from_vLLM.json (default model key 6 = Mistral-7B on port 8001; use --qwen for Qwen3-VL-4B on port 8006).
+   - Output: sector -> list of { comment_index, comment, year?, answers: { "1.1_gate": "1", "1.1.1_stance": "pro", ... } }.
+   - Use with 00_vLLM_visualize.py to build norms_hierarchical_dashboard.html and examples.
 """
 
 import json
@@ -16,6 +28,7 @@ import random
 import re
 import asyncio
 import aiohttp
+from collections import defaultdict
 from typing import Dict, List, Tuple, Any, Optional
 from pathlib import Path
 
@@ -105,8 +118,8 @@ CHAT_ENDPOINT = "/v1/chat/completions"
 MAX_CONCURRENT = 80
 REQUEST_TIMEOUT = 60
 
-# Model key for vLLM (e.g. "5" = Qwen3-VL-4B on port 8006)
-VLLM_MODEL_KEY = "5"
+# Model key for vLLM (default "6" = Mistral-7B on port 8001; "5" = Qwen3-VL-4B on port 8006)
+VLLM_MODEL_KEY = "6"
 
 
 def load_api_config(model_key: str = None) -> Dict[str, str]:
@@ -136,15 +149,16 @@ def _is_submission_file(filename: str) -> bool:
     return "submissions" in os.path.basename(filename).lower()
 
 
-def _pick_columns(df: pd.DataFrame) -> Tuple[str, str, str, str, Optional[str]]:
-    """Return (id_col, body_col, title_col, type_col, matched_keyword_col); match by lower name."""
+def _pick_columns(df: pd.DataFrame) -> Tuple[str, str, str, str, Optional[str], Optional[str]]:
+    """Return (id_col, body_col, title_col, type_col, matched_keyword_col, created_utc_col); match by lower name."""
     cols_lower = {c.lower(): c for c in df.columns}
     id_col = cols_lower.get("id") or (df.columns[0] if len(df.columns) else None)
     body_col = cols_lower.get("body")
     title_col = cols_lower.get("title")
     type_col = cols_lower.get("type")
     matched_col = cols_lower.get("matched_keyword")
-    return id_col, body_col, title_col, type_col, matched_col
+    created_utc_col = cols_lower.get("created_utc")
+    return id_col, body_col, title_col, type_col, matched_col, created_utc_col
 
 
 def _sector_from_matched_keyword(matched: str) -> Optional[str]:
@@ -177,7 +191,7 @@ def build_cache_from_csvs(csv_dir: str = CSV_DIR, cache_path: str = CACHE_PATH) 
                 p,
                 encoding="utf-8",
                 on_bad_lines="skip",
-                usecols=lambda c: c and c.strip().lower() in ("id", "body", "title", "type", "matched_keyword"),
+                usecols=lambda c: c and c.strip().lower() in ("id", "body", "title", "type", "matched_keyword", "created_utc"),
                 dtype=str,
                 chunksize=CSV_CHUNK_SIZE,
             )
@@ -195,10 +209,10 @@ def build_cache_from_csvs(csv_dir: str = CSV_DIR, cache_path: str = CACHE_PATH) 
                 continue
 
         for chunk in chunks:
-            id_col, body_col, title_col, type_col, matched_col = _pick_columns(chunk)
+            id_col, body_col, title_col, type_col, matched_col, created_utc_col = _pick_columns(chunk)
             if id_col is None:
                 continue
-            keep = [c for c in (id_col, body_col, title_col, type_col, matched_col) if c and c in chunk.columns]
+            keep = [c for c in (id_col, body_col, title_col, type_col, matched_col, created_utc_col) if c and c in chunk.columns]
             chunk = chunk[keep].copy()
             id_ser = chunk[id_col].fillna("").astype(str).str.strip()
             body_ser = chunk[body_col].fillna("").astype(str).str.strip() if body_col in chunk.columns else pd.Series("", index=chunk.index)
@@ -213,19 +227,31 @@ def build_cache_from_csvs(csv_dir: str = CSV_DIR, cache_path: str = CACHE_PATH) 
                 text_ser = title_ser.where(title_ser != "", body_ser) if is_submission else body_ser.where(body_ser != "", title_ser)
             has_matched_col = matched_col and matched_col in chunk.columns
             matched_ser = chunk[matched_col].fillna("").astype(str).str.strip() if has_matched_col else None
+            # Extract year from created_utc (Unix timestamp)
+            year_ser = None
+            if created_utc_col and created_utc_col in chunk.columns:
+                try:
+                    created_utc_ser = pd.to_numeric(chunk[created_utc_col], errors="coerce")
+                    year_ser = pd.to_datetime(created_utc_ser, unit="s", errors="coerce").dt.year
+                except Exception:
+                    year_ser = None
 
             mask = (id_ser != "") & (text_ser != "")
             ids = id_ser[mask].tolist()
             texts = text_ser[mask].tolist()
             matched_list = matched_ser[mask].tolist() if matched_ser is not None else [""] * len(ids)
-            for rid, text, matched in zip(ids, texts, matched_list):
+            years_list = year_ser[mask].tolist() if year_ser is not None else [None] * len(ids)
+            for rid, text, matched, year in zip(ids, texts, matched_list, years_list):
                 if not matched or not str(matched).strip():
                     skipped_no_matched_keyword += 1
                     continue
                 sector = _sector_from_matched_keyword(matched)
                 if sector is None or sector not in SECTOR_NAMES:
                     continue
-                sector_items[sector].append({"id": rid, "body": text})
+                item = {"id": rid, "body": text}
+                if year is not None and not pd.isna(year):
+                    item["year"] = int(year)
+                sector_items[sector].append(item)
             del chunk
 
     # Dedupe per sector by body (keep first occurrence)
@@ -249,9 +275,66 @@ def build_cache_from_csvs(csv_dir: str = CSV_DIR, cache_path: str = CACHE_PATH) 
 
 
 def load_cache(cache_path: str = CACHE_PATH) -> Dict[str, List[Dict[str, str]]]:
-    """Load sector -> list of {id, body} from JSON."""
+    """Load sector -> list of {id, body, year?} from JSON."""
     with open(cache_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def sample_by_year_equal(items: List[Dict[str, Any]], n_total: int, min_year: int = 2010) -> List[Dict[str, Any]]:
+    """
+    Sample n_total items distributed equally across years (min_year onwards).
+    If a year has fewer items than the per-year quota, take all available.
+    Returns items with year >= min_year, distributed as evenly as possible.
+    """
+    # Filter to items with year >= min_year
+    items_with_year = [it for it in items if it.get("year") and isinstance(it["year"], (int, float)) and int(it["year"]) >= min_year]
+    items_no_year = [it for it in items if not (it.get("year") and isinstance(it["year"], (int, float)) and int(it["year"]) >= min_year)]
+    
+    if not items_with_year:
+        # No year data: fallback to random sample
+        return random.sample(items, min(n_total, len(items))) if items else []
+    
+    # Group by year
+    by_year: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+    for it in items_with_year:
+        year = int(it["year"])
+        by_year[year].append(it)
+    
+    years = sorted(by_year.keys())
+    if not years:
+        return random.sample(items, min(n_total, len(items))) if items else []
+    
+    # Calculate per-year quota (whole number)
+    n_years = len(years)
+    per_year_quota = n_total // n_years  # Integer division
+    
+    sampled = []
+    for year in years:
+        year_items = by_year[year]
+        n_take = min(per_year_quota, len(year_items))
+        if n_take > 0:
+            sampled.extend(random.sample(year_items, n_take))
+    
+    # If we have leftover slots (n_total % n_years), fill from years with remaining items
+    remaining = n_total - len(sampled)
+    if remaining > 0:
+        available = []
+        for year in years:
+            year_items = by_year[year]
+            already_taken = {id(it.get("id", "")) for it in sampled}
+            remaining_items = [it for it in year_items if id(it.get("id", "")) not in already_taken]
+            available.extend(remaining_items)
+        if available:
+            n_add = min(remaining, len(available))
+            sampled.extend(random.sample(available, n_add))
+    
+    # If still not enough, add items without year data
+    if len(sampled) < n_total and items_no_year:
+        remaining = n_total - len(sampled)
+        n_add = min(remaining, len(items_no_year))
+        sampled.extend(random.sample(items_no_year, n_add))
+    
+    return sampled
 
 
 def build_sample_from_cache(
@@ -300,107 +383,73 @@ DISAGREEMENT_USER = "Does the following comment or post show disagreement with s
 # ---------------------------------------------------------------------------
 # Norms labelling (IPCC social drivers) — questions and prompts for dashboard
 # Output keys match norms_hierarchical_dashboard: 1.1_gate, 1.1.1_stance, etc.
+# Schema loaded from 00_vllm_ipcc_social_norms_schema.json
 # ---------------------------------------------------------------------------
-NORMS_SYSTEM = (
-    "You are an expert annotator for social norms and climate-related discourse. "
-    "Answer with exactly one of the allowed options; no explanation."
-)
+def load_norms_schema(schema_path: str = "00_vllm_ipcc_social_norms_schema.json") -> Dict[str, Any]:
+    """Load norms schema from JSON file. Returns dict with keys: norms_system, sector_topic, stance_against_recheck_template, stance_against_strict_recheck_template, stance_against_strict_recheck_options, norms_questions."""
+    schema_file = Path(__file__).parent / schema_path
+    with open(schema_file, "r", encoding="utf-8") as f:
+        schema = json.load(f)
+    return schema
 
-# Topic wording per sector so the LLM sees only the relevant sector (not all three)
-SECTOR_TOPIC = {
-    "transport": "EVs",
-    "food": "veganism or vegetarianism / diet",
-    "housing": "solar",
-}
 
-# Safety net: when stance is "against", recheck if text asks for more options or complains insufficient options
-STANCE_AGAINST_RECHECK_TEMPLATE = (
-    "Does this comment ask for more {sector_topic} options or complain that current {sector_topic} options are insufficient? "
-    "Answer with exactly one word: yes or no."
-)
+# Load schema at module level
+_NORMS_SCHEMA = load_norms_schema()
 
-# Second pass (stringent): for comments still labelled "against" after first pass, reclassify with strict question
-STANCE_AGAINST_STRICT_RECHECK_OPTIONS = ["against", "frustrated but still pro", "unclear stance"]
-STANCE_AGAINST_STRICT_RECHECK_TEMPLATE = (
-    "This comment was initially classified as the author being AGAINST {sector_topic}. "
-    "Apply a strict second pass. Is the author truly AGAINST {sector_topic} (opposes, rejects, or is hostile)? "
-    "Or are they frustrated with aspects (e.g. availability, cost) but still supportive of {sector_topic}? "
-    "Or is their stance unclear or ambiguous? "
-    "Answer with exactly one of: against, frustrated but still pro, unclear stance."
-)
+# Extract constants from schema for backward compatibility and convenience
+NORMS_SYSTEM = _NORMS_SCHEMA["norms_system"]
+SECTOR_TOPIC = _NORMS_SCHEMA["sector_topic"]
+STANCE_AGAINST_RECHECK_TEMPLATE = _NORMS_SCHEMA["stance_against_recheck_template"]
+STANCE_AGAINST_STRICT_RECHECK_TEMPLATE = _NORMS_SCHEMA["stance_against_strict_recheck_template"]
+STANCE_AGAINST_STRICT_RECHECK_OPTIONS = _NORMS_SCHEMA["stance_against_strict_recheck_options"]
+NORMS_QUESTIONS: List[Dict[str, Any]] = _NORMS_SCHEMA["norms_questions"]
 
-# question_id, user_prompt (or prompt_template with {sector_topic} for sector-specific questions), options, map_to
-NORMS_QUESTIONS: List[Dict[str, Any]] = [
-    {
-        "id": "1.1_gate",
-        "prompt": (
-            "Definitions: A social norm is a shared belief or expectation about what is typical or what is approved/disapproved. "
-            "Descriptive norm = reference to what people typically do or how common something is (e.g. 'most people here drive EVs'). "
-            "Injunctive norm = reference to what people should do, or explicit approval/disapproval (e.g. 'you should go vegan', 'eating meat is wrong'). "
-            "Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no."
-        ),
-        "options": ["yes", "no"],
-        "map_to": {"yes": "1", "no": "0"},
-    },
-    {
-        "id": "1.1.1_stance",
-        "prompt": (
-            "What is the author's stance toward the topic (EVs / solar / veganism or diet)? "
-            "against = opposes or rejects the topic. pro but lack of options = author is in favor but wants more options or complains current options are insufficient (do not code as against). "
-            "Answer with exactly one of: against, against particular but pro, neither/mixed, pro, pro but lack of options."
-        ),
-        "prompt_template": (
-            "What is the author's stance toward {sector_topic}? "
-            "Definitions: against = author opposes or rejects {sector_topic}. "
-            "pro but lack of options = author is in favor of {sector_topic} but wants more options or complains that current options are insufficient; do NOT code this as against. "
-            "Complaints that there are too few {sector_topic} options count as 'pro but lack of options', not 'against'. "
-            "Examples: 'I wish there were more {sector_topic} options' → pro but lack of options. '{sector_topic} is stupid' → against. "
-            "Answer with exactly one of: against, against particular but pro, neither/mixed, pro, pro but lack of options."
-        ),
-        "options": ["against", "against particular but pro", "neither/mixed", "pro", "pro but lack of options"],
-        "map_to": None,
-    },
-    {
-        "id": "1.2.1_descriptive",
-        "prompt": (
-            "Descriptive norms refer to what people actually do or how common a behavior is (e.g. 'most people here drive EVs', 'I am a vegetarian'). "
-            "They describe behavior or prevalence, not what people should do. Do NOT code as descriptive if the text prescribes or proscribes behavior (that is injunctive). "
-            "Answer with exactly one of: explicitly present, absent, unclear."
-        ),
-        "options": ["explicitly present", "absent", "unclear"],
-        "map_to": None,
-    },
-    {
-        "id": "1.2.2_injunctive",
-        "prompt": (
-            "Injunctive norms are social rules about what behaviors are approved or disapproved—guiding what people should do (or avoid). "
-            "They use language like should, must, have to, ought to, or express approval/disapproval (e.g. 'people should go vegan', 'I encourage everyone to go vegan'). "
-            "Do NOT code as injunctive mere descriptions of how people act (e.g. 'I am a vegetarian' = describing one's own behavior, not a rule). "
-            "Code as injunctive only when the text prescribes or proscribes behavior for others. "
-            "Answer with exactly one of: present, absent, unclear."
-        ),
-        "options": ["present", "absent", "unclear"],
-        "map_to": None,
-    },
-    {
-        "id": "1.3.1_reference_group",
-        "prompt": "Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.",
-        "options": ["coworkers", "family", "friends", "local community", "neighbors", "online community", "other", "other reddit user", "partner/spouse", "political tribe"],
-        "map_to": None,
-    },
-    {
-        "id": "1.3.1b_perceived_reference_stance",
-        "prompt": "What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pro.",
-        "options": ["against", "neither/mixed", "pro"],
-        "map_to": None,
-    },
-    {
-        "id": "1.3.3_second_order",
-        "prompt": "Does the text express second-order normative beliefs (beliefs about what others think one should do)? Answer with exactly one of: none, weak, strong.",
-        "options": ["none", "weak", "strong"],
-        "map_to": {"none": "0", "weak": "1", "strong": "2"},
-    },
-]
+
+def load_survey_questions(survey_path: str = "00_vllm_survey_question_final.json", n_per_sector: Optional[int] = None) -> Dict[str, List[Dict[str, Any]]]:
+    """Load survey questions from JSON, select n_per_sector questions from each sector (or all if None), format as question dicts."""
+    survey_file = Path(__file__).parent / survey_path
+    with open(survey_file, "r", encoding="utf-8") as f:
+        survey_data = json.load(f)
+    
+    survey_system = survey_data.get("survey_system", "You are an expert annotator. Answer with exactly one of the allowed options; no explanation.")
+    
+    # Map sector names: FOOD -> food, TRANSPORT -> transport, HOUSING -> housing
+    sector_map = {"FOOD": "food", "TRANSPORT": "transport", "HOUSING": "housing"}
+    
+    survey_questions_by_sector: Dict[str, List[Dict[str, Any]]] = {}
+    
+    for sector_key, sector_name in sector_map.items():
+        if sector_key not in survey_data:
+            continue
+        
+        sector_questions = []
+        # Get first question set (there's only one per sector currently)
+        for question_set_name, question_set in survey_data[sector_key].items():
+            questions = question_set.get("questions", [])
+            # Take all questions if n_per_sector is None, otherwise take first n_per_sector
+            selected = questions if n_per_sector is None else questions[:n_per_sector]
+            
+            for q in selected:
+                # Format as question dict compatible with call_vllm_single_choice
+                formatted_q = {
+                    "id": q["id"],
+                    "prompt": q["prompt"],
+                    "options": ["YES", "NO"],
+                    "map_to": {"YES": "1", "NO": "0"},
+                }
+                sector_questions.append(formatted_q)
+            break  # Only process first question set per sector
+        
+        if sector_questions:
+            survey_questions_by_sector[sector_name] = sector_questions
+    
+    return {"survey_system": survey_system, "questions_by_sector": survey_questions_by_sector}
+
+
+# Load survey questions at module level (all questions)
+_SURVEY_DATA = load_survey_questions(n_per_sector=None)
+SURVEY_SYSTEM = _SURVEY_DATA["survey_system"]
+SURVEY_QUESTIONS_BY_SECTOR: Dict[str, List[Dict[str, Any]]] = _SURVEY_DATA["questions_by_sector"]
 
 
 def _parse_single_choice(content: str, options: List[str], map_to: Optional[Dict[str, str]]) -> str:
@@ -432,15 +481,17 @@ async def call_vllm_single_choice(
     base_url: str,
     model_name: str,
     sector: Optional[str] = None,
+    system_prompt: Optional[str] = None,
 ) -> Tuple[str, str]:
-    """Call vLLM for one norms question; return (parsed_answer, raw_content). sector used for sector-specific prompts."""
+    """Call vLLM for one question; return (parsed_answer, raw_content). sector used for sector-specific prompts. system_prompt defaults to NORMS_SYSTEM if not provided."""
     url = base_url.rstrip("/") + CHAT_ENDPOINT
     prompt = _get_prompt_for_question(question, sector)
     user_content = prompt + "\n\n---\n\nComment/post:\n\n" + (text[:4000] if text else "")
+    system_content = system_prompt if system_prompt is not None else NORMS_SYSTEM
     payload = {
         "model": model_name,
         "messages": [
-            {"role": "system", "content": NORMS_SYSTEM},
+            {"role": "system", "content": system_content},
             {"role": "user", "content": user_content},
         ],
         "temperature": 0.1,
@@ -569,12 +620,18 @@ async def label_one_item_norms(
     sem: asyncio.Semaphore,
     sector: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Run all NORMS_QUESTIONS for one comment; return { comment_index, comment, answers } (dashboard format). sector used for sector-specific prompts (e.g. stance toward EVs vs solar vs diet). Safety net: if stance is 'against', recheck for 'pro but lack of options'."""
+    """Run all NORMS_QUESTIONS and SURVEY_QUESTIONS for one comment; return { comment_index, comment, answers } (dashboard format). sector used for sector-specific prompts (e.g. stance toward EVs vs solar vs diet). Safety net: if stance is 'against', recheck for 'pro but lack of options'."""
     async with sem:
         answers: Dict[str, str] = {}
+        # Run norms questions
         for q in NORMS_QUESTIONS:
             ans, _ = await call_vllm_single_choice(session, item["body"], q, base_url, model_name, sector=sector)
             answers[q["id"]] = ans
+        # Run survey questions for this sector (if any)
+        if sector and sector in SURVEY_QUESTIONS_BY_SECTOR:
+            for q in SURVEY_QUESTIONS_BY_SECTOR[sector]:
+                ans, _ = await call_vllm_single_choice(session, item["body"], q, base_url, model_name, sector=sector, system_prompt=SURVEY_SYSTEM)
+                answers[q["id"]] = ans
         # Safety net: if model said "against", recheck whether text asks for more options or complains options insufficient
         if sector and answers.get("1.1.1_stance") == "against":
             if await _recheck_against_is_lack_of_options(session, item["body"], sector, base_url, model_name):
@@ -583,11 +640,15 @@ async def label_one_item_norms(
                 # Second pass (stringent): still "against" — recheck with strict question; store result for dashboard
                 recheck = await _recheck_against_strict(session, item["body"], sector, base_url, model_name)
                 answers["1.1.1_stance_recheck"] = recheck
-        return {
+        result = {
             "comment_index": comment_index,
             "comment": item["body"],
             "answers": answers,
         }
+        # Preserve year if present (for temporal analysis)
+        if "year" in item:
+            result["year"] = item["year"]
+        return result
 
 
 async def label_sector_items_norms(
@@ -720,7 +781,9 @@ def run_norms_label_cache(
     api = load_api_config(model_key)
     base_url = api["base_url"]
     model_name = api["model_name"]
-    print(f"vLLM norms: {base_url} model={model_name} ({len(NORMS_QUESTIONS)} questions per comment)")
+    survey_q_counts = {s: len(qs) for s, qs in SURVEY_QUESTIONS_BY_SECTOR.items()}
+    survey_info = f" + {sum(survey_q_counts.values())} survey questions ({survey_q_counts})" if survey_q_counts else ""
+    print(f"vLLM norms: {base_url} model={model_name} ({len(NORMS_QUESTIONS)} norms questions per comment{survey_info})")
     if not check_vllm_health(base_url):
         print("WARNING: vLLM server did not respond. Start the server (e.g. Docker on 8006) or requests may fail.")
     else:
@@ -735,7 +798,8 @@ def run_norms_label_cache(
         if limit_per_sector is not None:
             items = items[: limit_per_sector]
         if per_sector_cap is not None:
-            items = items[: per_sector_cap]
+            # Sample equally across years (2010+) for temporal analysis
+            items = sample_by_year_equal(items, per_sector_cap, min_year=2010)
         if not items:
             all_results[sector] = []
             continue
@@ -766,8 +830,9 @@ if __name__ == "__main__":
     p.add_argument("--build-sample", action="store_true", help="Sample 10k per sector from cache and save to sector_to_comments_cache_10k_sample.json (fast load for API testing).")
     p.add_argument("--label-only", action="store_true", help="Only load cache and label; skip building.")
     p.add_argument("--cache", default=CACHE_PATH, help="Path to cache JSON (default: full cache; use sector_to_comments_cache_10k_sample.json for fast API test).")
-    p.add_argument("--model-key", default=VLLM_MODEL_KEY, help="Key in local_LLM_api_from_vLLM.json (e.g. 5 for Qwen3-VL-4B)")
-    p.add_argument("--7b", "--7B", dest="use_7b", action="store_true", help="Use Mistral 7B (CLASSIFICATIONS #7B, port 8001); default remains current model")
+    p.add_argument("--model-key", default=VLLM_MODEL_KEY, help="Key in local_LLM_api_from_vLLM.json (default 6 = Mistral-7B, 5 = Qwen3-VL-4B)")
+    p.add_argument("--7b", "--7B", dest="use_7b", action="store_true", help="Use Mistral 7B (CLASSIFICATIONS #7B, port 8001); now default, kept for compatibility")
+    p.add_argument("--qwen", dest="use_qwen", action="store_true", help="Use Qwen3-VL-4B (port 8006) instead of default Mistral-7B")
     p.add_argument("--out", default=None, help="Output JSON path for labels (default: paper4data/disagreement_labels.json)")
     p.add_argument("--limit", type=int, default=None, help="Max items per sector to label (for testing)")
     p.add_argument("--limit-total", type=int, default=None, help="Max items per sector (500 = 500 of each sector, 1500 total)")
@@ -778,6 +843,8 @@ if __name__ == "__main__":
     args = p.parse_args()
     if getattr(args, "use_7b", False):
         args.model_key = "6"
+    if getattr(args, "use_qwen", False):
+        args.model_key = "5"
 
     if args.incomplete:
         args.label_only = True

@@ -13,6 +13,7 @@ import os
 import random
 import re
 from collections import defaultdict
+from pathlib import Path
 from typing import Dict, List, Any, Optional
 
 
@@ -71,7 +72,7 @@ NORMS_PROMPTS = {
         "options": ["present", "absent", "unclear"],
     },
     "1.3.1_reference_group": {
-        "prompt": "Who is the reference group (who the author refers to as doing or approving something)? Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.",
+        "prompt": "Who is the reference group? This refers to a group that the author has a personal relationship with (e.g. their own family, their own coworkers, their own friends). Do NOT code as a reference group if the text describes someone else's relationship (e.g. 'my neighbor's family' → not 'family' as reference group) or describes someone else who has that relationship (e.g. 'a coworker' without indicating the author's relationship). The reference group is who the author refers to as doing or approving something, where the author has a personal connection to that group. Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.",
         "options": ["coworkers", "family", "friends", "local community", "neighbors", "online community", "other", "other reddit user", "partner/spouse", "political tribe"],
     },
     "1.3.1b_perceived_reference_stance": {
@@ -92,6 +93,28 @@ NORMS_PROMPTS = {
 def load_norms_labels(path: str) -> Dict[str, List[Dict[str, Any]]]:
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_survey_metadata(survey_path: str = "00_vllm_survey_question_final.json") -> Dict[str, Dict[str, str]]:
+    """Load survey question metadata (id -> wording, short_form, sector) for display titles."""
+    survey_file = Path(survey_path)
+    if not survey_file.exists():
+        return {}
+    with open(survey_file, "r", encoding="utf-8") as f:
+        survey_data = json.load(f)
+    
+    metadata: Dict[str, Dict[str, str]] = {}
+    for sector_key in ["FOOD", "TRANSPORT", "HOUSING"]:
+        if sector_key not in survey_data:
+            continue
+        for question_set_name, question_set in survey_data[sector_key].items():
+            for q in question_set.get("questions", []):
+                metadata[q["id"]] = {
+                    "wording": q.get("wording", q["id"]),
+                    "short_form": q.get("short_form", q.get("wording", q["id"])),
+                    "sector": sector_key.lower(),
+                }
+    return metadata
 
 
 def answer_to_label(qid: str, value: str) -> str:
@@ -153,12 +176,39 @@ RECHECK_COLORS = {
 }
 
 
+def compute_temporal_counts(
+    data: Dict[str, List[Dict[str, Any]]],
+    qid: str,
+    min_year: int = 2010,
+) -> Dict[str, Dict[int, Dict[str, int]]]:
+    """
+    Compute counts by year for a question. Returns temporal_counts[sector][year][label] = count.
+    Only includes items with year >= min_year.
+    """
+    temporal_counts: Dict[str, Dict[int, Dict[str, int]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(int)))
+    for sector, items in data.items():
+        for rec in items:
+            year = rec.get("year")
+            if not year or not isinstance(year, (int, float)) or int(year) < min_year:
+                continue
+            year_int = int(year)
+            ans = rec.get("answers") or {}
+            val = ans.get(qid)
+            if val is None:
+                continue
+            label = answer_to_label(qid, str(val).strip())
+            temporal_counts[sector][year_int][label] += 1
+    return dict(temporal_counts)
+
+
 def build_dashboard_html(
     counts: Dict[str, Dict[str, Dict[str, int]]],
     out_path: str,
     recheck_counts: Optional[Dict[str, Dict[str, int]]] = None,
+    data: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+    survey_metadata: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> None:
-    """Write dashboard HTML with Plotly charts (inline JSON + plotly.js). If recheck_counts is set, add bottom chart for against recheck."""
+    """Write dashboard HTML with Plotly charts (inline JSON + plotly.js). If recheck_counts is set, add bottom chart for against recheck. If data is set, add temporal plots."""
     sectors = ["food", "transport", "housing"]
     question_order = [
         "1.1_gate",
@@ -316,21 +366,28 @@ a { color: #58a6ff; font-size: 0.9em; }
                         "marker": {"color": label_to_color[label]},
                         "text": [str(v) if v else "" for v in x],
                         "textposition": "inside",
+                        "showlegend": True,
                     })
             if traces:
                 fig = {
                     "data": traces,
                     "layout": {
                         "barmode": "stack",
-                        "height": 240,
-                        "margin": {"l": 85, "t": 20, "b": 28},
+                        "bargap": 0.2,
+                        "height": 150,
+                        "margin": {"l": 85, "t": 15, "b": 20},
                         "xaxis": {"title": "Count", "color": "#e6edf3", "gridcolor": "#30363d", "titlefont": {"size": 11}, "tickfont": {"size": 10}},
                         "yaxis": {"color": "#e6edf3", "gridcolor": "#30363d", "tickfont": {"size": 10}},
                         "showlegend": True,
                         "paper_bgcolor": "#161b22",
                         "plot_bgcolor": "#161b22",
                         "font": {"color": "#e6edf3", "size": 11},
-                        "legend": {"font": {"color": "#e6edf3", "size": 10}},
+                        "legend": {
+                            "font": {"color": "#e6edf3", "size": 10},
+                            "traceorder": "normal",
+                            "itemclick": "toggleothers",
+                            "itemdoubleclick": "toggle",
+                        },
                     },
                 }
                 cid = _chart_id(qid)
@@ -373,8 +430,9 @@ a { color: #58a6ff; font-size: 0.9em; }
                 html_parts.append(f'<p style="font-size: 0.95em; color: #c9d1d9;">{" | ".join(summary_parts)}</p>\n')
             recheck_layout = {
                 "barmode": "stack",
-                "height": 240,
-                "margin": {"l": 85, "t": 20, "b": 28},
+                "bargap": 0.2,
+                "height": 150,
+                "margin": {"l": 85, "t": 15, "b": 20},
                 "xaxis": {"title": "Sector", "color": "#e6edf3", "gridcolor": "#30363d", "titlefont": {"size": 11}, "tickfont": {"size": 10}},
                 "yaxis": {"title": "Count", "color": "#e6edf3", "gridcolor": "#30363d", "tickfont": {"size": 10}},
                 "showlegend": True,
@@ -389,6 +447,183 @@ a { color: #58a6ff; font-size: 0.9em; }
                 f'<script>var fig_stance_recheck = {json.dumps(recheck_fig)}; Plotly.newPlot("chart_stance_recheck", fig_stance_recheck.data, fig_stance_recheck.layout);</script>\n'
             )
 
+    # Temporal plots for Author stance and Reference group
+    if data:
+        temporal_qids = ["1.1.1_stance", "1.3.1_reference_group"]
+        for qid in temporal_qids:
+            temporal_counts = compute_temporal_counts(data, qid, min_year=2010)
+            if not temporal_counts:
+                continue
+            
+            title = QUESTION_TITLES.get(qid, qid)
+            html_parts.append(f'<h2>{title} (temporal)</h2>\n')
+            
+            # Collect all years and labels across sectors
+            all_years = set()
+            all_labels = set()
+            for sector_counts in temporal_counts.values():
+                all_years.update(sector_counts.keys())
+                for year_counts in sector_counts.values():
+                    all_labels.update(year_counts.keys())
+            
+            if not all_years:
+                continue
+            
+            years_sorted = sorted(all_years)
+            labels_order = [l for l in colors if l in all_labels] + [l for l in sorted(all_labels) if l not in colors]
+            
+            # One chart per sector (3 charts in a row)
+            html_parts.append('<div class="charts-row">\n')
+            for sector in sectors:
+                sector_counts = temporal_counts.get(sector, {})
+                if not sector_counts:
+                    continue
+                
+                traces = []
+                label_to_color_map = {}
+                unseen_idx = 0
+                for label in labels_order:
+                    if label in colors:
+                        label_to_color_map[label] = colors[label]
+                    else:
+                        label_to_color_map[label] = _palette_extra[unseen_idx % len(_palette_extra)]
+                        unseen_idx += 1
+                    
+                    y_vals = [sector_counts.get(year, {}).get(label, 0) for year in years_sorted]
+                    if any(y_vals):
+                        trace = {
+                            "x": years_sorted,
+                            "y": y_vals,
+                            "name": label,
+                            "type": "scatter",
+                            "mode": "lines+markers",
+                            "stackgroup": "one",
+                            "marker": {"color": label_to_color_map[label], "size": 6},
+                            "line": {"color": label_to_color_map[label], "width": 2},
+                        }
+                        if traces:
+                            trace["fill"] = "tonexty"
+                        else:
+                            trace["fill"] = "tozeroy"
+                        traces.append(trace)
+                
+                if traces:
+                    cid = _chart_id(qid, sector)
+                    temporal_layout = {
+                        "height": 300,
+                        "margin": {"l": 60, "t": 40, "b": 40, "r": 20},
+                        "xaxis": {
+                            "title": "Year",
+                            "color": "#e6edf3",
+                            "gridcolor": "#30363d",
+                            "titlefont": {"size": 11},
+                            "tickfont": {"size": 10},
+                        },
+                        "yaxis": {
+                            "title": "Count",
+                            "color": "#e6edf3",
+                            "gridcolor": "#30363d",
+                            "tickfont": {"size": 10},
+                        },
+                        "showlegend": True,
+                        "paper_bgcolor": "#161b22",
+                        "plot_bgcolor": "#161b22",
+                        "font": {"color": "#e6edf3", "size": 11},
+                        "legend": {"font": {"color": "#e6edf3", "size": 9}, "orientation": "h", "yanchor": "bottom", "y": -0.25, "xanchor": "center", "x": 0.5},
+                        "title": {"text": SECTOR_DISPLAY.get(sector, sector), "font": {"color": "#e6edf3", "size": 12}},
+                    }
+                    temporal_fig = {"data": traces, "layout": temporal_layout}
+                    html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
+                    html_parts.append(
+                        f'<script>var fig_{cid} = {json.dumps(temporal_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
+                    )
+            html_parts.append("</div>\n")
+
+    # Survey questions section (at bottom)
+    survey_metadata = survey_metadata or {}
+    survey_qids = [qid for qid in counts.keys() if qid.startswith(("diet_", "ev_", "solar_"))]
+    if survey_qids:
+        html_parts.append('<h2 style="margin-top: 40px;">Survey Questions</h2>\n')
+        # Group by sector
+        survey_by_sector: Dict[str, List[str]] = defaultdict(list)
+        for qid in sorted(survey_qids):
+            sector = survey_metadata.get(qid, {}).get("sector", "unknown")
+            survey_by_sector[sector].append(qid)
+        
+        for sector in ["food", "transport", "housing"]:
+            if sector not in survey_by_sector:
+                continue
+            
+            sector_title = SECTOR_DISPLAY.get(sector, sector.upper())
+            html_parts.append(f'<h3 style="margin-top: 20px; color: #c9d1d9;">{sector_title}</h3>\n')
+            
+            for qid in survey_by_sector[sector]:
+                if qid not in counts:
+                    continue
+                
+                short_form = survey_metadata.get(qid, {}).get("short_form", qid)
+                html_parts.append(f'<h4 style="margin-top: 12px; margin-bottom: 4px; color: #b1bac4; font-size: 1.0em;">{short_form}</h4>\n')
+                
+                c = counts[qid]
+                # Create horizontal bar chart: YES vs NO for this question's sector only
+                if sector not in c:
+                    continue
+                
+                yes_count = c[sector].get("YES", 0) + c[sector].get("1", 0) + c[sector].get("yes", 0)
+                no_count = c[sector].get("NO", 0) + c[sector].get("0", 0) + c[sector].get("no", 0)
+                total = yes_count + no_count
+                
+                if total == 0:
+                    continue
+                
+                yes_pct = (yes_count / total) * 100
+                no_pct = (no_count / total) * 100
+                
+                traces = [
+                    {
+                        "x": [yes_pct],
+                        "y": [SECTOR_DISPLAY.get(sector, sector)],
+                        "name": "YES",
+                        "type": "bar",
+                        "orientation": "h",
+                        "marker": {"color": "#2ecc71"},
+                        "text": [f"{yes_pct:.1f}% ({yes_count})"],
+                        "textposition": "inside",
+                        "showlegend": True,
+                    },
+                    {
+                        "x": [no_pct],
+                        "y": [SECTOR_DISPLAY.get(sector, sector)],
+                        "name": "NO",
+                        "type": "bar",
+                        "orientation": "h",
+                        "marker": {"color": "#e74c3c"},
+                        "text": [f"{no_pct:.1f}% ({no_count})"],
+                        "textposition": "inside",
+                        "showlegend": True,
+                    }
+                ]
+                
+                cid = _chart_id(qid, "")
+                survey_layout = {
+                    "barmode": "stack",
+                    "bargap": 0.2,
+                    "height": 100,
+                    "margin": {"l": 85, "t": 10, "b": 15, "r": 20},
+                    "xaxis": {"title": "Percentage", "range": [0, 100], "color": "#e6edf3", "gridcolor": "#30363d", "titlefont": {"size": 10}, "tickfont": {"size": 9}},
+                    "yaxis": {"color": "#e6edf3", "gridcolor": "#30363d", "tickfont": {"size": 9}},
+                    "showlegend": True,
+                    "paper_bgcolor": "#161b22",
+                    "plot_bgcolor": "#161b22",
+                    "font": {"color": "#e6edf3", "size": 10},
+                    "legend": {"font": {"color": "#e6edf3", "size": 9}, "orientation": "h", "yanchor": "bottom", "y": -0.35, "xanchor": "center", "x": 0.5},
+                }
+                survey_fig = {"data": traces, "layout": survey_layout}
+                html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
+                html_parts.append(
+                    f'<script>var fig_{cid} = {json.dumps(survey_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
+                )
+
     html_parts.append("</body>\n</html>")
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
@@ -396,7 +631,7 @@ a { color: #58a6ff; font-size: 0.9em; }
     print(f"Wrote dashboard: {out_path}")
 
 
-def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str) -> None:
+def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str, survey_metadata: Optional[Dict[str, Dict[str, str]]] = None) -> None:
     """One example comment per (question, category, sector)."""
     sectors = ["food", "transport", "housing"]
     question_order = [
@@ -408,6 +643,18 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str) ->
         "1.2.2_injunctive",
         "1.3.2_mechanism",
     ]
+    
+    # Add survey questions to question_order if they exist in data
+    survey_metadata = survey_metadata or {}
+    survey_qids = []
+    for sector, items in data.items():
+        for rec in items:
+            ans = rec.get("answers") or {}
+            for qid in ans.keys():
+                if qid.startswith(("diet_", "ev_", "solar_")) and qid not in survey_qids:
+                    survey_qids.append(qid)
+    if survey_qids:
+        question_order.extend(sorted(survey_qids))
     # Collect by (qid, label, sector) -> list of comment texts, then pick one at random per slot
     by_cat: Dict[str, Dict[str, Dict[str, List[str]]]] = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
     for sector, items in data.items():
@@ -419,6 +666,12 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str) ->
             ans = rec.get("answers") or {}
             for qid, val in ans.items():
                 label = answer_to_label(qid, str(val).strip())
+                # Normalize survey question labels: "1" -> "YES", "0" -> "NO"
+                if qid.startswith(("diet_", "ev_", "solar_")):
+                    if label in ("1", "yes"):
+                        label = "YES"
+                    elif label in ("0", "no"):
+                        label = "NO"
                 by_cat[qid][label][sector].append(text)
     # Up to 3 random samples per (qid, label, sector) for display
     N_EXAMPLES = 3
@@ -506,12 +759,41 @@ h1 { text-align: center; color: #e6edf3; font-size: 1.28em; margin: 0.4em 0; }
     for qid in question_order:
         if qid not in samples:
             continue
-        title = QUESTION_TITLES.get(qid, qid)
+        # Use short_form for survey questions, QUESTION_TITLES for norms questions
+        if qid.startswith(("diet_", "ev_", "solar_")):
+            title = survey_metadata.get(qid, {}).get("short_form", qid)
+        else:
+            title = QUESTION_TITLES.get(qid, qid)
         html_parts.append(f'<details class="question-section"><summary>{html_escape(title)}</summary>\n')
         html_parts.append('<div class="question-content">\n')
         # Dropdown: exact prompt and choices sent to the LLM
         prompt_info = NORMS_PROMPTS.get(qid)
-        if prompt_info:
+        # For survey questions, show prompt from metadata
+        if qid.startswith(("diet_", "ev_", "solar_")):
+            survey_q_meta = survey_metadata.get(qid, {})
+            if survey_q_meta:
+                html_parts.append('<details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>\n')
+                html_parts.append('<div class="prompt-box">\n')
+                # Load full survey data to get prompt
+                survey_file = Path("00_vllm_survey_question_final.json")
+                if survey_file.exists():
+                    with open(survey_file, "r", encoding="utf-8") as f:
+                        survey_data = json.load(f)
+                    for sector_key in ["FOOD", "TRANSPORT", "HOUSING"]:
+                        if sector_key not in survey_data:
+                            continue
+                        for question_set_name, question_set in survey_data[sector_key].items():
+                            for q in question_set.get("questions", []):
+                                if q["id"] == qid:
+                                    html_parts.append(f'<div class="prompt-text">{html_escape(q.get("prompt", ""))}</div>\n')
+                                    html_parts.append('<div class="choices-label">Valid choices:</div>\n<ul class="choices-list">\n')
+                                    html_parts.append('<li>YES</li>\n<li>NO</li>\n')
+                                    html_parts.append('</ul>\n</div>\n</details>\n')
+                                    break
+                            else:
+                                continue
+                            break
+        elif prompt_info:
             html_parts.append('<details class="prompt-dropdown"><summary>Read exact prompt &amp; choices sent to the LLM</summary>\n')
             html_parts.append('<div class="prompt-box">\n')
             prompt_text = prompt_info["prompt"]
@@ -526,9 +808,24 @@ h1 { text-align: center; color: #e6edf3; font-size: 1.28em; margin: 0.4em 0; }
             for opt in prompt_info["options"]:
                 html_parts.append(f'<li>{html_escape(opt)}</li>\n')
             html_parts.append('</ul>\n</div>\n</details>\n')
+        # For survey questions, only show examples for the matching sector
+        survey_q_sector = None
+        if qid.startswith(("diet_", "ev_", "solar_")):
+            survey_q_sector = survey_metadata.get(qid, {}).get("sector", None)
+        
         for label in sorted(samples[qid].keys()):
             html_parts.append(f'<div class="category-group"><div class="category-title">{label}</div><div class="sectors-row">\n')
             for sector in sectors:
+                # Skip sectors that don't match for survey questions
+                if survey_q_sector and sector != survey_q_sector:
+                    # Fill with empty slots for non-matching sectors
+                    for i in range(N_EXAMPLES):
+                        sector_name = SECTOR_DISPLAY.get(sector, sector)
+                        header = f"{sector_name} · {i + 1}"
+                        html_parts.append(f'<div class="sector-column"><div class="sector-header">{header}</div>')
+                        html_parts.append(f'<div class="example-comment">—</div></div>\n')
+                    continue
+                
                 texts = (samples[qid][label].get(sector) or [])[:N_EXAMPLES]
                 while len(texts) < N_EXAMPLES:
                     texts.append("")
@@ -593,8 +890,9 @@ def main():
     data = load_norms_labels(args.input)
     counts = compute_counts(data)
     recheck_counts = compute_recheck_counts(data)
-    build_dashboard_html(counts, args.dashboard, recheck_counts=recheck_counts)
-    build_examples_html(data, args.examples)
+    survey_metadata = load_survey_metadata()
+    build_dashboard_html(counts, args.dashboard, recheck_counts=recheck_counts, data=data, survey_metadata=survey_metadata)
+    build_examples_html(data, args.examples, survey_metadata=survey_metadata)
     print("Done.")
 
 
