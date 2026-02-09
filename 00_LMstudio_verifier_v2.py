@@ -42,8 +42,8 @@ API_CONFIG_PATH = "local_LLM_api_from_vLLM.json"
 NORMS_LABELS_PATH = "paper4data/norms_labels.json"
 OUTPUT_PATH = "paper4data/00_verification_results.json"
 SAMPLES_OUTPUT_PATH = "paper4data/00_verification_samples.json"  # Full sample-level results
-SAMPLES_PER_QUESTION = 25  # Number of comments to verify per question (or max available)
-MAX_CONCURRENT = 12  # Concurrent requests (matching LM Studio configuration)
+SAMPLES_PER_QUESTION = 50  # Number of comments to verify per question (or max available)
+MAX_CONCURRENT = 16  # Concurrent requests (matching LM Studio configuration)
 RANDOM_SEED = 42
 
 

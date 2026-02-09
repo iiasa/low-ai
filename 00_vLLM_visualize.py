@@ -12,6 +12,7 @@ import json
 import os
 import random
 import re
+import numpy as np
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Any, Optional
@@ -871,10 +872,14 @@ a:hover { text-decoration: underline; }
                 f'<script>var fig_survey_radials = {json.dumps(radial_fig)}; Plotly.newPlot("chart_survey_radials", fig_survey_radials.data, fig_survey_radials.layout);</script>\n'
             )
 
-    # Add verification results section if available
+    # Add verification results section with confidence analysis
     verification_path = "paper4data/00_verification_results.json"
+    verification_samples_path = "paper4data/00_verification_samples.json"
     if os.path.exists(verification_path):
-        html_parts.extend(build_verification_section(verification_path))
+        html_parts.extend(build_verification_section(
+            verification_path,
+            verification_samples_path if os.path.exists(verification_samples_path) else None
+        ))
 
     html_parts.append("</body>\n</html>")
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
@@ -883,15 +888,15 @@ a:hover { text-decoration: underline; }
     print(f"Wrote dashboard: {out_path}")
 
 
-def build_verification_section(verification_path: str) -> List[str]:
-    """Build beautiful verification results visualization for dashboard bottom."""
+def build_confidence_plots_only(samples_path: str) -> List[str]:
+    """Build just the confidence analysis plots for 4-column layout - two vertically stacked plots."""
     try:
-        with open(verification_path, "r", encoding="utf-8") as f:
-            verification = json.load(f)
+        with open(samples_path, "r", encoding="utf-8") as f:
+            samples_data = json.load(f)
     except Exception as e:
-        return [f'<p style="color: #ff6b6b; text-align: center;">Error loading verification results: {e}</p>\n']
+        return [f'<div style="width: 24%;"><p style="color: #ff6b6b; text-align: center;">Error loading samples</p></div>\n']
 
-    # Load survey questions to get short_form labels
+    # Load question labels
     try:
         with open("00_vllm_survey_question_final.json", "r", encoding="utf-8") as f:
             survey_data = json.load(f)
@@ -906,6 +911,641 @@ def build_verification_section(verification_path: str) -> List[str]:
                     question_labels[q["id"]] = q.get("short_form", q["id"])
     except:
         question_labels = {}
+
+    try:
+        with open("00_vllm_ipcc_social_norms_schema.json", "r", encoding="utf-8") as f:
+            norms_schema = json.load(f)
+        for q in norms_schema.get("norms_questions", []):
+            question_labels[q["id"]] = q["id"]
+    except:
+        pass
+
+    # Analyze confidence vs mismatch
+    confidence_data = []
+
+    for task_type in ["norms", "survey"]:
+        if task_type not in samples_data:
+            continue
+        for qid, samples in samples_data[task_type].items():
+            for sample in samples:
+                vllm_label = str(sample.get("vllm_label", "")).strip().lower()
+                reasoning_label = str(sample.get("reasoning_label", "")).strip().lower()
+                is_match = (vllm_label == reasoning_label)
+
+                logprobs = sample.get("logprobs", {})
+                if qid in logprobs:
+                    logprob = logprobs[qid]
+                    confidence = min(1.0, max(0.0, np.exp(logprob)))
+                    confidence_data.append({
+                        "qid": qid,
+                        "confidence": confidence,
+                        "is_match": is_match,
+                        "sector": sample.get("sector", "unknown")
+                    })
+
+    if not confidence_data:
+        return [f'<div style="width: 24%;"><p style="color: #ff6b6b; text-align: center;">No data</p></div>\n']
+
+    html = []
+    html.append('<div style="width: 24%; display: flex; flex-direction: column;">\n')
+    html.append('<h3 style="font-size: 1.05em; color: #b0b0b0; text-align: center; margin-bottom: 10px;">Confidence vs Mismatch</h3>\n')
+
+    # === TOP PLOT: Bar chart (aggregate by confidence bins) ===
+
+    # Bin by confidence
+    confidence_bins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    bin_labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+    bin_stats = {label: {"total": 0, "mismatches": 0} for label in bin_labels}
+
+    for item in confidence_data:
+        conf = item["confidence"]
+        for i in range(len(confidence_bins) - 1):
+            if confidence_bins[i] <= conf < confidence_bins[i+1]:
+                bin_label = bin_labels[i]
+                break
+        else:
+            bin_label = bin_labels[-1]
+
+        bin_stats[bin_label]["total"] += 1
+        if not item["is_match"]:
+            bin_stats[bin_label]["mismatches"] += 1
+
+    mismatch_rates = []
+    bin_counts = []
+    for label in bin_labels:
+        total = bin_stats[label]["total"]
+        if total > 0:
+            rate = bin_stats[label]["mismatches"] / total
+            mismatch_rates.append(rate * 100)
+            bin_counts.append(total)
+        else:
+            mismatch_rates.append(0)
+            bin_counts.append(0)
+
+    # Bar chart
+    confidence_trace = {
+        "x": bin_labels,
+        "y": mismatch_rates,
+        "type": "bar",
+        "marker": {
+            "color": mismatch_rates,
+            "colorscale": [[0, "#8fcc8f"], [0.5, "#ffb87a"], [1, "#ff9aa8"]],
+            "cmin": 0,
+            "cmax": max(mismatch_rates) if mismatch_rates else 50,
+            "line": {"width": 0}
+        },
+        "text": [f"{r:.1f}%" if c > 0 else "" for r, c in zip(mismatch_rates, bin_counts)],
+        "textposition": "outside",
+        "textfont": {"size": 9, "color": "#e0e0e0"},
+        "hovertemplate": "Confidence: %{x}<br>Mismatch: %{y:.1f}%<extra></extra>",
+    }
+
+    confidence_layout = {
+        "height": 240,  # Reduced from 500 to ~0.5x
+        "margin": {"l": 50, "t": 5, "b": 50, "r": 20},
+        "xaxis": {
+            "title": "Confidence",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "titlefont": {"size": 9, "color": "#b0b0b0"},
+            "tickfont": {"size": 8, "color": "#b0b0b0"},
+        },
+        "yaxis": {
+            "title": "Mismatch (%)",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "showgrid": True,
+            "titlefont": {"size": 9, "color": "#b0b0b0"},
+            "tickfont": {"size": 8, "color": "#b0b0b0"},
+        },
+        "paper_bgcolor": "#1a1a1a",
+        "plot_bgcolor": "#1a1a1a",
+        "font": {"color": "#e0e0e0"},
+        "showlegend": False,
+    }
+
+    confidence_fig = {"data": [confidence_trace], "layout": confidence_layout}
+    html.append('<div class="chart" id="chart_confidence_bar"></div>\n')
+    html.append(f'<script>var fig_confidence_bar = {json.dumps(confidence_fig)}; Plotly.newPlot("chart_confidence_bar", fig_confidence_bar.data, fig_confidence_bar.layout);</script>\n')
+
+    # === BOTTOM PLOT: Bubble chart (per-question breakdown) ===
+
+    # Calculate per-question stats
+    question_stats = defaultdict(lambda: {"total": 0, "mismatches": 0, "confidences": []})
+
+    for item in confidence_data:
+        qid = item["qid"]
+        question_stats[qid]["total"] += 1
+        question_stats[qid]["confidences"].append(item["confidence"])
+        if not item["is_match"]:
+            question_stats[qid]["mismatches"] += 1
+
+    # Prepare data for bubble chart
+    question_plot_data = []
+    for qid, stats in question_stats.items():
+        if stats["total"] > 0:
+            mismatch_rate = stats["mismatches"] / stats["total"] * 100
+            avg_conf = np.mean(stats["confidences"])
+            label = question_labels.get(qid, qid)
+            question_plot_data.append({
+                "qid": qid,
+                "label": label[:30],
+                "mismatch_rate": mismatch_rate,
+                "avg_confidence": avg_conf,
+                "total": stats["total"]
+            })
+
+    q_labels = [q["label"] for q in question_plot_data]
+    q_mismatch_rates = [q["mismatch_rate"] for q in question_plot_data]
+    q_avg_confidences = [q["avg_confidence"] for q in question_plot_data]
+    q_totals = [q["total"] for q in question_plot_data]
+
+    question_trace = {
+        "x": q_avg_confidences,
+        "y": q_mismatch_rates,
+        "mode": "markers",
+        "type": "scatter",
+        "marker": {
+            "size": [min(12.5, max(3, t / 6)) for t in q_totals],  # 50% smaller
+            "color": q_mismatch_rates,
+            "colorscale": [[0, "#8fcc8f"], [0.5, "#ffb87a"], [1, "#ff9aa8"]],
+            "cmin": 0,
+            "cmax": max(q_mismatch_rates) if q_mismatch_rates else 50,
+            "line": {"width": 0.5, "color": "#e0e0e0"},
+            "showscale": False,
+        },
+        "text": q_labels,
+        "hovertemplate": "<b>%{text}</b><br>Conf: %{x:.3f}<br>Mismatch: %{y:.1f}%<extra></extra>",
+    }
+
+    question_layout = {
+        "height": 240,  # Match top plot height
+        "margin": {"l": 50, "t": 10, "b": 50, "r": 20},
+        "xaxis": {
+            "title": "Avg Confidence",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "showgrid": True,
+            "titlefont": {"size": 9, "color": "#b0b0b0"},
+            "tickfont": {"size": 8, "color": "#b0b0b0"},
+            "range": [0.5, 1.05],  # Start from 0.5 instead of 0
+        },
+        "yaxis": {
+            "title": "Mismatch (%)",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "showgrid": True,
+            "titlefont": {"size": 9, "color": "#b0b0b0"},
+            "tickfont": {"size": 8, "color": "#b0b0b0"},
+        },
+        "paper_bgcolor": "#1a1a1a",
+        "plot_bgcolor": "#1a1a1a",
+        "font": {"color": "#e0e0e0"},
+        "showlegend": False,
+    }
+
+    question_fig = {"data": [question_trace], "layout": question_layout}
+    html.append('<div class="chart" id="chart_confidence_bubble" style="margin-top: 10px;"></div>\n')
+    html.append(f'<script>var fig_confidence_bubble = {json.dumps(question_fig)}; Plotly.newPlot("chart_confidence_bubble", fig_confidence_bubble.data, fig_confidence_bubble.layout);</script>\n')
+
+    html.append('</div>\n')  # Close width: 24% div (column 3)
+
+    return html
+
+
+def build_low_confidence_accuracy(samples_path: str, question_labels: Dict[str, str]) -> List[str]:
+    """Build accuracy chart for high-confidence samples (confidence > 0.9)."""
+    try:
+        with open(samples_path, "r", encoding="utf-8") as f:
+            samples_data = json.load(f)
+    except Exception as e:
+        return [f'<div style="width: 24%;"><p style="color: #ff6b6b; text-align: center;">Error loading samples</p></div>\n']
+
+    # Calculate accuracy per question for samples with confidence > 0.9
+    high_conf_threshold = 0.9
+    question_accuracy = defaultdict(lambda: {"correct": 0, "total": 0})
+
+    for task_type in ["norms", "survey"]:
+        if task_type not in samples_data:
+            continue
+        for qid, samples in samples_data[task_type].items():
+            for sample in samples:
+                vllm_label = str(sample.get("vllm_label", "")).strip().lower()
+                reasoning_label = str(sample.get("reasoning_label", "")).strip().lower()
+
+                logprobs = sample.get("logprobs", {})
+                if qid in logprobs:
+                    confidence = min(1.0, max(0.0, np.exp(logprobs[qid])))
+
+                    # Only include samples with high confidence
+                    if confidence > high_conf_threshold:
+                        question_accuracy[qid]["total"] += 1
+                        if vllm_label == reasoning_label:
+                            question_accuracy[qid]["correct"] += 1
+
+    # Calculate accuracy percentages
+    accuracy_data = []
+    for qid, stats in question_accuracy.items():
+        if stats["total"] > 0:
+            acc = stats["correct"] / stats["total"]
+            label = question_labels.get(qid, qid)
+            accuracy_data.append({
+                "qid": qid,
+                "label": label[:32],
+                "accuracy": acc,
+                "total": stats["total"]
+            })
+
+    # Sort by accuracy (lowest first)
+    accuracy_data.sort(key=lambda x: x["accuracy"])
+
+    if not accuracy_data:
+        html = []
+        html.append('<div style="width: 24%;">\n')
+        html.append('<h3 style="font-size: 1.05em; color: #b0b0b0; text-align: center; margin-bottom: 10px;">Accuracy (Conf &gt; 0.9)</h3>\n')
+        html.append('<p style="color: #a0a0a0; text-align: center; font-size: 0.85em;">No samples with confidence &gt; 0.9</p>\n')
+        html.append('</div>\n')
+        return html
+
+    html = []
+    html.append('<div style="width: 24%;">\n')
+    html.append(f'<h3 style="font-size: 1.05em; color: #b0b0b0; text-align: center; margin-bottom: 10px;">Accuracy (Conf &gt; {high_conf_threshold})</h3>\n')
+
+    # Bar chart
+    q_labels = [d["label"] for d in accuracy_data]
+    accuracies = [d["accuracy"] for d in accuracy_data]
+    colors = []
+    for acc in accuracies:
+        if acc >= 0.7:
+            colors.append("#8fcc8f")
+        elif acc >= 0.5:
+            colors.append("#ffb87a")
+        else:
+            colors.append("#ff9aa8")
+
+    trace = {
+        "y": q_labels,
+        "x": accuracies,
+        "type": "bar",
+        "orientation": "h",
+        "marker": {"color": colors, "line": {"width": 0}},
+        "text": [f"{v:.0%}" for v in accuracies],
+        "textposition": "outside",
+        "textfont": {"size": 8, "color": "#e0e0e0"},
+        "hovertemplate": "%{y}<br>Accuracy: %{x:.1%}<extra></extra>",
+    }
+
+    layout = {
+        "height": 500,
+        "margin": {"l": 180, "t": 5, "b": 35, "r": 40},
+        "xaxis": {
+            "title": "",
+            "range": [0, 1.05],
+            "tickformat": ".0%",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "showgrid": True,
+            "titlefont": {"size": 9, "color": "#b0b0b0"},
+            "tickfont": {"size": 8, "color": "#b0b0b0"},
+        },
+        "yaxis": {
+            "color": "#b0b0b0",
+            "tickfont": {"size": 8, "color": "#b0b0b0"},
+        },
+        "paper_bgcolor": "#1a1a1a",
+        "plot_bgcolor": "#1a1a1a",
+        "font": {"color": "#e0e0e0"},
+        "showlegend": False,
+    }
+
+    fig = {"data": [trace], "layout": layout}
+    html.append('<div class="chart" id="chart_low_conf_accuracy"></div>\n')
+    html.append(f'<script>var fig_low_conf = {json.dumps(fig)}; Plotly.newPlot("chart_low_conf_accuracy", fig_low_conf.data, fig_low_conf.layout);</script>\n')
+    html.append('</div>\n')  # Close width: 24% div (column 4)
+
+    return html
+
+
+def build_confidence_analysis_section(samples_path: str) -> List[str]:
+    """Build confidence vs verifier mismatch analysis section."""
+    try:
+        with open(samples_path, "r", encoding="utf-8") as f:
+            samples_data = json.load(f)
+    except Exception as e:
+        return [f'<p style="color: #ff6b6b; text-align: center;">Error loading verification samples: {e}</p>\n']
+
+    # Load survey questions for labels
+    try:
+        with open("00_vllm_survey_question_final.json", "r", encoding="utf-8") as f:
+            survey_data = json.load(f)
+        question_labels = {}
+        for sector_data in survey_data.values():
+            if not isinstance(sector_data, dict):
+                continue
+            for question_set in sector_data.values():
+                if not isinstance(question_set, dict) or "questions" not in question_set:
+                    continue
+                for q in question_set["questions"]:
+                    question_labels[q["id"]] = q.get("short_form", q["id"])
+    except:
+        question_labels = {}
+
+    # Load norms schema for norms question labels
+    try:
+        with open("00_vllm_ipcc_social_norms_schema.json", "r", encoding="utf-8") as f:
+            norms_schema = json.load(f)
+        for q in norms_schema.get("norms_questions", []):
+            question_labels[q["id"]] = q["id"]
+    except:
+        pass
+
+    # Analyze confidence vs mismatch
+    # Collect all (question_id, confidence, match) tuples
+    confidence_data = []  # [(qid, confidence, is_match, sector)]
+
+    for task_type in ["norms", "survey"]:
+        if task_type not in samples_data:
+            continue
+        for qid, samples in samples_data[task_type].items():
+            for sample in samples:
+                vllm_label = str(sample.get("vllm_label", "")).strip().lower()
+                reasoning_label = str(sample.get("reasoning_label", "")).strip().lower()
+                is_match = (vllm_label == reasoning_label)
+
+                # Get confidence for this specific question
+                logprobs = sample.get("logprobs", {})
+                if qid in logprobs:
+                    # Convert logprob to confidence: exp(logprob), closer to 1 = higher confidence
+                    # Logprobs are negative, so exp(-0.01) ≈ 0.99, exp(-2) ≈ 0.135
+                    logprob = logprobs[qid]
+                    confidence = min(1.0, max(0.0, np.exp(logprob)))
+
+                    confidence_data.append({
+                        "qid": qid,
+                        "confidence": confidence,
+                        "is_match": is_match,
+                        "sector": sample.get("sector", "unknown")
+                    })
+
+    if not confidence_data:
+        return ['<p style="color: #ff6b6b; text-align: center;">No confidence data available for analysis.</p>\n']
+
+    html = []
+    html.append('<div style="margin-top: 50px; padding-top: 30px; border-top: 3px solid #d0d0d0;">\n')
+    html.append('<h2 style="text-align: center;">Confidence vs Verifier Mismatch Analysis</h2>\n')
+    html.append('<p style="text-align: center; font-size: 0.85em; color: #a0a0a0; margin: 8px 0;">Does Mistral\'s self-reported confidence predict when the verifier disagrees?</p>\n')
+
+    # === PANEL 1: Overall aggregate statistics ===
+
+    # Bin by confidence (0-0.2, 0.2-0.4, 0.4-0.6, 0.6-0.8, 0.8-1.0)
+    confidence_bins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    bin_labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+
+    # Overall statistics by confidence bin
+    bin_stats = {label: {"total": 0, "mismatches": 0} for label in bin_labels}
+
+    for item in confidence_data:
+        conf = item["confidence"]
+        # Find bin
+        for i in range(len(confidence_bins) - 1):
+            if confidence_bins[i] <= conf < confidence_bins[i+1]:
+                bin_label = bin_labels[i]
+                break
+        else:
+            bin_label = bin_labels[-1]  # Last bin includes 1.0
+
+        bin_stats[bin_label]["total"] += 1
+        if not item["is_match"]:
+            bin_stats[bin_label]["mismatches"] += 1
+
+    # Calculate mismatch rates
+    mismatch_rates = []
+    bin_counts = []
+    for label in bin_labels:
+        total = bin_stats[label]["total"]
+        if total > 0:
+            rate = bin_stats[label]["mismatches"] / total
+            mismatch_rates.append(rate * 100)
+            bin_counts.append(total)
+        else:
+            mismatch_rates.append(0)
+            bin_counts.append(0)
+
+    # Overall stats card
+    total_samples = len(confidence_data)
+    total_mismatches = sum(not item["is_match"] for item in confidence_data)
+    overall_mismatch_rate = (total_mismatches / total_samples * 100) if total_samples > 0 else 0
+
+    avg_confidence = np.mean([item["confidence"] for item in confidence_data])
+    avg_confidence_match = np.mean([item["confidence"] for item in confidence_data if item["is_match"]])
+    avg_confidence_mismatch = np.mean([item["confidence"] for item in confidence_data if not item["is_match"]])
+
+    html.append('<div style="display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap;">\n')
+
+    # Overall mismatch rate
+    html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 140px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: {"#8fcc8f" if overall_mismatch_rate < 15 else "#ffb87a" if overall_mismatch_rate < 30 else "#ff9aa8"};">{overall_mismatch_rate:.1f}%</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Mismatch Rate</div></div>\n')
+
+    # Avg confidence (match)
+    html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 140px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: #8fcc8f;">{avg_confidence_match:.3f}</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Avg Conf (Match)</div></div>\n')
+
+    # Avg confidence (mismatch)
+    html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 140px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: #ff9aa8;">{avg_confidence_mismatch:.3f}</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Avg Conf (Mismatch)</div></div>\n')
+
+    # Total samples
+    html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 140px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: #e0e0e0;">{total_samples}</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Total Comparisons</div></div>\n')
+
+    html.append('</div>\n')
+
+    # Panel 1: Overall mismatch rate by confidence bin
+    html.append('<div style="margin-top: 25px;">\n')
+    html.append('<h3 style="font-size: 1.05em; color: #b0b0b0; text-align: center; margin-bottom: 10px;">Mismatch Rate by Confidence Level (All Questions)</h3>\n')
+
+    confidence_trace = {
+        "x": bin_labels,
+        "y": mismatch_rates,
+        "type": "bar",
+        "marker": {
+            "color": mismatch_rates,
+            "colorscale": [[0, "#8fcc8f"], [0.5, "#ffb87a"], [1, "#ff9aa8"]],
+            "cmin": 0,
+            "cmax": max(mismatch_rates) if mismatch_rates else 50,
+            "line": {"width": 0}
+        },
+        "text": [f"{r:.1f}%<br>n={c}" for r, c in zip(mismatch_rates, bin_counts)],
+        "textposition": "outside",
+        "textfont": {"size": 10, "color": "#e0e0e0"},
+        "hovertemplate": "Confidence: %{x}<br>Mismatch Rate: %{y:.1f}%<br>Samples: %{text}<extra></extra>",
+    }
+
+    confidence_layout = {
+        "height": 300,
+        "margin": {"l": 60, "t": 10, "b": 70, "r": 40},
+        "xaxis": {
+            "title": "Mistral Confidence Level",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "titlefont": {"size": 11, "color": "#b0b0b0"},
+            "tickfont": {"size": 10, "color": "#b0b0b0"},
+        },
+        "yaxis": {
+            "title": "Verifier Mismatch Rate (%)",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "showgrid": True,
+            "titlefont": {"size": 11, "color": "#b0b0b0"},
+            "tickfont": {"size": 10, "color": "#b0b0b0"},
+        },
+        "paper_bgcolor": "#1a1a1a",
+        "plot_bgcolor": "#1a1a1a",
+        "font": {"color": "#e0e0e0"},
+        "showlegend": False,
+    }
+
+    confidence_fig = {"data": [confidence_trace], "layout": confidence_layout}
+    html.append('<div class="chart" id="chart_confidence_overall"></div>\n')
+    html.append(f'<script>var fig_confidence_overall = {json.dumps(confidence_fig)}; Plotly.newPlot("chart_confidence_overall", fig_confidence_overall.data, fig_confidence_overall.layout);</script>\n')
+    html.append('</div>\n')
+
+    # === PANEL 2: Per-question breakdown ===
+
+    # Calculate mismatch rate and avg confidence per question
+    question_stats = defaultdict(lambda: {"total": 0, "mismatches": 0, "confidences": []})
+
+    for item in confidence_data:
+        qid = item["qid"]
+        question_stats[qid]["total"] += 1
+        question_stats[qid]["confidences"].append(item["confidence"])
+        if not item["is_match"]:
+            question_stats[qid]["mismatches"] += 1
+
+    # Prepare data for plotting
+    question_plot_data = []
+    for qid, stats in question_stats.items():
+        if stats["total"] > 0:
+            mismatch_rate = stats["mismatches"] / stats["total"] * 100
+            avg_conf = np.mean(stats["confidences"])
+            label = question_labels.get(qid, qid)
+            question_plot_data.append({
+                "qid": qid,
+                "label": label[:35],  # Truncate for display
+                "mismatch_rate": mismatch_rate,
+                "avg_confidence": avg_conf,
+                "total": stats["total"]
+            })
+
+    # Sort by mismatch rate (highest first)
+    question_plot_data.sort(key=lambda x: x["mismatch_rate"], reverse=True)
+
+    html.append('<div style="margin-top: 35px;">\n')
+    html.append('<h3 style="font-size: 1.05em; color: #b0b0b0; text-align: center; margin-bottom: 10px;">Mismatch Rate & Confidence by Question</h3>\n')
+
+    # Create scatter plot: x=avg_confidence, y=mismatch_rate, size=total
+    q_labels = [q["label"] for q in question_plot_data]
+    q_mismatch_rates = [q["mismatch_rate"] for q in question_plot_data]
+    q_avg_confidences = [q["avg_confidence"] for q in question_plot_data]
+    q_totals = [q["total"] for q in question_plot_data]
+
+    question_trace = {
+        "x": q_avg_confidences,
+        "y": q_mismatch_rates,
+        "mode": "markers",
+        "type": "scatter",
+        "marker": {
+            "size": [min(30, max(8, t / 3)) for t in q_totals],  # Scale size by sample count
+            "color": q_mismatch_rates,
+            "colorscale": [[0, "#8fcc8f"], [0.5, "#ffb87a"], [1, "#ff9aa8"]],
+            "cmin": 0,
+            "cmax": max(q_mismatch_rates) if q_mismatch_rates else 50,
+            "line": {"width": 1, "color": "#e0e0e0"},
+            "showscale": True,
+            "colorbar": {
+                "title": "Mismatch<br>Rate (%)",
+                "titlefont": {"size": 9, "color": "#b0b0b0"},
+                "tickfont": {"size": 9, "color": "#b0b0b0"},
+                "x": 1.02,
+            }
+        },
+        "text": q_labels,
+        "hovertemplate": "<b>%{text}</b><br>Avg Confidence: %{x:.3f}<br>Mismatch Rate: %{y:.1f}%<extra></extra>",
+    }
+
+    question_layout = {
+        "height": 400,
+        "margin": {"l": 70, "t": 10, "b": 80, "r": 100},
+        "xaxis": {
+            "title": "Average Mistral Confidence",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "showgrid": True,
+            "titlefont": {"size": 11, "color": "#b0b0b0"},
+            "tickfont": {"size": 10, "color": "#b0b0b0"},
+            "range": [0, 1.05],
+        },
+        "yaxis": {
+            "title": "Verifier Mismatch Rate (%)",
+            "color": "#b0b0b0",
+            "gridcolor": "#3a3a3a",
+            "showgrid": True,
+            "titlefont": {"size": 11, "color": "#b0b0b0"},
+            "tickfont": {"size": 10, "color": "#b0b0b0"},
+        },
+        "paper_bgcolor": "#1a1a1a",
+        "plot_bgcolor": "#1a1a1a",
+        "font": {"color": "#e0e0e0"},
+        "showlegend": False,
+        "annotations": [
+            {
+                "text": "Bubble size = sample count",
+                "xref": "paper",
+                "yref": "paper",
+                "x": 0.5,
+                "y": -0.18,
+                "showarrow": False,
+                "font": {"size": 9, "color": "#7f8c8d"},
+            }
+        ]
+    }
+
+    question_fig = {"data": [question_trace], "layout": question_layout}
+    html.append('<div class="chart" id="chart_confidence_by_question"></div>\n')
+    html.append(f'<script>var fig_confidence_by_question = {json.dumps(question_fig)}; Plotly.newPlot("chart_confidence_by_question", fig_confidence_by_question.data, fig_confidence_by_question.layout);</script>\n')
+    html.append('</div>\n')
+
+    html.append('</div>\n')
+    return html
+
+
+def build_verification_section(verification_path: str, samples_path: Optional[str] = None) -> List[str]:
+    """Build beautiful verification results visualization for dashboard bottom."""
+    try:
+        with open(verification_path, "r", encoding="utf-8") as f:
+            verification = json.load(f)
+    except Exception as e:
+        return [f'<p style="color: #ff6b6b; text-align: center;">Error loading verification results: {e}</p>\n']
+
+    # Load survey questions to get short_form labels (will be reused for column 4)
+    question_labels = {}
+    try:
+        with open("00_vllm_survey_question_final.json", "r", encoding="utf-8") as f:
+            survey_data = json.load(f)
+        for sector_data in survey_data.values():
+            if not isinstance(sector_data, dict):
+                continue
+            for question_set in sector_data.values():
+                if not isinstance(question_set, dict) or "questions" not in question_set:
+                    continue
+                for q in question_set["questions"]:
+                    question_labels[q["id"]] = q.get("short_form", q["id"])
+    except:
+        pass
 
     # Load norms schema for norms question labels
     try:
@@ -940,6 +1580,49 @@ def build_verification_section(verification_path: str) -> List[str]:
     empty_pct = summary.get("empty_response_pct", 0)
     total_samples = summary.get("total_samples", 0)
 
+    # Calculate confidence stats for the summary row
+    avg_confidence_match = None
+    avg_confidence_mismatch = None
+    high_conf_accuracy = None
+    high_conf_samples = None
+    if samples_path and os.path.exists(samples_path):
+        try:
+            with open(samples_path, "r", encoding="utf-8") as f:
+                samples_data = json.load(f)
+            confidence_data = []
+            high_conf_correct = 0
+            high_conf_total = 0
+            high_conf_threshold = 0.9
+
+            for task_type in ["norms", "survey"]:
+                if task_type not in samples_data:
+                    continue
+                for qid, samples in samples_data[task_type].items():
+                    for sample in samples:
+                        vllm_label = str(sample.get("vllm_label", "")).strip().lower()
+                        reasoning_label = str(sample.get("reasoning_label", "")).strip().lower()
+                        is_match = (vllm_label == reasoning_label)
+                        logprobs = sample.get("logprobs", {})
+                        if qid in logprobs:
+                            confidence = min(1.0, max(0.0, np.exp(logprobs[qid])))
+                            confidence_data.append({"confidence": confidence, "is_match": is_match})
+
+                            # Track high-confidence accuracy
+                            if confidence > high_conf_threshold:
+                                high_conf_total += 1
+                                if is_match:
+                                    high_conf_correct += 1
+
+            if confidence_data:
+                avg_confidence_match = np.mean([item["confidence"] for item in confidence_data if item["is_match"]])
+                avg_confidence_mismatch = np.mean([item["confidence"] for item in confidence_data if not item["is_match"]])
+
+            if high_conf_total > 0:
+                high_conf_accuracy = high_conf_correct / high_conf_total
+                high_conf_samples = high_conf_total
+        except:
+            pass
+
     html.append('<div style="display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap;">\n')
 
     # Accuracy card
@@ -962,14 +1645,38 @@ def build_verification_section(verification_path: str) -> List[str]:
     html.append(f'<div style="font-size: 2em; font-weight: 600; color: #e0e0e0;">{total_samples}</div>')
     html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Total Samples</div></div>\n')
 
+    # Confidence (Match) card
+    if avg_confidence_match is not None:
+        html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 120px;">')
+        html.append(f'<div style="font-size: 2em; font-weight: 600; color: #8fcc8f;">{avg_confidence_match:.3f}</div>')
+        html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Conf (Match)</div></div>\n')
+
+    # Confidence (Mismatch) card
+    if avg_confidence_mismatch is not None:
+        html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 120px;">')
+        html.append(f'<div style="font-size: 2em; font-weight: 600; color: #ff9aa8;">{avg_confidence_mismatch:.3f}</div>')
+        html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Conf (Mismatch)</div></div>\n')
+
+    # High-confidence accuracy card
+    if high_conf_accuracy is not None:
+        html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 120px;">')
+        html.append(f'<div style="font-size: 2em; font-weight: 600; color: {"#8fcc8f" if high_conf_accuracy >= 0.85 else "#ffb87a" if high_conf_accuracy >= 0.70 else "#ff9aa8"};">{high_conf_accuracy:.1%}</div>')
+        html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">Acc (Conf &gt; 0.9)</div></div>\n')
+
+    # High-confidence samples card
+    if high_conf_samples is not None:
+        html.append(f'<div style="background: #1a1a1a; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); text-align: center; min-width: 120px;">')
+        html.append(f'<div style="font-size: 2em; font-weight: 600; color: #e0e0e0;">{high_conf_samples}</div>')
+        html.append(f'<div style="font-size: 0.8em; color: #a0a0a0;">High-Conf Samples</div></div>\n')
+
     html.append('</div>\n')
 
-    # Charts side by side - equal widths and heights
+    # Charts side by side - four columns with confidence analysis
     if by_question:
-        html.append('<div style="display: flex; gap: 2%; margin-top: 25px;">\n')
+        html.append('<div style="display: flex; gap: 1%; margin-top: 25px;">\n')
 
-        # LEFT: Accuracy by Question (49% width)
-        html.append('<div style="width: 49%;">\n')
+        # COLUMN 1: Accuracy by Question (24% width)
+        html.append('<div style="width: 24%;">\n')
         html.append('<h3 style="font-size: 1.05em; color: #b0b0b0; text-align: center; margin-bottom: 10px;">Accuracy by Question</h3>\n')
 
         # Sort by accuracy (lowest first)
@@ -1037,10 +1744,10 @@ def build_verification_section(verification_path: str) -> List[str]:
         verification_fig = {"data": [verification_trace], "layout": verification_layout}
         html.append('<div class="chart" id="chart_verification"></div>\n')
         html.append(f'<script>var fig_verification = {json.dumps(verification_fig)}; Plotly.newPlot("chart_verification", fig_verification.data, fig_verification.layout);</script>\n')
-        html.append('</div>\n')  # Close left div
+        html.append('</div>\n')  # Close column 1
 
-        # RIGHT: Top Estimation Errors (49% width)
-        html.append('<div style="width: 49%;">\n')
+        # COLUMN 2: Top Estimation Errors (24% width)
+        html.append('<div style="width: 24%;">\n')
         html.append('<h3 style="font-size: 1.05em; color: #b0b0b0; text-align: center; margin-bottom: 10px;">Top Estimation Errors</h3>\n')
 
         # Collect estimation errors with short labels
@@ -1133,7 +1840,18 @@ def build_verification_section(verification_path: str) -> List[str]:
             html.append('<div class="chart" id="chart_estimation_errors"></div>\n')
             html.append(f'<script>var fig_estimation = {json.dumps(estimation_fig)}; Plotly.newPlot("chart_estimation_errors", fig_estimation.data, fig_estimation.layout);</script>\n')
 
-        html.append('</div>\n')  # Close right div
+        html.append('</div>\n')  # Close column 2
+
+        # COLUMN 3: Confidence Analysis (24% width)
+        if samples_path:
+            confidence_html = build_confidence_plots_only(samples_path)
+            html.extend(confidence_html)
+
+        # COLUMN 4: Low-Confidence Accuracy (24% width)
+        if samples_path:
+            low_conf_html = build_low_confidence_accuracy(samples_path, question_labels)
+            html.extend(low_conf_html)
+
         html.append('</div>\n')  # Close flex container
 
     html.append('</div>\n')
@@ -1142,10 +1860,12 @@ def build_verification_section(verification_path: str) -> List[str]:
 
 def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str, survey_metadata: Optional[Dict[str, Dict[str, str]]] = None) -> None:
     """One example comment per (question, category, sector).
-    Adds green border if verifier agrees with fast model, red if disagrees."""
+    Adds green border if verifier agrees with fast model, red if disagrees.
+    Shows confidence score in top corner."""
 
-    # Load verification samples for border coloring
+    # Load verification samples for border coloring and confidence scores
     verification_map = {}  # comment_text -> (vllm_label, reasoning_label, match)
+    confidence_map = {}  # (comment_text, qid) -> confidence
     samples_path = "paper4data/00_verification_samples.json"
     if os.path.exists(samples_path):
         with open(samples_path, "r", encoding="utf-8") as f:
@@ -1157,6 +1877,12 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str, su
                     vllm = str(sample.get("vllm_label", "")).lower()
                     reasoning = str(sample.get("reasoning_label", "")).lower()
                     verification_map[comment_key] = (vllm, reasoning, vllm == reasoning)
+
+                    # Store confidence for this question
+                    logprobs = sample.get("logprobs", {})
+                    if qid in logprobs:
+                        confidence = min(1.0, max(0.0, np.exp(logprobs[qid])))
+                        confidence_map[(comment_key, qid)] = confidence
 
     sectors = ["food", "transport", "housing"]
     question_order = [
@@ -1271,7 +1997,8 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
 .sectors-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
 .sector-column { display: flex; flex-direction: column; min-width: 0; }
 .sector-header { font-weight: 600; font-size: 8px; color: #888888; margin-bottom: 3px; text-transform: uppercase; }
-.example-comment { padding: 5px 7px; border-radius: 6px; font-size: 9px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; border-left: 2px solid #4a6d7c; background: #252525; color: #e0e0e0; }
+.example-comment { padding: 5px 7px; border-radius: 6px; font-size: 9px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; border-left: 2px solid #4a6d7c; background: #252525; color: #e0e0e0; position: relative; }
+.confidence-badge { position: absolute; top: 2px; right: 2px; font-size: 7px; color: #888888; background: #1a1a1a; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
 .prompt-dropdown { margin-bottom: 12px; }
 .prompt-dropdown summary { cursor: pointer; color: #6c9bcf; font-size: 10px; user-select: none; }
 .prompt-dropdown summary:hover { text-decoration: underline; }
@@ -1364,8 +2091,9 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
                 sector_name = SECTOR_DISPLAY.get(sector, sector)
                 for i, text in enumerate(texts):
                     header = f"{sector_name} · {i + 1}"
-                    # Check verification status for border color
+                    # Check verification status for border color and get confidence
                     border_style = ""
+                    confidence_badge = ""
                     if text:
                         comment_key = text[:200].strip().lower()
                         if comment_key in verification_map:
@@ -1374,8 +2102,15 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
                                 border_style = ' style="border-left: 4px solid #8fcc8f;"'  # Green = agree
                             else:
                                 border_style = ' style="border-left: 4px solid #ff9aa8;"'  # Red = disagree
+
+                        # Get confidence for this question
+                        conf_key = (comment_key, qid)
+                        if conf_key in confidence_map:
+                            conf_val = confidence_map[conf_key]
+                            confidence_badge = f'<span class="confidence-badge">{conf_val:.2f}</span>'
+
                     html_parts.append(f'<div class="sector-column"><div class="sector-header">{header}</div>')
-                    html_parts.append(f'<div class="example-comment"{border_style}>{html_escape(text) if text else "—"}</div></div>\n')
+                    html_parts.append(f'<div class="example-comment"{border_style}>{confidence_badge}{html_escape(text) if text else "—"}</div></div>\n')
             html_parts.append("</div></div>\n")
         html_parts.append("</div></details>\n")
 
@@ -1395,8 +2130,9 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
                 sector_name = SECTOR_DISPLAY.get(sector, sector)
                 for i, text in enumerate(texts):
                     header = f"{sector_name} · {i + 1}"
-                    # Check verification status for border color
+                    # Check verification status for border color and get confidence
                     border_style = ""
+                    confidence_badge = ""
                     if text:
                         comment_key = text[:200].strip().lower()
                         if comment_key in verification_map:
@@ -1405,8 +2141,15 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
                                 border_style = ' style="border-left: 4px solid #8fcc8f;"'  # Green = agree
                             else:
                                 border_style = ' style="border-left: 4px solid #ff9aa8;"'  # Red = disagree
+
+                        # Get confidence for this question
+                        conf_key = (comment_key, qid)
+                        if conf_key in confidence_map:
+                            conf_val = confidence_map[conf_key]
+                            confidence_badge = f'<span class="confidence-badge">{conf_val:.2f}</span>'
+
                     html_parts.append(f'<div class="sector-column"><div class="sector-header">{header}</div>')
-                    html_parts.append(f'<div class="example-comment"{border_style}>{html_escape(text) if text else "—"}</div></div>\n')
+                    html_parts.append(f'<div class="example-comment"{border_style}>{confidence_badge}{html_escape(text) if text else "—"}</div></div>\n')
             html_parts.append("</div></div>\n")
         html_parts.append("</div></details>\n")
 

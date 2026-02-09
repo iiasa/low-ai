@@ -652,6 +652,15 @@ def _get_prompt_for_question(question, sector):
     return question.get("prompt", "")
 ```
 
+### 7. Survey Questions Applied to All Comments
+
+**Decision:** Survey questions (sector-specific attitude questions) are applied to ALL comments in a sector, not filtered by the gate question (1.1_gate).
+
+**Rationale:**
+- Preserves maximum data: captures attitudes even in comments without explicit social norms, enabling analysis of how attitudes relate to norm presence/absence.
+- Simplifies pipeline: uniform labeling across all comments without conditional logic reduces complexity and potential errors.
+- Research flexibility: allows post-hoc analysis of attitude differences between norm-present vs norm-absent comments without requiring re-labeling.
+
 ---
 
 ## Conclusion: Research Impact & Next Steps
