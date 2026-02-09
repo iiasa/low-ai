@@ -170,9 +170,9 @@ def _chart_id(qid: str, sector: str = "") -> str:
 # Recheck (second pass) labels and colors for "against" author-stance recheck chart
 RECHECK_LABELS_ORDER = ["against", "frustrated but still pro", "unclear stance"]
 RECHECK_COLORS = {
-    "against": "#e74c3c",
-    "frustrated but still pro": "#3498db",
-    "unclear stance": "#95a5a6",
+    "against": "#ff9aa8",
+    "frustrated but still pro": "#8fbfd9",
+    "unclear stance": "#d0d0d0",
 }
 
 
@@ -211,8 +211,8 @@ def build_dashboard_html(
     """Write dashboard HTML with Plotly charts (inline JSON + plotly.js). If recheck_counts is set, add bottom chart for against recheck. If data is set, add temporal plots."""
     sectors = ["food", "transport", "housing"]
     question_order = [
-        "1.1_gate",
         "1.1.1_stance",
+        "1.1_gate",
         "1.3.1_reference_group",
         "1.3.1b_perceived_reference_stance",
         "1.2.1_descriptive",
@@ -221,51 +221,51 @@ def build_dashboard_html(
         "1.3.3_second_order",
     ]
     colors = {
-        "Yes": "#3498db",
-        "No": "#9b59b6",
-        "pro": "#2ecc71",
-        "against": "#e74c3c",
-        "against particular but pro": "#e67e22",
-        "neither/mixed": "#f1c40f",
-        "pro but lack of options": "#3498db",
-        "none": "#95a5a6",
-        "implied": "#673ab7",
-        "explicit": "#3f51b5",
-        "implied approval": "#3498db",
-        "implied disapproval": "#9b59b6",
-        "explicit approval": "#34495e",
-        "explicit disapproval": "#8e44ad",
+        "Yes": "#7cbcbe",
+        "No": "#c49fc4",
+        "pro": "#8fcc8f",
+        "against": "#ff9aa8",
+        "against particular but pro": "#ffb87a",
+        "neither/mixed": "#ffe87a",
+        "pro but lack of options": "#8fbfd9",
+        "none": "#c2c2c2",
+        "implied": "#b88fb8",
+        "explicit": "#7caed6",
+        "implied approval": "#8fbfd9",
+        "implied disapproval": "#d99fd9",
+        "explicit approval": "#7cadc6",
+        "explicit disapproval": "#c692c6",
         # Descriptive / injunctive (new schema)
-        "explicitly present": "#3f51b5",
-        "absent": "#95a5a6",
-        "unclear": "#78909c",
-        "present": "#3498db",
+        "explicitly present": "#7caed6",
+        "absent": "#d0d0d0",
+        "unclear": "#b8c1c6",
+        "present": "#8fbfd9",
         # Reference group (distinct per category)
-        "family": "#2c3e50",
-        "partner/spouse": "#9b59b6",
-        "friends": "#3498db",
-        "coworkers": "#8e44ad",
-        "neighbors": "#2980b9",
-        "local community": "#1abc9c",
-        "political tribe": "#5d6d7e",
-        "online community": "#95a5a6",
-        "other reddit user": "#e91e63",
-        "other": "#546e7a",
+        "family": "#a8b8c2",
+        "partner/spouse": "#c49fc4",
+        "friends": "#8fbfd9",
+        "coworkers": "#c692c6",
+        "neighbors": "#7cadc6",
+        "local community": "#7cc2b8",
+        "political tribe": "#a8b1b8",
+        "online community": "#b8b8b8",
+        "other reddit user": "#ffa8c2",
+        "other": "#a0acb4",
         # Mechanism
-        "social comparison": "#5c6bc0",
-        "praise": "#66bb6a",
-        "blame/shame": "#ef5350",
-        "community standard": "#26a69a",
-        "identity/status signaling": "#ffa726",
-        "rule/virtue language": "#ab47bc",
+        "social comparison": "#92a8c6",
+        "praise": "#a8cca8",
+        "blame/shame": "#ffa8a8",
+        "community standard": "#7cc2b8",
+        "identity/status signaling": "#ffc8a0",
+        "rule/virtue language": "#c6a8c6",
         # Second-order
-        "weak": "#42a5f5",
-        "strong": "#ff7043",
+        "weak": "#8fbfd9",
+        "strong": "#ffb0a0",
     }
     # Fallback palette for any label not in colors (distinct hues)
     _palette_extra = [
-        "#7e57c2", "#ec407a", "#26c6da", "#9ccc65", "#ffca28",
-        "#8d6e63", "#78909c", "#5c6bc0", "#66bb6a", "#ef5350",
+        "#b8a8c6", "#ffa8c2", "#a8d4dc", "#c2d4b0", "#ffd4a8",
+        "#c2a89c", "#a8b4b8", "#a0acc6", "#b0ccb0", "#ffb0b0",
     ]
 
     html_parts = [
@@ -276,30 +276,42 @@ def build_dashboard_html(
 <title>Norms Hierarchical Dashboard</title>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <style>
-html { background: #0d1117; }
-body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 10px; background: #0d1117; color: #e6edf3; min-height: 100vh; font-size: 14px; }
-h1 { text-align: center; color: #e6edf3; font-size: 1.6em; margin: 0.4em 0; }
-h2 { margin: 6px 0 4px; color: #c9d1d9; font-size: 1.2em; }
-.chart { margin: 4px 0; background: #161b22; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); padding: 8px; }
-.charts-row { display: flex; flex-wrap: nowrap; gap: 10px; margin: 8px 0; }
+html { background: #faf8f5; }
+body { font-family: "Inter", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 8px; background: #faf8f5; color: #2c3e50; min-height: 100vh; font-size: 13px; }
+h1 { text-align: center; color: #2c3e50; font-size: 1.3em; margin: 0.3em 0; font-weight: 600; }
+h2 { margin: 4px 0 3px; color: #34495e; font-size: 1.05em; font-weight: 600; }
+.chart { margin: 3px 0; background: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); padding: 6px; }
+.charts-row { display: flex; flex-wrap: nowrap; gap: 8px; margin: 6px 0; }
 .charts-row .chart { flex: 1; min-width: 0; margin: 0; }
-a { color: #58a6ff; font-size: 0.9em; }
+a { color: #6c9bcf; font-size: 0.85em; text-decoration: none; }
+a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
 <h1>Norms Hierarchical Dashboard</h1>
-<p style="text-align:center"><a href="00_dashboard_examples.html">Example comments by category</a></p>
+<p style="text-align:center; margin: 6px 0;"><a href="00_dashboard_examples.html">Example comments by category</a></p>
 """
     ]
+
+    # Group bar charts into pairs for 2-per-row layout
+    bar_chart_buffer = []
 
     for qid in question_order:
         if qid not in counts:
             continue
         title = QUESTION_TITLES.get(qid, qid)
-        html_parts.append(f"<h2>{title}</h2>\n")
-
         c = counts[qid]
+
         if qid == "1.1_gate":
+            # Flush any pending bar charts before gate chart
+            if bar_chart_buffer:
+                html_parts.append('<div class="charts-row">\n')
+                for buffered_html in bar_chart_buffer:
+                    html_parts.append(buffered_html)
+                html_parts.append('</div>\n')
+                bar_chart_buffer = []
+
+            html_parts.append(f"<h2>{title}</h2>\n")
             # One figure with 3 donuts (domains) and a single shared legend; bigger height
             gate_traces = []
             for i, sector in enumerate(sectors):
@@ -318,17 +330,17 @@ a { color: #58a6ff; font-size: 0.9em; }
                 })
             cid = _chart_id(qid)
             annotations = [
-                {"text": SECTOR_DISPLAY.get(s, s), "x": (i + 0.5) / 3, "y": 1.04, "showarrow": False, "xanchor": "center", "font": {"color": "#e6edf3", "size": 11}}
+                {"text": SECTOR_DISPLAY.get(s, s), "x": (i + 0.5) / 3, "y": 1.04, "showarrow": False, "xanchor": "center", "font": {"color": "#34495e", "size": 10}}
                 for i, s in enumerate(sectors)
             ]
             gate_layout = {
-                "height": 380,
-                "paper_bgcolor": "#161b22",
-                "plot_bgcolor": "#161b22",
-                "font": {"color": "#e6edf3", "size": 11},
+                "height": 280,
+                "paper_bgcolor": "#ffffff",
+                "plot_bgcolor": "#ffffff",
+                "font": {"color": "#2c3e50", "size": 10},
                 "showlegend": True,
-                "legend": {"orientation": "h", "yanchor": "top", "y": -0.08, "xanchor": "center", "x": 0.5, "font": {"size": 10}},
-                "margin": {"t": 44, "b": 32, "l": 8, "r": 8},
+                "legend": {"orientation": "h", "yanchor": "top", "y": -0.06, "xanchor": "center", "x": 0.5, "font": {"size": 9}},
+                "margin": {"t": 32, "b": 24, "l": 6, "r": 6},
                 "annotations": annotations,
             }
             gate_fig = {"data": gate_traces, "layout": gate_layout}
@@ -337,6 +349,7 @@ a { color: #58a6ff; font-size: 0.9em; }
                 f'<script>var fig_{cid} = {json.dumps(gate_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
             )
         else:
+            # Bar chart - buffer for 2-per-row layout
             labels_seen = set()
             for sector in sectors:
                 for label in c.get(sector, {}).keys():
@@ -373,47 +386,67 @@ a { color: #58a6ff; font-size: 0.9em; }
                     "data": traces,
                     "layout": {
                         "barmode": "stack",
-                        "bargap": 0.2,
-                        "height": 150,
-                        "margin": {"l": 85, "t": 15, "b": 20},
-                        "xaxis": {"title": "Count", "color": "#e6edf3", "gridcolor": "#30363d", "titlefont": {"size": 11}, "tickfont": {"size": 10}},
-                        "yaxis": {"color": "#e6edf3", "gridcolor": "#30363d", "tickfont": {"size": 10}},
+                        "bargap": 0.15,
+                        "height": 120,
+                        "margin": {"l": 75, "t": 30, "b": 15},
+                        "xaxis": {"title": "Count", "color": "#34495e", "gridcolor": "#e8e8e8", "titlefont": {"size": 10}, "tickfont": {"size": 9}},
+                        "yaxis": {"color": "#34495e", "gridcolor": "#e8e8e8", "tickfont": {"size": 9}},
                         "showlegend": True,
-                        "paper_bgcolor": "#161b22",
-                        "plot_bgcolor": "#161b22",
-                        "font": {"color": "#e6edf3", "size": 11},
+                        "paper_bgcolor": "#ffffff",
+                        "plot_bgcolor": "#ffffff",
+                        "font": {"color": "#2c3e50", "size": 10},
                         "legend": {
-                            "font": {"color": "#e6edf3", "size": 10},
+                            "font": {"color": "#2c3e50", "size": 9},
                             "traceorder": "normal",
                             "itemclick": "toggleothers",
                             "itemdoubleclick": "toggle",
                         },
+                        "title": {"text": title, "font": {"color": "#34495e", "size": 13, "family": "Inter, Segoe UI, sans-serif"}, "x": 0.02, "xanchor": "left"},
                     },
                 }
                 cid = _chart_id(qid)
-                html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
-                html_parts.append(
-                    f'<script>var fig_{cid} = {json.dumps(fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
-                )
+                chart_html = f'<div class="chart" id="chart_{cid}"></div>\n'
+                chart_html += f'<script>var fig_{cid} = {json.dumps(fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
+
+                # Buffer this chart
+                bar_chart_buffer.append(chart_html)
+
+                # If we have 2 charts buffered, emit them in a row
+                # BUT: if current chart is second_order, keep it in buffer for recheck chart
+                if len(bar_chart_buffer) == 2 and qid != "1.3.3_second_order":
+                    html_parts.append('<div class="charts-row">\n')
+                    for buffered_html in bar_chart_buffer:
+                        html_parts.append(buffered_html)
+                    html_parts.append('</div>\n')
+                    bar_chart_buffer = []
+                elif len(bar_chart_buffer) == 2 and qid == "1.3.3_second_order":
+                    # Emit only the first chart, keep second_order in buffer
+                    html_parts.append('<div class="charts-row">\n')
+                    html_parts.append(bar_chart_buffer[0])
+                    html_parts.append('</div>\n')
+                    bar_chart_buffer = [bar_chart_buffer[1]]  # Keep second_order
+
+    # Note: Don't flush buffer here - let recheck chart pair with it if it exists
 
     # Bottom section: "against" (1st pass) second-pass recheck percentages and chart
     if recheck_counts:
         recheck_traces = []
         labels_order = [l for l in RECHECK_LABELS_ORDER if any(recheck_counts.get(s, {}).get(l) for s in sectors)]
         for label in labels_order:
-            x_vals = [recheck_counts.get(s, {}).get(label, 0) for s in sectors]
-            if any(x_vals):
+            counts_vals = [recheck_counts.get(s, {}).get(label, 0) for s in sectors]
+            if any(counts_vals):
                 recheck_traces.append({
-                    "x": [SECTOR_DISPLAY.get(s, s) for s in sectors],
-                    "y": x_vals,
+                    "x": counts_vals,
+                    "y": [SECTOR_DISPLAY.get(s, s) for s in sectors],
                     "name": label,
                     "type": "bar",
-                    "marker": {"color": RECHECK_COLORS.get(label, "#95a5a6")},
-                    "text": [str(v) for v in x_vals],
+                    "orientation": "h",
+                    "marker": {"color": RECHECK_COLORS.get(label, "#e8e8e8")},
+                    "text": [str(v) if v else "" for v in counts_vals],
                     "textposition": "inside",
+                    "showlegend": True,
                 })
         if recheck_traces:
-            html_parts.append('<h2>Against (1st pass) — second-pass recheck</h2>\n')
             # Summary line: Of N against (per sector): X% confirmed, Y% frustrated but still pro, Z% unclear
             summary_parts = []
             for sector in sectors:
@@ -426,26 +459,57 @@ a { color: #58a6ff; font-size: 0.9em; }
                 summary_parts.append(
                     f"{SECTOR_DISPLAY.get(sector, sector)}: of {total} &quot;against&quot; → {pct_against:.0f}% confirmed against, {pct_frustrated:.0f}% frustrated but still pro, {pct_unclear:.0f}% unclear"
                 )
-            if summary_parts:
-                html_parts.append(f'<p style="font-size: 0.95em; color: #c9d1d9;">{" | ".join(summary_parts)}</p>\n')
+            summary_text = " | ".join(summary_parts) if summary_parts else ""
+
             recheck_layout = {
                 "barmode": "stack",
-                "bargap": 0.2,
-                "height": 150,
-                "margin": {"l": 85, "t": 15, "b": 20},
-                "xaxis": {"title": "Sector", "color": "#e6edf3", "gridcolor": "#30363d", "titlefont": {"size": 11}, "tickfont": {"size": 10}},
-                "yaxis": {"title": "Count", "color": "#e6edf3", "gridcolor": "#30363d", "tickfont": {"size": 10}},
+                "bargap": 0.15,
+                "height": 120,
+                "margin": {"l": 75, "t": 30, "b": 15},
+                "xaxis": {"title": "Count", "color": "#34495e", "gridcolor": "#e8e8e8", "titlefont": {"size": 10}, "tickfont": {"size": 9}},
+                "yaxis": {"color": "#34495e", "gridcolor": "#e8e8e8", "tickfont": {"size": 9}},
                 "showlegend": True,
-                "paper_bgcolor": "#161b22",
-                "plot_bgcolor": "#161b22",
-                "font": {"color": "#e6edf3", "size": 11},
-                "legend": {"font": {"color": "#e6edf3", "size": 10}},
+                "paper_bgcolor": "#ffffff",
+                "plot_bgcolor": "#ffffff",
+                "font": {"color": "#2c3e50", "size": 10},
+                "legend": {
+                    "font": {"color": "#2c3e50", "size": 9},
+                    "traceorder": "normal",
+                    "itemclick": "toggleothers",
+                    "itemdoubleclick": "toggle",
+                },
+                "title": {"text": "Against (1st pass) — second-pass recheck", "font": {"color": "#34495e", "size": 13, "family": "Inter, Segoe UI, sans-serif"}, "x": 0.02, "xanchor": "left"},
+                "annotations": [{"text": summary_text, "xref": "paper", "yref": "paper", "x": 0.5, "y": -0.15, "showarrow": False, "xanchor": "center", "font": {"size": 9, "color": "#5a6c7d"}}] if summary_text else [],
             }
             recheck_fig = {"data": recheck_traces, "layout": recheck_layout}
-            html_parts.append('<div class="chart" id="chart_stance_recheck"></div>\n')
-            html_parts.append(
-                f'<script>var fig_stance_recheck = {json.dumps(recheck_fig)}; Plotly.newPlot("chart_stance_recheck", fig_stance_recheck.data, fig_stance_recheck.layout);</script>\n'
-            )
+
+            # Add to charts row buffer if exists, otherwise create new row
+            if bar_chart_buffer:
+                # Add recheck chart to complete the pair
+                chart_html = '<div class="chart" id="chart_stance_recheck"></div>\n'
+                chart_html += f'<script>var fig_stance_recheck = {json.dumps(recheck_fig)}; Plotly.newPlot("chart_stance_recheck", fig_stance_recheck.data, fig_stance_recheck.layout);</script>\n'
+                bar_chart_buffer.append(chart_html)
+                html_parts.append('<div class="charts-row">\n')
+                for buffered_html in bar_chart_buffer:
+                    html_parts.append(buffered_html)
+                html_parts.append('</div>\n')
+                bar_chart_buffer = []
+            else:
+                # Standalone chart in its own row
+                html_parts.append('<div class="charts-row">\n')
+                html_parts.append('<div class="chart" id="chart_stance_recheck"></div>\n')
+                html_parts.append(
+                    f'<script>var fig_stance_recheck = {json.dumps(recheck_fig)}; Plotly.newPlot("chart_stance_recheck", fig_stance_recheck.data, fig_stance_recheck.layout);</script>\n'
+                )
+                html_parts.append('</div>\n')
+    else:
+        # No recheck chart, flush any remaining buffered chart
+        if bar_chart_buffer:
+            html_parts.append('<div class="charts-row">\n')
+            for buffered_html in bar_chart_buffer:
+                html_parts.append(buffered_html)
+            html_parts.append('</div>\n')
+            bar_chart_buffer = []
 
     # Temporal plots for Author stance and Reference group
     if data:
@@ -472,23 +536,42 @@ a { color: #58a6ff; font-size: 0.9em; }
             years_sorted = sorted(all_years)
             labels_order = [l for l in colors if l in all_labels] + [l for l in sorted(all_labels) if l not in colors]
             
-            # One chart per sector (3 charts in a row)
-            html_parts.append('<div class="charts-row">\n')
-            for sector in sectors:
+            # Create single figure with 3 subplots using domain positioning
+            all_traces = []
+            annotations = []
+            sector_idx = 0
+            total_sectors = len([s for s in sectors if s in temporal_counts and temporal_counts[s]])
+
+            # Build color map once
+            label_to_color_map = {}
+            unseen_idx = 0
+            for label in labels_order:
+                if label in colors:
+                    label_to_color_map[label] = colors[label]
+                else:
+                    label_to_color_map[label] = _palette_extra[unseen_idx % len(_palette_extra)]
+                    unseen_idx += 1
+
+            for i, sector in enumerate(sectors):
                 sector_counts = temporal_counts.get(sector, {})
                 if not sector_counts:
                     continue
-                
-                traces = []
-                label_to_color_map = {}
-                unseen_idx = 0
+
+                sector_idx += 1
+                is_last_sector = (sector_idx == total_sectors)
+
+                # Calculate domain for this subplot with gaps
+                gap = 0.02  # 2% gap between plots
+                subplot_width = (1.0 - gap * 2) / 3  # Divide remaining space by 3
+                x0 = i * (subplot_width + gap)
+                x1 = x0 + subplot_width
+
+                # Define axis names for this subplot
+                xaxis_name = "xaxis" if i == 0 else f"xaxis{i+1}"
+                yaxis_name = "yaxis" if i == 0 else f"yaxis{i+1}"
+
+                sector_traces = []
                 for label in labels_order:
-                    if label in colors:
-                        label_to_color_map[label] = colors[label]
-                    else:
-                        label_to_color_map[label] = _palette_extra[unseen_idx % len(_palette_extra)]
-                        unseen_idx += 1
-                    
                     y_vals = [sector_counts.get(year, {}).get(label, 0) for year in years_sorted]
                     if any(y_vals):
                         trace = {
@@ -497,163 +580,263 @@ a { color: #58a6ff; font-size: 0.9em; }
                             "name": label,
                             "type": "scatter",
                             "mode": "lines+markers",
-                            "stackgroup": "one",
+                            "stackgroup": f"one_{i}",  # Unique stackgroup per subplot
                             "marker": {"color": label_to_color_map[label], "size": 6},
                             "line": {"color": label_to_color_map[label], "width": 2},
+                            "showlegend": is_last_sector,
+                            "xaxis": f"x{i+1 if i > 0 else ''}",
+                            "yaxis": f"y{i+1 if i > 0 else ''}",
                         }
-                        if traces:
+                        if sector_traces:
                             trace["fill"] = "tonexty"
                         else:
                             trace["fill"] = "tozeroy"
-                        traces.append(trace)
-                
-                if traces:
-                    cid = _chart_id(qid, sector)
-                    temporal_layout = {
-                        "height": 300,
-                        "margin": {"l": 60, "t": 40, "b": 40, "r": 20},
-                        "xaxis": {
-                            "title": "Year",
-                            "color": "#e6edf3",
-                            "gridcolor": "#30363d",
-                            "titlefont": {"size": 11},
-                            "tickfont": {"size": 10},
-                        },
-                        "yaxis": {
-                            "title": "Count",
-                            "color": "#e6edf3",
-                            "gridcolor": "#30363d",
-                            "tickfont": {"size": 10},
-                        },
-                        "showlegend": True,
-                        "paper_bgcolor": "#161b22",
-                        "plot_bgcolor": "#161b22",
-                        "font": {"color": "#e6edf3", "size": 11},
-                        "legend": {"font": {"color": "#e6edf3", "size": 9}, "orientation": "h", "yanchor": "bottom", "y": -0.25, "xanchor": "center", "x": 0.5},
-                        "title": {"text": SECTOR_DISPLAY.get(sector, sector), "font": {"color": "#e6edf3", "size": 12}},
-                    }
-                    temporal_fig = {"data": traces, "layout": temporal_layout}
-                    html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
-                    html_parts.append(
-                        f'<script>var fig_{cid} = {json.dumps(temporal_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
-                    )
-            html_parts.append("</div>\n")
+                        sector_traces.append(trace)
+                        all_traces.append(trace)
 
-    # Survey questions section (at bottom) - radial bar charts, one per sector
+                # Add sector title annotation
+                annotations.append({
+                    "text": SECTOR_DISPLAY.get(sector, sector),
+                    "x": (i + 0.5) / 3,
+                    "y": 1.02,
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "xanchor": "center",
+                    "yanchor": "bottom",
+                    "font": {"color": "#34495e", "size": 11},
+                })
+
+            if all_traces:
+                # Create layout with three subplots
+                temporal_layout = {
+                    "height": 280,
+                    "paper_bgcolor": "#ffffff",
+                    "plot_bgcolor": "#ffffff",
+                    "font": {"color": "#2c3e50", "size": 10},
+                    "showlegend": True,
+                    "margin": {"t": 50, "b": 70, "l": 50, "r": 20},
+                    "annotations": annotations,
+                    "legend": {"font": {"color": "#2c3e50", "size": 8}, "orientation": "h", "yanchor": "bottom", "y": -0.22, "xanchor": "center", "x": 0.5},
+                }
+
+                # Add axis configuration for each subplot
+                gap = 0.02  # 2% gap between plots
+                subplot_width = (1.0 - gap * 2) / 3
+                for i, sector in enumerate(sectors):
+                    if sector not in temporal_counts or not temporal_counts[sector]:
+                        continue
+
+                    x0 = i * (subplot_width + gap)
+                    x1 = x0 + subplot_width
+                    xaxis_key = "xaxis" if i == 0 else f"xaxis{i+1}"
+                    yaxis_key = "yaxis" if i == 0 else f"yaxis{i+1}"
+
+                    temporal_layout[xaxis_key] = {
+                        "domain": [x0, x1],
+                        "anchor": f"y{i+1 if i > 0 else ''}",
+                        "title": "Year",
+                        "color": "#34495e",
+                        "gridcolor": "#e8e8e8",
+                        "titlefont": {"size": 10},
+                        "tickfont": {"size": 9},
+                    }
+                    temporal_layout[yaxis_key] = {
+                        "domain": [0, 0.85],
+                        "anchor": f"x{i+1 if i > 0 else ''}",
+                        "title": "Count" if i == 0 else "",
+                        "color": "#34495e",
+                        "gridcolor": "#e8e8e8",
+                        "tickfont": {"size": 9},
+                    }
+
+                temporal_fig = {"data": all_traces, "layout": temporal_layout}
+                cid = _chart_id(qid, "temporal")
+                html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
+                html_parts.append(
+                    f'<script>var fig_{cid} = {json.dumps(temporal_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
+                )
+
+    # Survey questions section (at bottom) - radial bar charts using domain positioning like gate chart
     survey_metadata = survey_metadata or {}
     survey_qids = [qid for qid in counts.keys() if qid.startswith(("diet_", "ev_", "solar_"))]
     if survey_qids:
-        html_parts.append('<h2 style="margin-top: 40px;">Survey Questions</h2>\n')
+        html_parts.append('<h2 style="margin-top: 28px;">Survey Questions</h2>\n')
         # Group by sector
         survey_by_sector: Dict[str, List[str]] = defaultdict(list)
         for qid in sorted(survey_qids):
             sector = survey_metadata.get(qid, {}).get("sector", "unknown")
             survey_by_sector[sector].append(qid)
-        
-        for sector in ["food", "transport", "housing"]:
+
+        # Collect data for all three sectors
+        radial_traces = []
+        annotations = []
+
+        for i, sector in enumerate(["food", "transport", "housing"]):
             if sector not in survey_by_sector:
                 continue
-            
+
             sector_title = SECTOR_DISPLAY.get(sector, sector.upper())
-            html_parts.append(f'<h3 style="margin-top: 20px; color: #c9d1d9;">{sector_title}</h3>\n')
-            
+
             # Collect YES percentages for all questions in this sector
             question_labels = []
             yes_percentages = []
-            question_ids = []
-            
+
             for qid in survey_by_sector[sector]:
                 if qid not in counts:
                     continue
-                
+
                 c = counts[qid]
                 if sector not in c:
                     continue
-                
+
                 yes_count = c[sector].get("YES", 0) + c[sector].get("1", 0) + c[sector].get("yes", 0)
                 no_count = c[sector].get("NO", 0) + c[sector].get("0", 0) + c[sector].get("no", 0)
                 total = yes_count + no_count
-                
+
                 if total == 0:
                     continue
-                
+
                 yes_pct = (yes_count / total) * 100
                 short_form = survey_metadata.get(qid, {}).get("short_form", qid)
-                
+
                 question_labels.append(short_form)
                 yes_percentages.append(yes_pct)
-                question_ids.append(qid)
-            
+
             if not yes_percentages:
                 continue
-            
-            # Find max percentage for this sector to set as radial axis max
+
+            # Find max percentage for this sector
             max_pct = max(yes_percentages)
-            # Round up to next 5% for cleaner scale, but ensure at least 10% minimum
             max_range = max(10, ((int(max_pct) // 5) + 1) * 5)
-            
-            # Create radial bar chart (barpolar)
-            # Calculate angles evenly distributed around circle
+
+            # Calculate angles
             n_questions = len(question_labels)
             angles = [360 * i / n_questions for i in range(n_questions)]
-            
-            # Generate tick marks based on max_range
+
+            # Generate tick marks
             num_ticks = 5
             tick_step = max_range / num_ticks
             tickvals = [i * tick_step for i in range(num_ticks + 1)]
             ticktext = [f"{t:.0f}%" for t in tickvals]
-            
+
+            # Calculate domain positioning (x: horizontal, y: vertical)
+            x0, x1 = i / 3, (i + 1) / 3
+
             trace = {
                 "type": "barpolar",
                 "r": yes_percentages,
                 "theta": angles,
-                "text": [f"{label}<br>{pct:.1f}%" for label, pct in zip(question_labels, yes_percentages)],
-                "textposition": "outside",
+                "name": sector_title,
+                "subplot": f"polar{i+1 if i > 0 else ''}",
                 "marker": {
                     "color": yes_percentages,
-                    "colorscale": [[0, "#e74c3c"], [0.5, "#f39c12"], [1, "#2ecc71"]],
+                    "colorscale": [[0, "#ff9aa8"], [0.5, "#ffc8a0"], [1, "#8fcc8f"]],
                     "cmin": 0,
                     "cmax": max_range,
-                    "line": {"color": "#161b22", "width": 1},
+                    "line": {"color": "#ffffff", "width": 1},
                 },
-                "hovertemplate": "<b>%{text}</b><br>YES: %{r:.1f}%<extra></extra>",
+                "hovertemplate": "<b>%{theta}</b><br>%{r:.1f}%<extra></extra>",
             }
-            
-            cid = f"survey_radial_{sector}"
+            radial_traces.append(trace)
+
+            # Add sector title annotation
+            annotations.append({
+                "text": sector_title,
+                "x": (i + 0.5) / 3,
+                "y": 1.02,
+                "xref": "paper",
+                "yref": "paper",
+                "showarrow": False,
+                "xanchor": "center",
+                "yanchor": "bottom",
+                "font": {"color": "#34495e", "size": 12, "family": "Inter, Segoe UI, sans-serif"},
+            })
+
+        # Create layout with three polar subplots
+        if radial_traces:
             radial_layout = {
-                "polar": {
+                "height": 500,
+                "paper_bgcolor": "#ffffff",
+                "plot_bgcolor": "#ffffff",
+                "font": {"color": "#2c3e50", "size": 9},
+                "showlegend": False,
+                "margin": {"t": 50, "b": 80, "l": 80, "r": 80},
+                "annotations": annotations,
+            }
+
+            # Add polar axis configuration for each subplot
+            for i, sector in enumerate(["food", "transport", "housing"]):
+                if sector not in survey_by_sector:
+                    continue
+
+                # Recalculate data for axis config
+                question_labels = []
+                yes_percentages = []
+                for qid in survey_by_sector[sector]:
+                    if qid not in counts:
+                        continue
+                    c = counts[qid]
+                    if sector not in c:
+                        continue
+                    yes_count = c[sector].get("YES", 0) + c[sector].get("1", 0) + c[sector].get("yes", 0)
+                    no_count = c[sector].get("NO", 0) + c[sector].get("0", 0) + c[sector].get("no", 0)
+                    total = yes_count + no_count
+                    if total == 0:
+                        continue
+                    yes_pct = (yes_count / total) * 100
+                    short_form = survey_metadata.get(qid, {}).get("short_form", qid)
+                    question_labels.append(short_form)
+                    yes_percentages.append(yes_pct)
+
+                if not yes_percentages:
+                    continue
+
+                max_pct = max(yes_percentages)
+                max_range = max(10, ((int(max_pct) // 5) + 1) * 5)
+                n_questions = len(question_labels)
+                angles = [360 * j / n_questions for j in range(n_questions)]
+
+                num_ticks = 5
+                tick_step = max_range / num_ticks
+                tickvals = [j * tick_step for j in range(num_ticks + 1)]
+                ticktext = [f"{t:.0f}%" for t in tickvals]
+
+                x0, x1 = i / 3, (i + 1) / 3
+
+                polar_key = f"polar{i+1 if i > 0 else ''}"
+                radial_layout[polar_key] = {
+                    "domain": {"x": [x0, x1], "y": [0, 0.92]},
                     "radialaxis": {
                         "range": [0, max_range],
                         "tickvals": tickvals,
                         "ticktext": ticktext,
-                        "tickfont": {"size": 10, "color": "#e6edf3"},
-                        "gridcolor": "#30363d",
-                        "linecolor": "#30363d",
+                        "tickfont": {"size": 9, "color": "#34495e"},
+                        "gridcolor": "#e8e8e8",
+                        "linecolor": "#d0d0d0",
                     },
                     "angularaxis": {
                         "tickmode": "array",
                         "tickvals": angles,
                         "ticktext": question_labels,
-                        "tickfont": {"size": 9, "color": "#e6edf3"},
-                        "gridcolor": "#30363d",
-                        "linecolor": "#30363d",
+                        "tickfont": {"size": 9, "color": "#34495e"},
+                        "gridcolor": "#e8e8e8",
+                        "linecolor": "#d0d0d0",
                         "rotation": 90,
                         "direction": "counterclockwise",
                     },
-                },
-                "height": 600,
-                "margin": {"l": 50, "t": 50, "r": 50, "b": 50},
-                "paper_bgcolor": "#161b22",
-                "plot_bgcolor": "#161b22",
-                "font": {"color": "#e6edf3", "size": 11},
-                "showlegend": False,
-            }
-            
-            radial_fig = {"data": [trace], "layout": radial_layout}
-            html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
+                }
+
+            radial_fig = {"data": radial_traces, "layout": radial_layout}
+            html_parts.append('<div class="chart" id="chart_survey_radials"></div>\n')
             html_parts.append(
-                f'<script>var fig_{cid} = {json.dumps(radial_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
+                f'<script>var fig_survey_radials = {json.dumps(radial_fig)}; Plotly.newPlot("chart_survey_radials", fig_survey_radials.data, fig_survey_radials.layout);</script>\n'
             )
+
+    # Add verification results section if available
+    verification_path = "paper4data/00_verification_results.json"
+    if os.path.exists(verification_path):
+        html_parts.extend(build_verification_section(verification_path))
 
     html_parts.append("</body>\n</html>")
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
@@ -662,12 +845,207 @@ a { color: #58a6ff; font-size: 0.9em; }
     print(f"Wrote dashboard: {out_path}")
 
 
+def build_verification_section(verification_path: str) -> List[str]:
+    """Build beautiful verification results visualization for dashboard bottom."""
+    try:
+        with open(verification_path, "r", encoding="utf-8") as f:
+            verification = json.load(f)
+    except Exception as e:
+        return [f'<p style="color: #ff6b6b; text-align: center;">Error loading verification results: {e}</p>\n']
+
+    html = []
+    summary = verification.get("summary", {})
+
+    # Handle both old (by_question) and new (by_task) formats
+    by_task = verification.get("by_task", {})
+    if by_task:
+        # New format: combine norms and survey
+        by_question = {**by_task.get("norms", {}), **by_task.get("survey", {})}
+    else:
+        # Old format
+        by_question = verification.get("by_question", {})
+
+    html.append('<div style="margin-top: 50px; padding-top: 30px; border-top: 3px solid #d0d0d0;">\n')
+    html.append('<h2 style="text-align: center;">Label Verification (vLLM vs Reasoning Model)</h2>\n')
+    html.append(f'<p style="text-align: center; font-size: 0.85em; color: #5a6c7d; margin: 8px 0;">Mistral-7B labels verified against {verification.get("config", {}).get("reasoning_model", "GPT-OSS-20B")} • {verification.get("config", {}).get("samples_per_question", 20)} samples per question</p>\n')
+
+    # Summary metrics (compact cards)
+    mean_acc = summary.get("mean_accuracy", 0)
+    mean_kappa = summary.get("mean_kappa", 0)
+    min_acc = summary.get("min_accuracy", 0)
+    max_acc = summary.get("max_accuracy", 0)
+    empty_pct = summary.get("empty_response_pct", 0)
+    total_samples = summary.get("total_samples", 0)
+
+    html.append('<div style="display: flex; justify-content: center; gap: 15px; margin: 20px 0; flex-wrap: wrap;">\n')
+
+    # Accuracy card
+    html.append(f'<div style="background: #ffffff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; min-width: 120px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: {"#8fcc8f" if mean_acc >= 0.85 else "#ffb87a" if mean_acc >= 0.70 else "#ff9aa8"};">{mean_acc:.1%}</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #5a6c7d;">Accuracy</div></div>\n')
+
+    # Cohen's kappa card
+    html.append(f'<div style="background: #ffffff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; min-width: 120px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: {"#8fcc8f" if mean_kappa >= 0.80 else "#ffb87a" if mean_kappa >= 0.60 else "#ff9aa8"};">{mean_kappa:.2f}</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #5a6c7d;">Cohen\'s κ</div></div>\n')
+
+    # Empty responses card
+    html.append(f'<div style="background: #ffffff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; min-width: 120px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: {"#8fcc8f" if empty_pct < 5 else "#ffb87a" if empty_pct < 10 else "#ff9aa8"};">{empty_pct:.1f}%</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #5a6c7d;">No Response</div></div>\n')
+
+    # Sample size card
+    html.append(f'<div style="background: #ffffff; padding: 15px 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center; min-width: 120px;">')
+    html.append(f'<div style="font-size: 2em; font-weight: 600; color: #34495e;">{total_samples}</div>')
+    html.append(f'<div style="font-size: 0.8em; color: #5a6c7d;">Total Samples</div></div>\n')
+
+    html.append('</div>\n')
+
+    # Per-question accuracy (clean horizontal bars, sorted by accuracy)
+    if by_question:
+        html.append('<h3 style="margin-top: 25px; font-size: 1.1em; color: #34495e; text-align: center;">Accuracy by Question</h3>\n')
+
+        # Sort by accuracy (lowest first)
+        sorted_questions = sorted(
+            by_question.items(),
+            key=lambda x: x[1].get("accuracy", 0),
+            reverse=False
+        )
+
+        # Build data
+        q_labels = []
+        accuracies = []
+        colors = []
+
+        for qid, metrics in sorted_questions:
+            short_form = metrics.get("question_short_form", qid)
+            acc = metrics.get("accuracy", 0)
+            q_labels.append(short_form[:35])  # Truncate long labels
+            accuracies.append(acc)
+            # Color based on accuracy
+            if acc >= 0.7:
+                colors.append("#8fcc8f")
+            elif acc >= 0.5:
+                colors.append("#ffb87a")
+            else:
+                colors.append("#ff9aa8")
+
+        # Create single bar chart with color coding
+        verification_trace = {
+            "y": q_labels,
+            "x": accuracies,
+            "type": "bar",
+            "orientation": "h",
+            "marker": {"color": colors},
+            "text": [f"{v:.0%}" for v in accuracies],
+            "textposition": "outside",
+            "textfont": {"size": 10, "color": "#34495e"},
+        }
+
+        verification_layout = {
+            "height": max(400, len(q_labels) * 20),
+            "margin": {"l": 200, "t": 10, "b": 40, "r": 60},
+            "xaxis": {
+                "title": "Agreement Rate",
+                "range": [0, 1.05],
+                "tickformat": ".0%",
+                "color": "#34495e",
+                "gridcolor": "#e8e8e8",
+                "showgrid": True,
+                "titlefont": {"size": 11},
+                "tickfont": {"size": 10},
+            },
+            "yaxis": {
+                "color": "#34495e",
+                "tickfont": {"size": 10},
+            },
+            "paper_bgcolor": "#faf8f5",
+            "plot_bgcolor": "#ffffff",
+            "font": {"color": "#2c3e50"},
+            "showlegend": False,
+        }
+
+        verification_fig = {"data": [verification_trace], "layout": verification_layout}
+        html.append('<div class="chart" id="chart_verification"></div>\n')
+        html.append(f'<script>var fig_verification = {json.dumps(verification_fig)}; Plotly.newPlot("chart_verification", fig_verification.data, fig_verification.layout);</script>\n')
+
+        # Category estimation errors - top 12 worst cases only
+        html.append('<h3 style="margin-top: 30px; font-size: 1.1em; color: #34495e; text-align: center;">Top Estimation Errors</h3>\n')
+        html.append('<p style="font-size: 0.85em; color: #5a6c7d; text-align: center; margin: 5px 0 20px;">Fast model vs reasoning model category size differences (showing worst 12 cases)</p>\n')
+
+        # Collect estimation errors
+        estimation_data = []
+        for qid, metrics in by_question.items():
+            if "category_estimation" not in metrics:
+                continue
+            short_form = metrics.get("question_short_form", qid)
+            for category, est in metrics["category_estimation"].items():
+                estimation_data.append({
+                    "question": short_form,
+                    "category": category,
+                    "error": est["estimation_error"],
+                    "type": est["estimation_type"]
+                })
+
+        if estimation_data:
+            # Show only top 12 worst cases
+            estimation_data_sorted = sorted(estimation_data, key=lambda x: abs(x["error"]), reverse=True)[:12]
+
+            est_labels = [f"{d['question'][:30]} - {d['category']}" for d in estimation_data_sorted]
+            est_errors = [d["error"] for d in estimation_data_sorted]
+            est_colors = ["#ff9aa8" if e > 0 else "#7cbcbe" for e in est_errors]
+
+            estimation_trace = {
+                "y": est_labels,
+                "x": est_errors,
+                "type": "bar",
+                "orientation": "h",
+                "marker": {"color": est_colors, "line": {"width": 0}},
+                "text": [f"{e:+.0f}pp" for e in est_errors],
+                "textposition": "outside",
+                "textfont": {"size": 10, "color": "#34495e"},
+                "showlegend": False,
+                "hovertemplate": "%{y}<br>Error: %{x:+.1f} percentage points<extra></extra>",
+            }
+
+            estimation_layout = {
+                "height": 350,
+                "margin": {"l": 220, "t": 10, "b": 50, "r": 60},
+                "xaxis": {
+                    "title": "Error (percentage points)",
+                    "color": "#34495e",
+                    "gridcolor": "#e8e8e8",
+                    "showgrid": True,
+                    "titlefont": {"size": 11},
+                    "tickfont": {"size": 10},
+                    "zeroline": True,
+                    "zerolinecolor": "#34495e",
+                    "zerolinewidth": 1.5,
+                },
+                "yaxis": {
+                    "color": "#34495e",
+                    "tickfont": {"size": 10},
+                },
+                "paper_bgcolor": "#faf8f5",
+                "plot_bgcolor": "#ffffff",
+                "font": {"color": "#2c3e50"},
+                "showlegend": False,
+            }
+
+            estimation_fig = {"data": [estimation_trace], "layout": estimation_layout}
+            html.append('<div class="chart" id="chart_estimation_errors"></div>\n')
+            html.append(f'<script>var fig_estimation = {json.dumps(estimation_fig)}; Plotly.newPlot("chart_estimation_errors", fig_estimation.data, fig_estimation.layout);</script>\n')
+
+    html.append('</div>\n')
+    return html
+
+
 def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str, survey_metadata: Optional[Dict[str, Dict[str, str]]] = None) -> None:
     """One example comment per (question, category, sector)."""
     sectors = ["food", "transport", "housing"]
     question_order = [
-        "1.1_gate",
         "1.1.1_stance",
+        "1.1_gate",
         "1.3.1_reference_group",
         "1.3.1b_perceived_reference_stance",
         "1.2.1_descriptive",
@@ -753,31 +1131,32 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str, su
 <title>Norms Hierarchical - Example Comments</title>
 <style>
 * { box-sizing: border-box; }
-html { background: #0d1117; }
-body { font-family: "Segoe UI", system-ui, sans-serif; margin: 0; padding: 12px; background: #0d1117; color: #e6edf3; min-height: 100vh; font-size: 13px; }
-h1 { text-align: center; color: #e6edf3; font-size: 1.28em; margin: 0.4em 0; }
-.back-link { text-align: center; margin-bottom: 14px; font-size: 0.8em; }
-.back-link a { color: #58a6ff; }
-.question-section { max-width: 1400px; margin: 0 auto 10px; background: #161b22; border-radius: 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-.question-section summary { font-size: 14px; font-weight: 600; color: #c9d1d9; padding: 12px 18px; cursor: pointer; list-style: none; border-bottom: 2px solid transparent; }
+html { background: #faf8f5; }
+body { font-family: "Inter", "Segoe UI", system-ui, sans-serif; margin: 0; padding: 10px; background: #faf8f5; color: #2c3e50; min-height: 100vh; font-size: 12px; }
+h1 { text-align: center; color: #2c3e50; font-size: 1.2em; margin: 0.3em 0; font-weight: 600; }
+.back-link { text-align: center; margin-bottom: 12px; font-size: 0.75em; }
+.back-link a { color: #6c9bcf; text-decoration: none; }
+.back-link a:hover { text-decoration: underline; }
+.question-section { max-width: 1400px; margin: 0 auto 8px; background: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.question-section summary { font-size: 13px; font-weight: 600; color: #34495e; padding: 10px 15px; cursor: pointer; list-style: none; border-bottom: 1px solid transparent; }
 .question-section summary::-webkit-details-marker { display: none; }
-.question-section summary::before { content: "▶ "; color: #58a6ff; font-size: 10px; }
+.question-section summary::before { content: "▶ "; color: #6c9bcf; font-size: 9px; }
 .question-section[open] summary::before { content: "▼ "; }
-.question-section[open] summary { border-bottom-color: #30363d; }
-.question-content { padding: 18px; padding-top: 10px; }
-.category-group { margin-bottom: 14px; }
-.category-title { font-weight: 600; font-size: 11px; margin-bottom: 8px; padding: 6px 10px; border-radius: 0; display: inline-block; color: #e6edf3; }
-.sectors-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 8px; }
+.question-section[open] summary { border-bottom-color: #e8e8e8; }
+.question-content { padding: 14px; padding-top: 8px; }
+.category-group { margin-bottom: 12px; }
+.category-title { font-weight: 600; font-size: 10px; margin-bottom: 6px; padding: 5px 9px; border-radius: 12px; display: inline-block; color: #2c3e50; background: #f0f0f0; }
+.sectors-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
 .sector-column { display: flex; flex-direction: column; min-width: 0; }
-.sector-header { font-weight: 600; font-size: 9px; color: #8b949e; margin-bottom: 4px; text-transform: uppercase; }
-.example-comment { padding: 6px 8px; border-radius: 0; font-size: 9.5px; line-height: 1.4; white-space: pre-wrap; word-break: break-word; border-left: 3px solid #58a6ff; background: #0d1117; color: #e6edf3; }
-.prompt-dropdown { margin-bottom: 14px; }
-.prompt-dropdown summary { cursor: pointer; color: #58a6ff; font-size: 11px; user-select: none; }
+.sector-header { font-weight: 600; font-size: 8px; color: #7f8c8d; margin-bottom: 3px; text-transform: uppercase; }
+.example-comment { padding: 5px 7px; border-radius: 6px; font-size: 9px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; border-left: 2px solid #b5d4e6; background: #fafbfc; color: #2c3e50; }
+.prompt-dropdown { margin-bottom: 12px; }
+.prompt-dropdown summary { cursor: pointer; color: #6c9bcf; font-size: 10px; user-select: none; }
 .prompt-dropdown summary:hover { text-decoration: underline; }
-.prompt-box { margin-top: 10px; padding: 10px; border-radius: 0; background: #0d1117; border: 1px solid #30363d; font-size: 10.4px; }
-.prompt-box .prompt-text { color: #e6edf3; line-height: 1.5; margin-bottom: 8px; }
-.prompt-box .choices-label { color: #8b949e; font-weight: 600; margin-bottom: 4px; font-size: 10.4px; }
-.prompt-box .choices-list { color: #c9d1d9; list-style: none; padding-left: 0; font-size: 10.4px; }
+.prompt-box { margin-top: 8px; padding: 9px; border-radius: 6px; background: #fafbfc; border: 1px solid #e8e8e8; font-size: 9.5px; }
+.prompt-box .prompt-text { color: #2c3e50; line-height: 1.45; margin-bottom: 7px; }
+.prompt-box .choices-label { color: #5a6c7d; font-weight: 600; margin-bottom: 3px; font-size: 9.5px; }
+.prompt-box .choices-list { color: #34495e; list-style: none; padding-left: 0; font-size: 9.5px; }
 .prompt-box .choices-list li { margin: 2px 0; }
 </style>
 </head>
@@ -872,7 +1251,7 @@ h1 { text-align: center; color: #e6edf3; font-size: 1.28em; margin: 0.4em 0; }
     if recheck_samples:
         html_parts.append('<details class="question-section"><summary>Against recheck (2nd pass)</summary>\n')
         html_parts.append('<div class="question-content">\n')
-        html_parts.append('<p style="font-size: 11px; color: #8b949e; margin-bottom: 12px;">Comments that were labelled &quot;against&quot; in Author stance (1st pass) and re-labelled in a stringent second LLM pass.</p>\n')
+        html_parts.append('<p style="font-size: 10px; color: #7f8c8d; margin-bottom: 10px;">Comments that were labelled &quot;against&quot; in Author stance (1st pass) and re-labelled in a stringent second LLM pass.</p>\n')
         for recheck_label in RECHECK_LABELS_ORDER:
             if recheck_label not in recheck_samples:
                 continue

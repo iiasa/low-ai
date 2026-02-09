@@ -35,7 +35,14 @@
       "base_url": "http://127.0.0.1:8001",
       "model_name": "mistral7b",
       "description": "CLASSIFICATIONS #7B: Mistral-7B-Instruct-v0.2 (port 8001, Docker vllm-mistral7b)"
+    },
+    "7": {
+      "name": "gpt-oss-20b",
+      "base_url": "http://192.168.0.238:1234",
+      "model_name": "openai/gpt-oss-20b",
+      "description": "VERIFICATION/REASONING: GPT-OSS-20B (LM Studio, port 1234)"
     }
   },
-  "default_model_key": "1"
+  "default_model_key": "1",
+  "verification_model_key": "7"
 }
