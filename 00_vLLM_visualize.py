@@ -52,43 +52,37 @@ QUESTION_TITLES = {
     "1.3.3_second_order": "Second-order normative belief",
 }
 
-# Exact prompt and choices sent to the LLM (mirrors 00_vLLM_hierarchical.NORMS_QUESTIONS for display)
-NORMS_PROMPTS = {
-    "1.1_gate": {
-        "prompt": "Definitions: A social norm is a shared belief or expectation about what is typical or what is approved/disapproved. Descriptive norm = reference to what people typically do or how common something is (e.g. 'most people here drive EVs'). Injunctive norm = reference to what people should do, or explicit approval/disapproval (e.g. 'you should go vegan', 'eating meat is wrong'). Does this comment or post reference what others do or approve, or any social norm (descriptive or injunctive)? Answer with exactly one word: yes or no.",
-        "options": ["yes", "no"],
-    },
-    "1.1.1_stance": {
-        "prompt": "What is the author's stance toward {sector_topic}? Definitions: against = author opposes or rejects {sector_topic}. pro but lack of options = author is in favor of {sector_topic} but wants more options or complains that current options are insufficient; do NOT code this as against. Complaints that there are too few {sector_topic} options count as 'pro but lack of options', not 'against'. Examples: 'I wish there were more {sector_topic} options' → pro but lack of options. '{sector_topic} is stupid' → against. Answer with exactly one of: against, against particular but pro, neither/mixed, pro, pro but lack of options.",
-        "options": ["against", "against particular but pro", "neither/mixed", "pro", "pro but lack of options"],
-        "sector_specific": True,
-        "sector_topic": {"transport": "EVs", "food": "veganism or vegetarianism / diet", "housing": "solar"},
-    },
-    "1.2.1_descriptive": {
-        "prompt": "Descriptive norms refer to what people actually do or how common a behavior is (e.g. 'most people here drive EVs', 'I am a vegetarian'). They describe behavior or prevalence, not what people should do. Do NOT code as descriptive if the text prescribes or proscribes behavior (that is injunctive). Answer with exactly one of: explicitly present, absent, unclear.",
-        "options": ["explicitly present", "absent", "unclear"],
-    },
-    "1.2.2_injunctive": {
-        "prompt": "Injunctive norms are social rules about what behaviors are approved or disapproved—guiding what people should do (or avoid). They use language like should, must, have to, ought to, or express approval/disapproval (e.g. 'people should go vegan', 'I encourage everyone to go vegan'). Do NOT code as injunctive mere descriptions of how people act (e.g. 'I am a vegetarian' = describing one's own behavior, not a rule). Code as injunctive only when the text prescribes or proscribes behavior for others. Answer with exactly one of: present, absent, unclear.",
-        "options": ["present", "absent", "unclear"],
-    },
-    "1.3.1_reference_group": {
-        "prompt": "Who is the reference group? This refers to a group that the author has a personal relationship with (e.g. their own family, their own coworkers, their own friends). Do NOT code as a reference group if the text describes someone else's relationship (e.g. 'my neighbor's family' → not 'family' as reference group) or describes someone else who has that relationship (e.g. 'a coworker' without indicating the author's relationship). The reference group is who the author refers to as doing or approving something, where the author has a personal connection to that group. Answer with exactly one of: coworkers, family, friends, local community, neighbors, online community, other, other reddit user, partner/spouse, political tribe.",
-        "options": ["coworkers", "family", "friends", "local community", "neighbors", "online community", "other", "other reddit user", "partner/spouse", "political tribe"],
-    },
-    "1.3.1b_perceived_reference_stance": {
-        "prompt": "What stance does the author attribute to that reference group? Answer with exactly one of: against, neither/mixed, pro.",
-        "options": ["against", "neither/mixed", "pro"],
-    },
-    "1.3.2_mechanism": {
-        "prompt": "What mechanism is used to convey the norm or social pressure? Answer with exactly one of: blame/shame, community standard, identity/status signaling, other, praise, rule/virtue language, social comparison.",
-        "options": ["blame/shame", "community standard", "identity/status signaling", "other", "praise", "rule/virtue language", "social comparison"],
-    },
-    "1.3.3_second_order": {
-        "prompt": "Does the text express second-order normative beliefs (beliefs about what others think one should do)? Answer with exactly one of: none, weak, strong.",
-        "options": ["none", "weak", "strong"],
-    },
-}
+# Load actual prompts from schema file (used by vLLM and verifier)
+def load_norms_prompts(schema_path: str = "00_vllm_ipcc_social_norms_schema.json") -> Dict[str, Dict[str, Any]]:
+    """Load the actual prompts sent to the LLM from the schema file."""
+    try:
+        with open(schema_path, "r", encoding="utf-8") as f:
+            schema = json.load(f)
+
+        prompts = {}
+        sector_topic = schema.get("sector_topic", {})
+
+        for q in schema.get("norms_questions", []):
+            qid = q["id"]
+            prompt_text = q.get("prompt_template", q.get("prompt", ""))
+
+            prompts[qid] = {
+                "prompt": prompt_text,
+                "options": q.get("options", []),
+            }
+
+            # Check if this question uses sector-specific prompts
+            if "{sector_topic}" in prompt_text:
+                prompts[qid]["sector_specific"] = True
+                prompts[qid]["sector_topic"] = sector_topic
+
+        return prompts
+    except Exception as e:
+        print(f"Warning: Could not load schema file: {e}")
+        return {}
+
+# Load prompts at module level
+NORMS_PROMPTS = load_norms_prompts()
 
 
 def load_norms_labels(path: str) -> Dict[str, List[Dict[str, Any]]]:
@@ -282,7 +276,7 @@ body { font-family: "Inter", "Segoe UI", system-ui, sans-serif; margin: 0; paddi
 h1 { text-align: center; color: #e0e0e0; font-size: 1.3em; margin: 0.3em 0; font-weight: 600; }
 h2 { margin: 4px 0 3px; color: #b0b0b0; font-size: 1.05em; font-weight: 600; }
 h3 { color: #b0b0b0; }
-.chart { margin: 3px 0; background: #1a1a1a; border-radius: 8px; box-shadow: 0 1px 3px rgba(255,255,255,0.05); padding: 6px; }
+.chart { margin: 3px 0; }
 .charts-row { display: flex; flex-wrap: nowrap; gap: 24px; margin: 6px 0; }
 .charts-row .chart { flex: 1; min-width: 0; margin: 0; }
 a { color: #6c9bcf; font-size: 0.85em; text-decoration: none; }
@@ -297,6 +291,7 @@ a:hover { text-decoration: underline; }
 
     # Group bar charts into pairs for 2-per-row layout
     bar_chart_buffer = []
+    stance_chart_html = None  # Store Author stance chart separately
 
     for qid in question_order:
         if qid not in counts:
@@ -305,53 +300,67 @@ a:hover { text-decoration: underline; }
         c = counts[qid]
 
         if qid == "1.1_gate":
-            # Flush any pending bar charts before gate chart
-            if bar_chart_buffer:
-                html_parts.append('<div class="charts-row">\n')
-                for buffered_html in bar_chart_buffer:
-                    html_parts.append(buffered_html)
-                html_parts.append('</div>\n')
-                bar_chart_buffer = []
+            # Create 4-subplot row: Author stance (1/3) + 3 gate donuts (2/3)
+            html_parts.append('<div style="display: flex; align-items: center; gap: 15px; margin: 6px 0;">\n')
 
-            html_parts.append(f"<h2>{title}</h2>\n")
-            # One figure with 3 donuts (domains) and a single shared legend; bigger height
-            gate_traces = []
+            # Add Author stance chart (1/3 width)
+            if stance_chart_html:
+                html_parts.append('<div style="flex: 0 0 33.33%; min-width: 0;">\n')
+                html_parts.append(stance_chart_html)
+                html_parts.append('</div>\n')
+
+            # Add gate donuts container (2/3 width) - title will be inside the chart box
+            html_parts.append('<div class="chart" style="flex: 0 0 calc(66.67% - 15px); min-width: 0;">\n')
+            html_parts.append(f'<h3 style="font-size: 1.05em; color: #b0b0b0; margin: 0 0 8px 10px; padding-top: 6px;">{title}</h3>\n')
+            html_parts.append('<div style="display: flex; gap: 10px; justify-content: space-around; padding: 0 10px 10px 10px;">\n')
+
+            # Add gate donuts (3 subplots side by side)
             for i, sector in enumerate(sectors):
                 yes_count = c.get(sector, {}).get("Yes", 0) + c.get(sector, {}).get("1", 0)
                 no_count = c.get(sector, {}).get("No", 0) + c.get(sector, {}).get("0", 0)
-                x0, x1 = i / 3, (i + 1) / 3
-                # Shrink donut vertically (y domain) so sector titles sit above with clear gap
-                gate_traces.append({
+
+                gate_trace = {
                     "labels": ["Yes", "No"],
                     "values": [yes_count, no_count],
                     "type": "pie",
-                    "hole": 0.5,
+                    "hole": 0.4,
                     "marker": {"colors": [colors.get("Yes", "#3498db"), colors.get("No", "#9b59b6")]},
-                    "domain": {"x": [x0, x1], "y": [0.18, 0.92]},
                     "showlegend": i == 0,
-                })
-            cid = _chart_id(qid)
-            annotations = [
-                {"text": SECTOR_DISPLAY.get(s, s), "x": (i + 0.5) / 3, "y": 1.04, "showarrow": False, "xanchor": "center", "font": {"color": "#b0b0b0", "size": 10}}
-                for i, s in enumerate(sectors)
-            ]
-            gate_layout = {
-                "height": 280,
-                "paper_bgcolor": "#1a1a1a",
-                "plot_bgcolor": "#1a1a1a",
-                "font": {"color": "#e0e0e0", "size": 10},
-                "showlegend": True,
-                "legend": {"orientation": "h", "yanchor": "top", "y": -0.06, "xanchor": "center", "x": 0.5, "font": {"size": 9, "color": "#e0e0e0"}},
-                "margin": {"t": 32, "b": 24, "l": 6, "r": 6},
-                "annotations": annotations,
-            }
-            gate_fig = {"data": gate_traces, "layout": gate_layout}
-            html_parts.append(f'<div class="chart" id="chart_{cid}"></div>\n')
-            html_parts.append(
-                f'<script>var fig_{cid} = {json.dumps(gate_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
-            )
+                }
+
+                gate_layout = {
+                    "height": 160,
+                    "width": 200,
+                    "paper_bgcolor": "#1a1a1a",
+                    "plot_bgcolor": "#1a1a1a",
+                    "font": {"color": "#e0e0e0", "size": 9},
+                    "showlegend": i == 0,
+                    "legend": {"orientation": "h", "yanchor": "top", "y": -0.12, "xanchor": "center", "x": 0.5, "font": {"size": 8, "color": "#e0e0e0"}},
+                    "margin": {"t": 26, "b": 75, "l": 5, "r": 5},
+                    "annotations": [{
+                        "text": SECTOR_DISPLAY.get(sector, sector),
+                        "x": 1,
+                        "y": 1,
+                        "xref": "paper",
+                        "yref": "paper",
+                        "showarrow": False,
+                        "xanchor": "right",
+                        "yanchor": "top",
+                        "font": {"color": "#b0b0b0", "size": 9}
+                    }],
+                }
+
+                gate_fig = {"data": [gate_trace], "layout": gate_layout}
+                cid = f"gate_{sector}"
+                html_parts.append(f'<div id="chart_{cid}" style="flex: 1; min-width: 150px;"></div>\n')
+                html_parts.append(f'<script>var fig_{cid} = {json.dumps(gate_fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n')
+
+            html_parts.append('</div>\n')  # Close donuts flex container
+            html_parts.append('</div>\n')  # Close gate donuts container
+            html_parts.append('</div>\n')  # Close main row
+            stance_chart_html = None  # Clear stored chart
         else:
-            # Bar chart - buffer for 2-per-row layout
+            # Bar chart
             labels_seen = set()
             for sector in sectors:
                 for label in c.get(sector, {}).keys():
@@ -404,13 +413,16 @@ a:hover { text-decoration: underline; }
                         "showlegend": True,
                     })
             if traces:
+                # Set consistent width for all bar charts
+                chart_width = 396
+
                 fig = {
                     "data": traces,
                     "layout": {
                         "barmode": "stack",
                         "bargap": 0.15,
                         "height": 160,
-                        "width": 450,
+                        "width": chart_width,
                         "margin": {"l": 75, "t": 30, "b": 75},
                         "xaxis": {"title": "", "color": "#b0b0b0", "gridcolor": "#3a3a3a", "titlefont": {"size": 10, "color": "#b0b0b0"}, "tickfont": {"size": 9, "color": "#b0b0b0"}},
                         "yaxis": {"color": "#b0b0b0", "gridcolor": "#3a3a3a", "tickfont": {"size": 9, "color": "#b0b0b0"}},
@@ -436,16 +448,20 @@ a:hover { text-decoration: underline; }
                 chart_html = f'<div class="chart" id="chart_{cid}"></div>\n'
                 chart_html += f'<script>var fig_{cid} = {json.dumps(fig)}; Plotly.newPlot("chart_{cid}", fig_{cid}.data, fig_{cid}.layout);</script>\n'
 
-                # Buffer this chart
-                bar_chart_buffer.append(chart_html)
+                # Special handling for Author stance (1.1.1_stance) - store it separately
+                if qid == "1.1.1_stance":
+                    stance_chart_html = chart_html
+                else:
+                    # Buffer other charts for 3-per-row layout
+                    bar_chart_buffer.append(chart_html)
 
-                # If we have 3 charts buffered, emit them in a row
-                if len(bar_chart_buffer) == 3:
-                    html_parts.append('<div class="charts-row">\n')
-                    for buffered_html in bar_chart_buffer:
-                        html_parts.append(buffered_html)
-                    html_parts.append('</div>\n')
-                    bar_chart_buffer = []
+                    # If we have 3 charts buffered, emit them in a row
+                    if len(bar_chart_buffer) == 3:
+                        html_parts.append('<div class="charts-row">\n')
+                        for buffered_html in bar_chart_buffer:
+                            html_parts.append(buffered_html)
+                        html_parts.append('</div>\n')
+                        bar_chart_buffer = []
 
     # Bottom section: "against" (1st pass) second-pass recheck percentages and chart
     if recheck_counts:
@@ -486,26 +502,12 @@ a:hover { text-decoration: underline; }
                     "showlegend": True,
                 })
         if recheck_traces:
-            # Summary line: Of N against (per sector): X% confirmed, Y% frustrated but still pro, Z% unclear
-            summary_parts = []
-            for sector in sectors:
-                total = sum(recheck_counts.get(sector, {}).values())
-                if total == 0:
-                    continue
-                pct_against = 100 * recheck_counts.get(sector, {}).get("against", 0) / total
-                pct_frustrated = 100 * recheck_counts.get(sector, {}).get("frustrated but still pro", 0) / total
-                pct_unclear = 100 * recheck_counts.get(sector, {}).get("unclear stance", 0) / total
-                summary_parts.append(
-                    f"{SECTOR_DISPLAY.get(sector, sector)}: of {total} &quot;against&quot; → {pct_against:.0f}% confirmed against, {pct_frustrated:.0f}% frustrated but still pro, {pct_unclear:.0f}% unclear"
-                )
-            summary_text = " | ".join(summary_parts) if summary_parts else ""
-
             recheck_layout = {
                 "barmode": "stack",
                 "bargap": 0.15,
                 "height": 160,
-                "width": 450,
-                "margin": {"l": 75, "t": 30, "b": 90},
+                "width": 396,  # 10% larger than 360px
+                "margin": {"l": 75, "t": 30, "b": 75},
                 "xaxis": {"title": "", "color": "#b0b0b0", "gridcolor": "#3a3a3a", "titlefont": {"size": 10, "color": "#b0b0b0"}, "tickfont": {"size": 9, "color": "#b0b0b0"}},
                 "yaxis": {"color": "#b0b0b0", "gridcolor": "#3a3a3a", "tickfont": {"size": 9, "color": "#b0b0b0"}},
                 "showlegend": True,
@@ -524,7 +526,6 @@ a:hover { text-decoration: underline; }
                     "x": 0.5,
                 },
                 "title": {"text": "Against (1st pass) — second-pass recheck", "font": {"color": "#b0b0b0", "size": 13, "family": "Inter, Segoe UI, sans-serif"}, "x": 0.02, "xanchor": "left"},
-                "annotations": [{"text": summary_text, "xref": "paper", "yref": "paper", "x": 0.5, "y": -0.48, "showarrow": False, "xanchor": "center", "font": {"size": 9, "color": "#a0a0a0"}}] if summary_text else [],
             }
             recheck_fig = {"data": recheck_traces, "layout": recheck_layout}
 
@@ -869,7 +870,15 @@ a:hover { text-decoration: underline; }
             radial_fig = {"data": radial_traces, "layout": radial_layout}
             html_parts.append('<div class="chart" id="chart_survey_radials"></div>\n')
             html_parts.append(
-                f'<script>var fig_survey_radials = {json.dumps(radial_fig)}; Plotly.newPlot("chart_survey_radials", fig_survey_radials.data, fig_survey_radials.layout);</script>\n'
+                f'<script>var fig_survey_radials = {json.dumps(radial_fig)}; Plotly.newPlot("chart_survey_radials", fig_survey_radials.data, fig_survey_radials.layout).then(function() {{\n'
+                f'  // Add text stroke to radial axis tick labels for better visibility\n'
+                f'  document.querySelectorAll("#chart_survey_radials .radialaxis .tick text, #chart_survey_radials .angularaxis .tick text").forEach(function(el) {{\n'
+                f'    el.style.paintOrder = "stroke";\n'
+                f'    el.style.stroke = "#000000";\n'
+                f'    el.style.strokeWidth = "2px";\n'
+                f'    el.style.strokeLinejoin = "round";\n'
+                f'  }});\n'
+                f'}});</script>\n'
             )
 
     # Add verification results section with confidence analysis
@@ -952,9 +961,9 @@ def build_confidence_plots_only(samples_path: str) -> List[str]:
 
     # === TOP PLOT: Bar chart (aggregate by confidence bins) ===
 
-    # Bin by confidence
-    confidence_bins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-    bin_labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+    # Bin by confidence in 10% intervals starting at 50%
+    confidence_bins = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    bin_labels = ["50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
     bin_stats = {label: {"total": 0, "mismatches": 0} for label in bin_labels}
 
     for item in confidence_data:
@@ -1017,6 +1026,7 @@ def build_confidence_plots_only(samples_path: str) -> List[str]:
             "showgrid": True,
             "titlefont": {"size": 9, "color": "#b0b0b0"},
             "tickfont": {"size": 8, "color": "#b0b0b0"},
+            "range": [0, 100],
         },
         "paper_bgcolor": "#1a1a1a",
         "plot_bgcolor": "#1a1a1a",
@@ -1088,7 +1098,7 @@ def build_confidence_plots_only(samples_path: str) -> List[str]:
             "showgrid": True,
             "titlefont": {"size": 9, "color": "#b0b0b0"},
             "tickfont": {"size": 8, "color": "#b0b0b0"},
-            "range": [0.5, 1.05],  # Start from 0.5 instead of 0
+            "range": [0.5, 1.0],  # 50-100% range
         },
         "yaxis": {
             "title": "Mismatch (%)",
@@ -1097,6 +1107,7 @@ def build_confidence_plots_only(samples_path: str) -> List[str]:
             "showgrid": True,
             "titlefont": {"size": 9, "color": "#b0b0b0"},
             "tickfont": {"size": 8, "color": "#b0b0b0"},
+            "range": [0, 100],
         },
         "paper_bgcolor": "#1a1a1a",
         "plot_bgcolor": "#1a1a1a",
@@ -1297,9 +1308,9 @@ def build_confidence_analysis_section(samples_path: str) -> List[str]:
 
     # === PANEL 1: Overall aggregate statistics ===
 
-    # Bin by confidence (0-0.2, 0.2-0.4, 0.4-0.6, 0.6-0.8, 0.8-1.0)
-    confidence_bins = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
-    bin_labels = ["0-20%", "20-40%", "40-60%", "60-80%", "80-100%"]
+    # Bin by confidence in 10% intervals starting at 50%
+    confidence_bins = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+    bin_labels = ["50-60%", "60-70%", "70-80%", "80-90%", "90-100%"]
 
     # Overall statistics by confidence bin
     bin_stats = {label: {"total": 0, "mismatches": 0} for label in bin_labels}
@@ -1402,6 +1413,7 @@ def build_confidence_analysis_section(samples_path: str) -> List[str]:
             "showgrid": True,
             "titlefont": {"size": 11, "color": "#b0b0b0"},
             "tickfont": {"size": 10, "color": "#b0b0b0"},
+            "range": [50, 100],
         },
         "paper_bgcolor": "#1a1a1a",
         "plot_bgcolor": "#1a1a1a",
@@ -1487,7 +1499,7 @@ def build_confidence_analysis_section(samples_path: str) -> List[str]:
             "showgrid": True,
             "titlefont": {"size": 11, "color": "#b0b0b0"},
             "tickfont": {"size": 10, "color": "#b0b0b0"},
-            "range": [0, 1.05],
+            "range": [0.5, 1.0],
         },
         "yaxis": {
             "title": "Verifier Mismatch Rate (%)",
@@ -1496,6 +1508,7 @@ def build_confidence_analysis_section(samples_path: str) -> List[str]:
             "showgrid": True,
             "titlefont": {"size": 11, "color": "#b0b0b0"},
             "tickfont": {"size": 10, "color": "#b0b0b0"},
+            "range": [50, 100],
         },
         "paper_bgcolor": "#1a1a1a",
         "plot_bgcolor": "#1a1a1a",
@@ -1922,6 +1935,10 @@ def build_examples_html(data: Dict[str, List[Dict[str, Any]]], out_path: str, su
             text = comment[:500] + ("..." if len(comment) > 500 else "")
             ans = rec.get("answers") or {}
             for qid, val in ans.items():
+                # Only include if we have confidence for this specific (comment, question) pair
+                if (comment_key, qid) not in confidence_map:
+                    continue
+
                 label = answer_to_label(qid, str(val).strip())
                 # Normalize survey question labels: "1" -> "YES", "0" -> "NO"
                 if qid.startswith(("diet_", "ev_", "solar_")):
@@ -1997,8 +2014,8 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
 .sectors-row { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
 .sector-column { display: flex; flex-direction: column; min-width: 0; }
 .sector-header { font-weight: 600; font-size: 8px; color: #888888; margin-bottom: 3px; text-transform: uppercase; }
-.example-comment { padding: 5px 7px; border-radius: 6px; font-size: 9px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; border-left: 2px solid #4a6d7c; background: #252525; color: #e0e0e0; position: relative; }
-.confidence-badge { position: absolute; top: 2px; right: 2px; font-size: 7px; color: #888888; background: #1a1a1a; padding: 1px 4px; border-radius: 3px; font-weight: 600; }
+.example-comment { position: relative; padding: 5px 7px; border-radius: 6px; font-size: 9px; line-height: 1.35; white-space: pre-wrap; word-break: break-word; border-left: 2px solid #4a6d7c; background: #252525; color: #e0e0e0; }
+.confidence-badge { position: absolute; top: 3px; right: 3px; font-size: 7px; color: #888; background: #1a1a1a; padding: 1px 3px; border-radius: 3px; }
 .prompt-dropdown { margin-bottom: 12px; }
 .prompt-dropdown summary { cursor: pointer; color: #6c9bcf; font-size: 10px; user-select: none; }
 .prompt-dropdown summary:hover { text-decoration: underline; }
@@ -2012,6 +2029,23 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
 <body>
 <h1>Example Comments by Category</h1>
 <div class="back-link"><a href="00_dashboardv2.html">&lt;- Back to Dashboard</a></div>
+<div style="max-width: 1400px; margin: 0 auto 20px; background: #1a1a1a; padding: 12px 18px; border-radius: 6px; border-left: 3px solid #6c9bcf;">
+<div style="font-size: 11px; font-weight: 600; color: #b0b0b0; margin-bottom: 6px;">Legend:</div>
+<div style="display: flex; gap: 30px; flex-wrap: wrap; font-size: 10px; color: #a0a0a0;">
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="display: inline-block; width: 30px; height: 20px; background: #252525; border-left: 4px solid #8fcc8f; border-radius: 3px;"></span>
+<span><strong style="color: #8fcc8f;">Green border:</strong> Verifier (reasoning model) agrees with fast labeler</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="display: inline-block; width: 30px; height: 20px; background: #252525; border-left: 4px solid #ff9aa8; border-radius: 3px;"></span>
+<span><strong style="color: #ff9aa8;">Red border:</strong> Verifier disagrees with fast labeler</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="display: inline-block; padding: 1px 3px; background: #1a1a1a; border-radius: 3px; font-size: 7px; color: #888;">0.95</span>
+<span><strong style="color: #e0e0e0;">Top right number:</strong> Confidence score from fast labeler (0-1)</span>
+</div>
+</div>
+</div>
 """
     ]
 
@@ -2103,7 +2137,7 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
                             else:
                                 border_style = ' style="border-left: 4px solid #ff9aa8;"'  # Red = disagree
 
-                        # Get confidence for this question
+                        # Get confidence for this question and display as badge
                         conf_key = (comment_key, qid)
                         if conf_key in confidence_map:
                             conf_val = confidence_map[conf_key]
@@ -2142,7 +2176,7 @@ h1 { text-align: center; color: #e0e0e0; font-size: 1.2em; margin: 0.3em 0; font
                             else:
                                 border_style = ' style="border-left: 4px solid #ff9aa8;"'  # Red = disagree
 
-                        # Get confidence for this question
+                        # Get confidence for this question and display as badge
                         conf_key = (comment_key, qid)
                         if conf_key in confidence_map:
                             conf_val = confidence_map[conf_key]
