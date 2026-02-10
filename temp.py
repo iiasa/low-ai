@@ -1,116 +1,150 @@
 """
-temp.py
-Load verification samples for each question (lowest accuracy first) and analyze mismatches.
+temp.py - Flipped semi-circular gauge chart for norm signal present across sectors
 """
-
 import json
+import plotly.graph_objects as go
 
-# Load verification results
-with open('paper4data/00_verification_results.json', 'r', encoding='utf-8') as f:
-    results = json.load(f)
+# Load norms labels data to calculate norm signal present percentages
+with open("paper4data/norms_labels.json", "r", encoding="utf-8") as f:
+    norms_data = json.load(f)
 
-# Load verification samples
-with open('paper4data/00_verification_samples.json', 'r', encoding='utf-8') as f:
-    samples_data = json.load(f)
+# Calculate norm signal present for each sector
+sector_stats = {}
+for sector in ["food", "transport", "housing"]:
+    if sector in norms_data:
+        comments = norms_data[sector]
+        total = len(comments)
+        # Count comments with gate=1 (norm signal present)
+        gate_present = sum(1 for c in comments if c.get("answers", {}).get("1.1_gate") == "1")
+        pct = (gate_present / total * 100) if total > 0 else 0
+        sector_stats[sector] = {
+            "total": total,
+            "gate_present": gate_present,
+            "percentage": pct
+        }
 
-# Flatten samples from nested structure
-all_samples = []
-for task_type in ['norms', 'survey']:
-    if task_type in samples_data:
-        for question_id, question_samples in samples_data[task_type].items():
-            for sample in question_samples:
-                all_samples.append(sample)
+# Print statistics
+print("\nNorm Signal Present by Sector:")
+print("-" * 60)
+for sector, stats in sector_stats.items():
+    print(f"{sector:12} {stats['percentage']:5.1f}% ({stats['gate_present']}/{stats['total']})")
+print("-" * 60)
 
-# Get questions sorted by accuracy (lowest first)
-questions = []
-for task_type in ['norms', 'survey']:
-    if task_type in results['by_task']:
-        for qid, qdata in results['by_task'][task_type].items():
-            questions.append({
-                'id': qid,
-                'type': task_type,
-                'accuracy': qdata['accuracy'],
-                'kappa': qdata['cohen_kappa'],
-                'n_samples': qdata['n_samples_valid']
-            })
+# Calculate overall average
+all_sectors_pct = [stats['percentage'] for stats in sector_stats.values()]
+avg_pct = sum(all_sectors_pct) / len(all_sectors_pct)
+print(f"Average:     {avg_pct:5.1f}%\n")
 
-questions.sort(key=lambda x: x['accuracy'])
+# Create flipped semi-circular gauge chart
+fig = go.Figure()
 
-# Analyze each question
-import sys
-if len(sys.argv) > 1:
-    # Analyze specific question
-    target_qid = sys.argv[1]
-    questions = [q for q in questions if q['id'] == target_qid]
+# Colors for each sector
+colors = {
+    'food': '#5ab4ac',      # Teal
+    'transport': '#af8dc3', # Purple
+    'housing': '#f46d43'    # Orange
+}
 
-for q in questions[:10]:  # Top 10 lowest accuracy
-    qid = q['id']
-    print(f"\n{'='*100}")
-    print(f"QUESTION: {qid}")
-    print(f"Accuracy: {q['accuracy']:.2%} | Kappa: {q['kappa']:.3f} | Type: {q['type']}")
-    print(f"{'='*100}\n")
+# Values for the gauge (showing each sector)
+values = [
+    sector_stats['food']['percentage'],
+    sector_stats['transport']['percentage'],
+    sector_stats['housing']['percentage'],
+    100  # Bottom half (hidden)
+]
 
-    # Get samples for this question
-    question_samples = [s for s in all_samples if s.get('question_id') == qid]
+labels = ['Food', 'Transport', 'Housing', '']
 
-    # Separate matches and mismatches
-    matches = [s for s in question_samples if s['vllm_label'] == s['reasoning_label']]
-    mismatches = [s for s in question_samples if s['vllm_label'] != s['reasoning_label']]
+# Create semi-circle gauge (flipped - arc on top)
+fig.add_trace(go.Pie(
+    values=values,
+    labels=labels,
+    marker=dict(
+        colors=[colors['food'], colors['transport'], colors['housing'], 'rgba(255,255,255,0)'],
+        line=dict(color='white', width=4)
+    ),
+    hole=0.70,
+    direction='clockwise',
+    sort=False,
+    rotation=270,  # Rotated to put arc on top
+    textposition='none',
+    hovertemplate='<b>%{label}</b><br>%{value:.1f}% norm signal present<extra></extra>',
+    showlegend=False
+))
 
-    print(f"Total samples: {len(question_samples)}")
-    print(f"Matches: {len(matches)} ({len(matches)/len(question_samples)*100:.1f}%)")
-    print(f"Mismatches: {len(mismatches)} ({len(mismatches)/len(question_samples)*100:.1f}%)")
+# Add center text showing average percentage
+fig.add_annotation(
+    text=f'<b>{avg_pct:.1f}%</b>',
+    x=0.5, y=0.55,
+    font=dict(size=52, color='#1a1a1a', family='Arial'),
+    showarrow=False
+)
 
-    # Show mismatches
-    print(f"\n{'-'*100}")
-    print("MISMATCHES (Fast model WRONG, Reasoning model CORRECT):")
-    print(f"{'-'*100}\n")
+fig.add_annotation(
+    text='Avg. Norm Signal',
+    x=0.5, y=0.40,
+    font=dict(size=14, color='#666666', family='Arial'),
+    showarrow=False
+)
 
-    for i, sample in enumerate(mismatches, 1):
-        comment = sample.get('comment', sample.get('comment_text', 'N/A'))
-        if len(comment) > 300:
-            comment = comment[:300] + "..."
+# Update layout
+fig.update_layout(
+    title=dict(
+        text='<b>Norm Signal Present</b>',
+        x=0.5,
+        xanchor='center',
+        font=dict(size=22, color='#1a1a1a', family='Arial')
+    ),
+    height=450,
+    margin=dict(t=80, b=80, l=20, r=20),
+    paper_bgcolor='white',
+    plot_bgcolor='white',
+)
 
-        print(f"MISMATCH #{i}:")
-        print(f"Comment: {comment}")
-        print(f"Sector: {sample.get('sector', 'N/A')}")
-        print(f"Fast model (WRONG): {sample['vllm_label']}")
-        print(f"Reasoning model (CORRECT): {sample['reasoning_label']}")
-        print(f"Raw reasoning response: {sample.get('raw_reasoning_response', 'N/A')[:100]}")
-        print()
+# Add legend annotations at the bottom
+legend_y = 0.12
+fig.add_annotation(
+    text='●',
+    x=0.25, y=legend_y,
+    font=dict(size=24, color=colors['food']),
+    showarrow=False
+)
+fig.add_annotation(
+    text=f'Food ({sector_stats["food"]["percentage"]:.1f}%)',
+    x=0.29, y=legend_y,
+    font=dict(size=13, color='#1a1a1a', family='Arial'),
+    showarrow=False,
+    xanchor='left'
+)
 
-    print(f"\n{'-'*100}")
-    print("CATEGORY DISTRIBUTION:")
-    print(f"{'-'*100}\n")
+fig.add_annotation(
+    text='●',
+    x=0.45, y=legend_y,
+    font=dict(size=24, color=colors['transport']),
+    showarrow=False
+)
+fig.add_annotation(
+    text=f'Transport ({sector_stats["transport"]["percentage"]:.1f}%)',
+    x=0.49, y=legend_y,
+    font=dict(size=13, color='#1a1a1a', family='Arial'),
+    showarrow=False,
+    xanchor='left'
+)
 
-    # Count category distributions
-    from collections import Counter
-    vllm_counts = Counter([s['vllm_label'] for s in question_samples])
-    reasoning_counts = Counter([s['reasoning_label'] for s in question_samples])
+fig.add_annotation(
+    text='●',
+    x=0.70, y=legend_y,
+    font=dict(size=24, color=colors['housing']),
+    showarrow=False
+)
+fig.add_annotation(
+    text=f'Housing ({sector_stats["housing"]["percentage"]:.1f}%)',
+    x=0.74, y=legend_y,
+    font=dict(size=13, color='#1a1a1a', family='Arial'),
+    showarrow=False,
+    xanchor='left'
+)
 
-    all_categories = set(vllm_counts.keys()) | set(reasoning_counts.keys())
-
-    print(f"{'Category':<30} {'Fast Model':<15} {'Reasoning Model':<15} {'Difference':<15}")
-    print(f"{'-'*75}")
-    for cat in sorted(all_categories):
-        vllm_pct = vllm_counts.get(cat, 0) / len(question_samples) * 100
-        reasoning_pct = reasoning_counts.get(cat, 0) / len(question_samples) * 100
-        diff = vllm_pct - reasoning_pct
-        print(f"{cat:<30} {vllm_pct:>6.1f}% ({vllm_counts.get(cat, 0):>2}) {reasoning_pct:>6.1f}% ({reasoning_counts.get(cat, 0):>2}) {diff:>+6.1f}%")
-
-    print(f"\n{'-'*100}")
-    print("CORRECT PREDICTIONS (for reference):")
-    print(f"{'-'*100}\n")
-
-    # Show a few correct predictions for comparison
-    for i, sample in enumerate(matches[:3], 1):
-        comment = sample.get('comment', sample.get('comment_text', 'N/A'))
-        if len(comment) > 200:
-            comment = comment[:200] + "..."
-
-        print(f"CORRECT #{i}:")
-        print(f"Comment: {comment}")
-        print(f"Both models agreed: {sample['vllm_label']}")
-        print()
-
-    print("\n" + "="*100 + "\n")
+# Save to HTML
+fig.write_html("temp.html", config={'displayModeBar': False})
+print("Saved to temp.html")

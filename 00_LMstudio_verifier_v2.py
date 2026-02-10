@@ -1,12 +1,126 @@
 """
 00_LMstudio_verifier_v2.py
 
-Comprehensive verification script for both labeling tasks:
-1. Survey questions (diet/EV/solar attitudes)
-2. IPCC social norms schema (gate, stance, descriptive/injunctive norms, etc.)
+═══════════════════════════════════════════════════════════════════════════════
+WHY: Comprehensive Verification & Quality Assurance for Hierarchical Labeling
+═══════════════════════════════════════════════════════════════════════════════
 
-Uses shared utilities to ensure exact same prompting as 00_vLLM_hierarchical.py,
-just with LM Studio reasoning model (gpt-oss-20b) instead of vLLM fast model.
+In automated annotation pipelines, smaller/faster models (Mistral-7B, Qwen3-VL-4B via vLLM)
+are used for bulk labeling due to cost and throughput efficiency. However, we need to validate
+that these labels are reliable and accurate across BOTH labeling tasks:
+  1. Survey questions: attitude labels (diet/EV/solar attitudes)
+  2. IPCC social norms schema: hierarchical labels (gate, stance, norms, etc.)
+
+This script implements a comprehensive verification strategy:
+  1. Sample a subset of labeled data (50 comments per question/task, or max available)
+  2. Re-label using a larger reasoning model (GPT-OSS-20B via LM Studio)
+  3. Use EXACT same prompting as 00_vLLM_hierarchical.py via shared_utilities.py
+  4. Treat reasoning model output as "ground truth"
+  5. Calculate standard ML evaluation metrics (accuracy, precision, recall, F1, kappa)
+
+This gives us:
+  - Confidence intervals for automated label quality across all tasks
+  - Identification of problematic questions/categories
+  - Category-level estimation errors (over/underestimation)
+  - Evidence for methodology section in papers
+  - Continuous quality monitoring capability
+  - Sample-level data for error analysis and example extraction
+
+═══════════════════════════════════════════════════════════════════════════════
+HOW: Comprehensive Verification Pipeline
+═══════════════════════════════════════════════════════════════════════════════
+
+1. SAMPLING STRATEGY:
+   - Random stratified sampling: 50 comments per question across all sectors
+     * Norms questions: sampled from all comments (norms labels apply to all)
+     * Survey questions: sampled per sector (diet/housing/transport)
+   - Ensures coverage of different comment types and sectors
+   - Balance between statistical power and verification cost
+   - Higher sample size (50 vs 20) for better statistical confidence
+
+2. RE-LABELING WITH REASONING MODEL:
+   - Use larger model (GPT-OSS-20B) hosted in LM Studio as local API
+   - CRITICAL: Use shared_utilities.py to ensure exact same prompting as vLLM
+     * Same system prompts (NORMS_SYSTEM, SURVEY_SYSTEM)
+     * Same question structures (NORMS_QUESTIONS, SURVEY_QUESTIONS_BY_SECTOR)
+     * Same answer extraction logic (call_llm_single_choice)
+   - Reasoning model assumed to be more accurate due to size and chain-of-thought
+   - Hierarchical labeling support (gate -> stance -> norms cascade)
+
+3. METRIC CALCULATION (Per Question, Both Task Types):
+   - Overall Accuracy: % of labels that match between fast model and reasoning model
+   - Per-Class Metrics (for each answer option):
+     * Precision: Of labels predicted as X, how many were truly X?
+     * Recall: Of true X labels, how many were predicted as X?
+     * F1 Score: Harmonic mean of precision and recall
+   - Cohen's Kappa: Inter-rater agreement adjusting for chance
+   - Category Estimation Error: Over/underestimation by fast model for each label
+     * Positive error: fast model over-predicts this category
+     * Negative error: fast model under-predicts this category
+   - Empty Response Tracking: Percentage of cases where reasoning model failed to respond
+
+4. OUTPUT:
+   - 00_verification_results.json: Aggregated metrics by question
+     * Summary statistics (mean/std/min/max accuracy, kappa)
+     * Per-question metrics (accuracy, precision, recall, F1, kappa)
+     * Category estimation errors
+     * Broken down by task type (norms vs survey)
+   - 00_verification_samples.json: Full sample-level data
+     * All verified comments with both vLLM and reasoning labels
+     * Raw reasoning model responses
+     * Enables detailed error analysis and example extraction
+
+═══════════════════════════════════════════════════════════════════════════════
+WHAT: Metrics Interpretation
+═══════════════════════════════════════════════════════════════════════════════
+
+ACCURACY:
+- Accuracy ≥ 0.85: Excellent agreement, vLLM labels are reliable
+- Accuracy 0.70-0.85: Good agreement, minor issues
+- Accuracy < 0.70: Poor agreement, investigate prompts or model choice
+
+PER-CLASS METRICS (identify specific problems):
+- Low precision for class X: vLLM over-predicts X (false positives)
+- Low recall for class X: vLLM under-predicts X (misses true X)
+- Low F1: Class X is generally problematic in vLLM
+
+COHEN'S KAPPA (inter-rater agreement):
+- κ > 0.80: Almost perfect agreement
+- κ 0.60-0.80: Substantial agreement
+- κ 0.40-0.60: Moderate agreement
+- κ < 0.40: Poor agreement
+
+CATEGORY ESTIMATION ERROR:
+- |error| ≤ 2%: Accurate category size estimation
+- error > 2%: Fast model overestimates this category
+- error < -2%: Fast model underestimates this category
+- Important for population-level inferences (e.g., "X% of comments support policy Y")
+
+EMPTY RESPONSES:
+- Monitor % of cases where reasoning model fails to respond
+- High empty rate (>10%) may indicate prompt issues or model limitations
+- Valid responses only are used for accuracy calculations
+
+═══════════════════════════════════════════════════════════════════════════════
+KEY DIFFERENCES FROM v1:
+═══════════════════════════════════════════════════════════════════════════════
+
+v1 (00_LMstudio_verifier.py):
+- Single task type: survey questions only
+- 20 samples per question
+- Direct prompting from survey JSON
+- One output file
+
+v2 (this script):
+- BOTH task types: norms + survey questions
+- 50 samples per question (2.5x more for better statistics)
+- Shared utilities: exact same prompting as 00_vLLM_hierarchical.py
+- Two output files: aggregated metrics + full sample data
+- Hierarchical labeling support
+- Category estimation error tracking
+- Empty response monitoring
+
+═══════════════════════════════════════════════════════════════════════════════
 """
 
 import json
