@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Documentation — Social Norms in Climate Discussions</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:#0a1628;scroll-behavior:smooth}
+body{font-family:"Inter","Segoe UI",system-ui,sans-serif;background:#0a1628;color:#c8d8e8;padding:30px 20px;line-height:1.7;max-width:1100px;margin:0 auto}
+h1{text-align:center;font-size:1.5em;color:#fff;font-weight:300;letter-spacing:2px;margin-bottom:4px}
+.subtitle{text-align:center;color:#6a8caf;font-size:0.82em;margin-bottom:30px}
+.subtitle a{color:#5ab4ac;text-decoration:none;border-bottom:1px solid #2a4a5a}
+.subtitle a:hover{color:#8fd8d0;border-color:#5ab4ac}
+h2{font-size:1.15em;color:#fff;font-weight:400;margin:36px 0 14px;padding-bottom:6px;border-bottom:1px solid #1a3050;letter-spacing:1px}
+h3{font-size:0.95em;color:#8fb8d8;font-weight:500;margin:22px 0 10px}
+p{margin-bottom:12px;font-size:0.88em}
+strong{color:#e0e8f0}
+em{color:#a0b8d0;font-style:italic}
+a{color:#5ab4ac;text-decoration:none}
+a:hover{text-decoration:underline}
+sup{font-size:0.7em;color:#5ab4ac;cursor:pointer}
+sup:hover{color:#8fd8d0}
+/* Navigation */
+.toc{background:#0f1d33;border:1px solid #1a3050;border-radius:10px;padding:18px 24px;margin-bottom:30px}
+.toc-title{font-size:0.85em;color:#6a8caf;font-weight:600;letter-spacing:1px;margin-bottom:10px;text-transform:uppercase}
+.toc a{display:inline-block;color:#5ab4ac;font-size:0.82em;margin:3px 16px 3px 0;transition:color 0.2s}
+.toc a:hover{color:#fff;text-decoration:none}
+/* Sections */
+.sec{background:#0f1d33;border:1px solid #1a3050;border-radius:10px;padding:22px 26px;margin-bottom:20px}
+.sec:hover{border-color:#2a4060}
+/* Stat row */
+.stats{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+.stat{background:#12203a;border:1px solid #1a3050;border-radius:8px;padding:12px 20px;text-align:center;min-width:100px}
+.stat-val{font-size:1.5em;font-weight:600}
+.stat-label{font-size:0.68em;color:#6a8caf;margin-top:3px}
+/* Tables */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:0.82em}
+th{text-align:left;color:#8fb8d8;font-weight:600;padding:8px 12px;border-bottom:2px solid #1a3050;font-size:0.85em;letter-spacing:0.5px}
+td{padding:7px 12px;border-bottom:1px solid #12203a;color:#b0c4d8}
+tr:hover td{background:#12203a}
+td.r{text-align:right;font-variant-numeric:tabular-nums}
+/* Code */
+code{background:#12203a;padding:1px 6px;border-radius:4px;font-size:0.85em;color:#8fd8d0;font-family:"Cascadia Code","Fira Code",monospace}
+/* Lists */
+ol,ul{margin:8px 0 12px 22px;font-size:0.88em}
+li{margin-bottom:4px}
+li::marker{color:#5ab4ac}
+/* Pipeline flow */
+.pipeline{display:flex;gap:0;justify-content:center;flex-wrap:wrap;margin:20px 0}
+.pipe-step{background:#12203a;border:1px solid #1a3050;border-radius:8px;padding:14px 18px;text-align:center;min-width:140px;flex:1;position:relative}
+.pipe-step:not(:last-child)::after{content:"\2192";position:absolute;right:-14px;top:50%;transform:translateY(-50%);color:#3a5a7a;font-size:1.3em;z-index:1}
+.pipe-num{font-size:1.6em;font-weight:700;color:#5ab4ac;display:block;line-height:1}
+.pipe-title{font-size:0.78em;color:#fff;font-weight:500;margin-top:4px}
+.pipe-detail{font-size:0.68em;color:#6a8caf;margin-top:2px}
+/* Subreddit pills */
+.sub-pills{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.sub-pill{background:#12203a;border:1px solid #1a3050;border-radius:14px;padding:3px 12px;font-size:0.75em;color:#b0c4d8}
+.sub-pill.food{border-color:#2a4a4a;color:#5ab4ac}
+.sub-pill.transport{border-color:#3a2a4a;color:#af8dc3}
+.sub-pill.housing{border-color:#4a3a2a;color:#f4a460}
+.sub-pill.climate{border-color:#2a3a4a;color:#6a8caf}
+/* Sector badges */
+.badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:0.75em;font-weight:600}
+.badge.food{background:#1a3a4a;color:#5ab4ac}
+.badge.transport{background:#2a1a3a;color:#af8dc3}
+.badge.housing{background:#3a2a1a;color:#f4a460}
+/* Contribution list */
+.contrib{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:12px 0;font-size:0.85em}
+.contrib-num{color:#5ab4ac;font-weight:700;font-size:1em}
+.contrib-text{color:#b0c4d8}
+/* Method cards */
+.method-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin:14px 0}
+.method-card{background:#12203a;border:1px solid #1a3050;border-radius:8px;padding:14px 16px}
+.method-card:hover{border-color:#2a4060}
+.method-id{font-size:0.75em;color:#5ab4ac;font-weight:700;letter-spacing:1px}
+.method-name{font-size:0.88em;color:#fff;font-weight:500;margin:4px 0}
+.method-desc{font-size:0.75em;color:#6a8caf;line-height:1.5}
+/* Tab-method reference */
+.ref-grid{display:grid;grid-template-columns:auto auto 1fr;gap:4px 16px;margin:12px 0;font-size:0.82em}
+.ref-tab{color:#5ab4ac;font-weight:600}
+.ref-plot{color:#e0e8f0}
+.ref-method{color:#6a8caf}
+/* References */
+.ref-list{font-size:0.78em;color:#8a9ab0;line-height:1.8}
+.ref-list li{margin-bottom:2px}
+.ref-list li::marker{color:#3a5a7a}
+/* Responsive */
+@media(max-width:700px){
+  .pipeline{flex-direction:column;align-items:center}
+  .pipe-step::after{display:none}
+  .stats{flex-direction:column;align-items:center}
+  .method-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<h1>SOCIAL NORMS IN CLIMATE DISCUSSIONS</h1>
+<p class="subtitle">Dashboard documentation &amp; methodology &mdash; <a href="https://chowdhary-sandeep.github.io/climate_change__4housing_transport_food/" target="_blank">Live Dashboard</a></p>
+
+<nav class="toc">
+<div class="toc-title">Contents</div>
+<a href="#intro">1. Introduction</a>
+<a href="#data">2. Data</a>
+<a href="#pipeline">3. Pipeline</a>
+<a href="#dashboard">4. Dashboard</a>
+<a href="#methods">5. Methods</a>
+<a href="#tabref">6. Tab Reference</a>
+<a href="#refs">References</a>
+</nav>
+
+<!-- ================================================================ -->
+<h2 id="intro">1. Introduction</h2>
+<!-- ================================================================ -->
+<div class="sec">
+<p>Climate mitigation requires more than technological solutions&mdash;it depends on collective behavioural shifts shaped by social and cultural processes<sup>[1,2]</sup>. Social norms&mdash;shared expectations about what is typical or approved within a group&mdash;have emerged as powerful levers for encouraging climate-relevant behaviours<sup>[3,4]</sup>. <strong>Descriptive norms</strong> (what people <em>do</em>) and <strong>injunctive norms</strong> (what people <em>should</em> do) interact to shape energy conservation<sup>[5]</sup>, dietary choices, and technology adoption<sup>[6]</sup>. <strong>Second-order normative beliefs</strong>&mdash;beliefs about what others <em>believe</em> others do&mdash;have proven critical predictors of behaviour change, sometimes more so than first-order norms<sup>[7]</sup>. Trending norms, where a behaviour is growing even if still a minority practice, can be communicated to accelerate adoption<sup>[8]</sup>.</p>
+
+<p>Three domains sit at the heart of individual-level climate mitigation: <span class="badge transport">Transport</span> electric vehicles, <span class="badge food">Food</span> plant-based diets, and <span class="badge housing">Housing</span> residential solar photovoltaics. Together, these sectors account for a large share of household carbon footprints, and public discourse around them is rapidly evolving.</p>
+
+<p>Yet most of what we know about climate norms comes from surveys and experiments<sup>[3,5,7]</sup>&mdash;instruments that are expensive, slow, and limited in temporal resolution<sup>[9]</sup>. Social media platforms, especially Reddit, host continuous, large-scale, naturalistic discussion where normative claims surface organically. No study has systematically extracted the <em>structure</em> of social norms from this discourse&mdash;measuring not just sentiment but the type of norm invoked, the reference group cited, and the stance expressed&mdash;across multiple climate-action sectors simultaneously.</p>
+
+<h3>1.1 Knowledge Gap</h3>
+<p>Traditional measures of societal readiness&mdash;public opinion polls<sup>[10]</sup>, climate opinion maps<sup>[11]</sup>, media content analyses<sup>[12]</sup>, policy adoption indices<sup>[13]</sup>, technology deployment rates<sup>[14]</sup>&mdash;can be slow, costly, or limited in temporal granularity. Social-media sentiment studies exist<sup>[15]</sup> but typically treat sentiment as a single dimension, ignoring the richer norm taxonomy that behavioural science has shown to matter (descriptive vs. injunctive, first- vs. second-order, reference group specificity). Furthermore, no prior work has compared the <em>frame-level</em> content of online discourse with established survey instruments to identify where public attention and survey assumptions diverge.</p>
+
+<h3>1.2 Contributions</h3>
+<div class="contrib">
+<span class="contrib-num">1.</span><span class="contrib-text"><strong>Hierarchical norm extraction</strong> &mdash; Each comment classified on 7 norm dimensions derived from IPCC AR6 Chapter 5<sup>[2]</sup>: norm signal presence, author stance, descriptive norm, injunctive norm, reference group, perceived reference stance, second-order belief.</span>
+<span class="contrib-num">2.</span><span class="contrib-text"><strong>Sector-specific survey frame labeling</strong> &mdash; Comments labeled against 29 survey questions (13 food, 6 transport, 10 housing) from Gallup, Pew, Yale, and Green Fox Energy surveys<sup>[10,11,16]</sup>, enabling direct comparison with survey endorsement rates.</span>
+<span class="contrib-num">3.</span><span class="contrib-text"><strong>Temporal trend analysis</strong> &mdash; Year-stratified sampling (2010&ndash;2024) tracks how norm types, stances, reference groups, and factor salience shift over a 15-year window.</span>
+<span class="contrib-num">4.</span><span class="contrib-text"><strong>Verification pipeline</strong> &mdash; A reasoning model (GPT-OSS-20B) re-labels 1,800 samples (50 per question) to quantify reliability, with logprob-based confidence analysis.</span>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="data">2. Data</h2>
+<!-- ================================================================ -->
+
+<div class="stats">
+<div class="stat"><div class="stat-val" style="color:#5ab4ac">20.1M</div><div class="stat-label">Total Posts</div></div>
+<div class="stat"><div class="stat-val" style="color:#af8dc3">16</div><div class="stat-label">Subreddits</div></div>
+<div class="stat"><div class="stat-val" style="color:#f4a460">3.7M</div><div class="stat-label">Keyword Matched</div></div>
+<div class="stat"><div class="stat-val" style="color:#8fcc8f">9,000</div><div class="stat-label">Labeled Comments</div></div>
+<div class="stat"><div class="stat-val" style="color:#ffb87a">150K</div><div class="stat-label">Total Labels</div></div>
+<div class="stat"><div class="stat-val" style="color:#b0c4d8">15</div><div class="stat-label">Years (2010&ndash;24)</div></div>
+</div>
+
+<div class="sec">
+<h3>2.1 Reddit Corpus</h3>
+<p>Comments and submissions collected from <strong>16 subreddits</strong> spanning three behavioural sectors plus nine general climate subreddits. Posts filtered using sector-specific keyword regex patterns (60 transport, 31 housing, 40 food keywords).</p>
+
+<table>
+<tr><th>Sector</th><th>Subreddits</th><th class="r">Posts</th><th class="r">Keyword-matched</th></tr>
+<tr>
+<td><span class="badge food">Food</span></td>
+<td>
+<div class="sub-pills">
+<span class="sub-pill food">r/vegan</span>
+<span class="sub-pill food">r/veganarchism</span>
+<span class="sub-pill food">r/vegancirclejerk</span>
+</div>
+</td>
+<td class="r">13,226,049</td>
+<td class="r">2,535,937</td>
+</tr>
+<tr>
+<td><span class="badge transport">Transport</span></td>
+<td>
+<div class="sub-pills">
+<span class="sub-pill transport">r/electricvehicles</span>
+<span class="sub-pill transport">r/ElectricScooters</span>
+<span class="sub-pill transport">r/Electricmotorcycles</span>
+</div>
+</td>
+<td class="r">5,550,944</td>
+<td class="r">1,040,821</td>
+</tr>
+<tr>
+<td><span class="badge housing">Housing</span></td>
+<td>
+<div class="sub-pills">
+<span class="sub-pill housing">r/solar</span>
+</div>
+</td>
+<td class="r">681,926</td>
+<td class="r">126,481</td>
+</tr>
+<tr>
+<td style="color:#6a8caf">Climate</td>
+<td>
+<div class="sub-pills">
+<span class="sub-pill climate">r/climate</span>
+<span class="sub-pill climate">r/ClimateActionPlan</span>
+<span class="sub-pill climate">r/climatechange</span>
+<span class="sub-pill climate">r/ClimateChaos</span>
+<span class="sub-pill climate">r/climatedisalarm</span>
+<span class="sub-pill climate">r/ClimateMemes</span>
+<span class="sub-pill climate">r/ClimateOffensive</span>
+<span class="sub-pill climate">r/ClimateShitposting</span>
+<span class="sub-pill climate">r/climateskeptics</span>
+</div>
+</td>
+<td class="r">607,244</td>
+<td class="r">&mdash;</td>
+</tr>
+<tr style="border-top:2px solid #1a3050"><td colspan="2"><strong>Total</strong></td><td class="r"><strong>20,066,163</strong></td><td class="r"><strong>3,703,239</strong></td></tr>
+</table>
+
+<h3>2.2 Sampling</h3>
+<p>From 3.7M keyword-matched comments, <strong>9,000 comments</strong> (3,000/sector) sampled with <strong>equal yearly representation</strong> (2010&ndash;2024). Food: uniform 200/year. Transport and housing: &ge;57 comments even in earliest years, slightly more in recent years reflecting Reddit&rsquo;s growth.</p>
+
+<h3>2.3 Labeling Schema</h3>
+
+<p><strong>Social Norms</strong> (7 questions per comment, all sectors):</p>
+<table>
+<tr><th>ID</th><th>Question</th><th>Options</th></tr>
+<tr><td><code>1.1_gate</code></td><td>Does the comment reference a social norm?</td><td>yes / no</td></tr>
+<tr><td><code>1.1.1_stance</code></td><td>Author&rsquo;s stance toward the climate action</td><td>pro / against / against&nbsp;part.&nbsp;but&nbsp;pro / neither-mixed / pro&nbsp;but&nbsp;lack&nbsp;of&nbsp;options</td></tr>
+<tr><td><code>1.2.1_descriptive</code></td><td>Descriptive norm present?</td><td>explicitly present / absent / unclear</td></tr>
+<tr><td><code>1.2.2_injunctive</code></td><td>Injunctive norm present?</td><td>present / absent / unclear</td></tr>
+<tr><td><code>1.3.1_reference_group</code></td><td>Which social group is referenced?</td><td>family / partner / friends / coworkers / neighbors / local&nbsp;community / political&nbsp;tribe / online&nbsp;community / other&nbsp;reddit&nbsp;user / other</td></tr>
+<tr><td><code>1.3.1b_perceived_stance</code></td><td>Stance attributed to reference group</td><td>pro / against / neither-mixed</td></tr>
+<tr><td><code>1.3.3_second_order</code></td><td>Second-order normative belief</td><td>0 (none) / 1 (weak) / 2 (strong)</td></tr>
+</table>
+
+<p><strong>Survey Frame Questions</strong> (sector-specific, binary yes/no):</p>
+<table>
+<tr><th>Sector</th><th class="r"># Qs</th><th>Source Surveys</th><th>Examples</th></tr>
+<tr><td><span class="badge food">Food</span></td><td class="r">13</td><td>Gallup 2019; Yale &amp; GMU 2020</td><td>health, animal welfare, taste, social prompting, identity</td></tr>
+<tr><td><span class="badge transport">Transport</span></td><td class="r">6</td><td>Pew 2024</td><td>environment, purchase cost, infrastructure, reliability</td></tr>
+<tr><td><span class="badge housing">Housing</span></td><td class="r">10</td><td>Green Fox Energy 2025</td><td>cost savings, env. benefit, obsolescence, installer trust</td></tr>
+</table>
+
+<p><strong>Total labels:</strong> 9,000 &times; 7 norms + 3,000 &times; 13 + 3,000 &times; 6 + 3,000 &times; 10 = <strong>150,000 individual labels</strong></p>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="pipeline">3. Pipeline</h2>
+<!-- ================================================================ -->
+
+<div class="pipeline">
+<div class="pipe-step">
+<span class="pipe-num">1</span>
+<div class="pipe-title">Data Collection</div>
+<div class="pipe-detail">reddit_Paper4_EVs.ipynb<br>16 subreddits &rarr; 20M posts<br>Regex filter &rarr; 3.7M matched</div>
+</div>
+<div class="pipe-step">
+<span class="pipe-num">2</span>
+<div class="pipe-title">Hierarchical Labeling</div>
+<div class="pipe-detail">00_vLLM_hierarchical.py<br>Mistral-7B via vLLM<br>9,000 &times; 36 questions</div>
+</div>
+<div class="pipe-step">
+<span class="pipe-num">3</span>
+<div class="pipe-title">Prompt Optimization</div>
+<div class="pipe-detail">00_prompt_optimization.md<br>Evidence-guided refinement<br>from mismatch patterns</div>
+</div>
+<div class="pipe-step">
+<span class="pipe-num">4</span>
+<div class="pipe-title">Verification</div>
+<div class="pipe-detail">00_LMstudio_verifier_v2.py<br>GPT-OSS-20B re-labels<br>1,800 samples verified</div>
+</div>
+</div>
+
+<div class="sec">
+<h3>3.1 Data Collection</h3>
+<ol>
+<li>Load CSV exports of Reddit comments/submissions from 16 subreddits (Pushshift/Arctic Shift archives).</li>
+<li>Filter using sector-specific regex keyword matching (case-insensitive, morphological variants).</li>
+<li>Deduplicate by comment body per sector.</li>
+<li>Extract year from <code>created_utc</code> Unix timestamp.</li>
+<li>Cache to <code>paper4data/sector_to_comments_cache.json</code> (3.7M records).</li>
+</ol>
+
+<h3>3.2 Hierarchical Labeling</h3>
+<ol>
+<li>Load cache; sample 3,000/sector with equal yearly representation.</li>
+<li>Query local vLLM instance (<strong>Mistral-7B-Instruct</strong>) with hierarchical cascade: gate &rarr; stance &rarr; norms &rarr; reference group &rarr; second-order beliefs; plus sector-specific survey prompts.</li>
+<li>Collect both label and <strong>log-probability</strong> (confidence score) for each response.</li>
+<li>Safety net: recheck &ldquo;against&rdquo; stance labels for &ldquo;pro but lack of options&rdquo; misclassification.</li>
+<li>Output: <code>paper4data/norms_labels.json</code> &mdash; per-sector arrays of <code>{comment, year, answers, logprobs}</code>.</li>
+</ol>
+
+<h3>3.3 Prompt Optimization</h3>
+<p>Evidence-guided refinement from systematic analysis of verification mismatches:</p>
+<ul>
+<li><strong>Descriptive norm</strong>: Model too restrictive &mdash; added self-reports, statistics, observed group behaviour.</li>
+<li><strong>Gate question</strong>: Model too broad &mdash; excluded corporate mentions, technical facts, questions.</li>
+<li><strong>Perceived stance</strong>: Model defaulted to &ldquo;neither/mixed&rdquo; &mdash; added inference rules for tone, framing, sarcasm.</li>
+<li><strong>Reference group</strong>: Model over-assigned specific groups &mdash; emphasized possessive indicators (my/our).</li>
+</ul>
+
+<h3>3.4 Verification</h3>
+<ol>
+<li>Sample 50 comments per question (1,800 total across 36 questions).</li>
+<li>Re-label with <strong>GPT-OSS-20B</strong> (LM Studio) using <strong>identical prompts</strong>.</li>
+<li>Compute: accuracy, precision, recall, F1, Cohen&rsquo;s &kappa;, category estimation errors.</li>
+</ol>
+
+<div class="stats">
+<div class="stat"><div class="stat-val" style="color:#8fcc8f">86.1%</div><div class="stat-label">Mean Accuracy</div></div>
+<div class="stat"><div class="stat-val" style="color:#ffb87a">12.1%</div><div class="stat-label">Std Accuracy</div></div>
+<div class="stat"><div class="stat-val" style="color:#ff9aa8">56%</div><div class="stat-label">Min Accuracy</div></div>
+<div class="stat"><div class="stat-val" style="color:#8fcc8f">100%</div><div class="stat-label">Max Accuracy</div></div>
+<div class="stat"><div class="stat-val" style="color:#ffb87a">0.318</div><div class="stat-label">Mean Cohen&rsquo;s &kappa;</div></div>
+<div class="stat"><div class="stat-val" style="color:#b0c4d8">1,800</div><div class="stat-label">Samples Verified</div></div>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="dashboard">4. Dashboard</h2>
+<!-- ================================================================ -->
+<div class="sec">
+<h3>4.1 Data Sources</h3>
+<table>
+<tr><th>File</th><th>Contents</th></tr>
+<tr><td><code>paper4data/norms_labels.json</code></td><td>Full labeled dataset: 9,000 records with comment, year, answers (7&ndash;21 labels), logprobs</td></tr>
+<tr><td><code>paper4data/00_verification_results.json</code></td><td>Aggregated verification metrics by question</td></tr>
+<tr><td><code>paper4data/00_verification_samples.json</code></td><td>1,800 re-labeled samples with both model labels</td></tr>
+<tr><td><code>00_vllm_survey_question_final.json</code></td><td>Survey question metadata with wordings and source surveys</td></tr>
+</table>
+
+<h3>4.2 Libraries</h3>
+<table>
+<tr><th>Library</th><th>Version</th><th>Role</th></tr>
+<tr><td><strong>Plotly.js</strong></td><td>2.27.0</td><td>Gauge, treemap, Sankey, bar charts, scatter plots, stacked area charts</td></tr>
+<tr><td><strong>D3.js</strong></td><td>v7</td><td>Bubble pack layout, radial/spoke charts</td></tr>
+</table>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="methods">5. Methods &amp; Computations</h2>
+<!-- ================================================================ -->
+
+<div class="method-grid">
+<div class="method-card">
+<div class="method-id">M1</div>
+<div class="method-name">Year-Bucketed Proportion</div>
+<div class="method-desc">For each year 2010&ndash;2024: count category occurrences &rarr; proportion = count / total_in_year &times; 100. Used by all Temporal tab charts.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M2</div>
+<div class="method-name">Stacked Area Chart</div>
+<div class="method-desc">Plotly scatter with stackgroup. One trace per category, x = years, y = %. Fixed palette for stance/norms, 13-colour rotating palette for survey.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M3</div>
+<div class="method-name">Animated Bar Chart</div>
+<div class="method-desc">Horizontal bars animate from 0 to final value (900ms, cubic-out). Traffic-light colours: green &ge;85%, orange 70&ndash;85%, red &lt;70%.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M4</div>
+<div class="method-name">Gauge &mdash; Norm Prevalence</div>
+<div class="method-desc">Plotly pie (hole: 0.65, clipped to half). Food 40.2%, Transport 11.6%, Housing 16.2%. 30-step animation with cubic ease-out.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M5</div>
+<div class="method-name">Confidence Analysis</div>
+<div class="method-desc">Logprob &rarr; probability via exp(). Binned mismatch rates, per-question scatter, high-confidence (&gt;0.9) accuracy.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M6</div>
+<div class="method-name">Sankey &mdash; Norm Flow</div>
+<div class="method-desc">19 nodes, 48 links (16/sector). Per-sector toggle: bright 0.45 opacity, dim 0.06. Category labels update dynamically.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M7</div>
+<div class="method-name">Treemap &mdash; Author Stance</div>
+<div class="method-desc">Plotly treemap, branchvalues: remainder. Root &rarr; Sector &rarr; Stance. Green (pro) to red (against) gradient.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M8</div>
+<div class="method-name">Bubble Pack &mdash; Ref Groups</div>
+<div class="method-desc">D3 force simulation. r = sqrt(count) &times; 2.2. 9 categories &times; 3 sectors with staggered reveal animation.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M9</div>
+<div class="method-name">Radial Spokes &mdash; Survey</div>
+<div class="method-desc">D3 d3.arc(). Food: 13 spokes (max 25%), Transport: 6 (max 10%), Housing: 10 (max 15%). Sequential spoke animation.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M10</div>
+<div class="method-name">Verification Stat Boxes</div>
+<div class="method-desc">8 metrics from summary stats + confidence computations. Colour-coded thresholds with scale-in animation.</div>
+</div>
+<div class="method-card">
+<div class="method-id">M11</div>
+<div class="method-name">Examples</div>
+<div class="method-desc">11 questions, 50 samples each. Up to 4 mismatches + 2 matches per question. Low-accuracy expanded by default.</div>
+</div>
+</div>
+
+<div class="sec">
+<h3>Key Data Tables</h3>
+
+<p><strong>Author Stance (Tab 2, Treemap):</strong></p>
+<table>
+<tr><th>Sector</th><th class="r">Pro</th><th class="r">Against</th><th class="r">Against part. but pro</th><th class="r">Neither/Mixed</th><th class="r">Pro but lack of opt.</th></tr>
+<tr><td><span class="badge food">Food</span></td><td class="r">735</td><td class="r">252</td><td class="r">83</td><td class="r">1,404</td><td class="r">526</td></tr>
+<tr><td><span class="badge transport">Transport</span></td><td class="r">372</td><td class="r">274</td><td class="r">66</td><td class="r">1,754</td><td class="r">534</td></tr>
+<tr><td><span class="badge housing">Housing</span></td><td class="r">531</td><td class="r">243</td><td class="r">69</td><td class="r">1,555</td><td class="r">602</td></tr>
+</table>
+
+<p><strong>Norm Signal Prevalence (Tab 1, Gauge):</strong></p>
+<table>
+<tr><th>Sector</th><th class="r">% with norm signal</th><th class="r">Count</th></tr>
+<tr><td><span class="badge food">Food</span></td><td class="r">40.2%</td><td class="r">1,206 / 3,000</td></tr>
+<tr><td><span class="badge transport">Transport</span></td><td class="r">11.6%</td><td class="r">348 / 3,000</td></tr>
+<tr><td><span class="badge housing">Housing</span></td><td class="r">16.2%</td><td class="r">486 / 3,000</td></tr>
+</table>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="tabref">6. Tab &rarr; Plot &rarr; Method Reference</h2>
+<!-- ================================================================ -->
+<div class="sec">
+<div class="ref-grid">
+<span class="ref-tab">1. Norms</span><span class="ref-plot">Gauge (norm signal %)</span><span class="ref-method">M4</span>
+<span class="ref-tab">1. Norms</span><span class="ref-plot">Sankey (classification flow)</span><span class="ref-method">M6</span>
+<span class="ref-tab">1. Norms</span><span class="ref-plot">Bubble pack (reference groups)</span><span class="ref-method">M8</span>
+<span class="ref-tab">2. Author Stance</span><span class="ref-plot">Treemap</span><span class="ref-method">M7</span>
+<span class="ref-tab">3. Factors &amp; Barriers</span><span class="ref-plot">Radial charts (&times;3 sectors)</span><span class="ref-method">M9</span>
+<span class="ref-tab">4. Temporal</span><span class="ref-plot">Stance over time (&times;3)</span><span class="ref-method">M1 &rarr; M2</span>
+<span class="ref-tab">4. Temporal</span><span class="ref-plot">Norm dimensions over time (&times;3, togglable)</span><span class="ref-method">M1 &rarr; M2</span>
+<span class="ref-tab">4. Temporal</span><span class="ref-plot">Survey factors over time (&times;3)</span><span class="ref-method">M1 &rarr; M2</span>
+<span class="ref-tab">5. Verification</span><span class="ref-plot">Stat boxes</span><span class="ref-method">M10</span>
+<span class="ref-tab">5. Verification</span><span class="ref-plot">Accuracy by question</span><span class="ref-method">M3</span>
+<span class="ref-tab">5. Verification</span><span class="ref-plot">Top estimation errors</span><span class="ref-method">M3</span>
+<span class="ref-tab">5. Verification</span><span class="ref-plot">Confidence bin bar + scatter</span><span class="ref-method">M5</span>
+<span class="ref-tab">5. Verification</span><span class="ref-plot">High-confidence accuracy</span><span class="ref-method">M3 + M5</span>
+<span class="ref-tab">6. Examples</span><span class="ref-plot">Sample comparisons</span><span class="ref-method">M11</span>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="refs">References</h2>
+<!-- ================================================================ -->
+<div class="sec">
+<ol class="ref-list">
+<li>IPCC, &ldquo;Climate Change 2022: Mitigation of Climate Change,&rdquo; Chapter 5 &mdash; Demand, Services and Social Aspects of Mitigation, 2022.</li>
+<li>S. Eker <em>et al.</em>, &ldquo;Social and cultural processes in climate mitigation,&rdquo; in <em>IPCC AR6 WG3 Chapter 5</em>, 2022.</li>
+<li>R. Cialdini, R. Reno, and C. Kallgren, &ldquo;A focus theory of normative conduct: Recycling the concept of norms to reduce littering in public places,&rdquo; <em>J. Personality and Social Psychology</em>, vol. 58, pp. 1015&ndash;1026, 1990.</li>
+<li>D. Miller and D. Prentice, &ldquo;Changing norms to change behavior,&rdquo; <em>Annual Review of Psychology</em>, vol. 67, pp. 339&ndash;361, 2016.</li>
+<li>J. Bonan, C. Cattaneo, G. d&rsquo;Adda, and M. Tavoni, &ldquo;The interaction of descriptive and injunctive norms in promoting energy conservation,&rdquo; <em>Nature Energy</em>, vol. 5, pp. 900&ndash;909, 2020.</li>
+<li>W. Abrahamse and L. Steg, &ldquo;Social influence approaches to encourage resource conservation: A meta-analysis,&rdquo; <em>Global Environmental Change</em>, vol. 23, pp. 1773&ndash;1785, 2013.</li>
+<li>J. Jachimowicz <em>et al.</em>, &ldquo;The critical role of second-order normative beliefs in predicting energy conservation,&rdquo; <em>Nature Human Behaviour</em>, vol. 2, pp. 757&ndash;764, 2018.</li>
+<li>C. Mortensen <em>et al.</em>, &ldquo;Trending norms: A lever for encouraging behaviors performed by the minority,&rdquo; <em>Social Psychological and Personality Science</em>, vol. 10, pp. 201&ndash;210, 2019.</li>
+<li>S. Chowdhary and S. Eker, &ldquo;Societal Readiness for Climate Solutions: Insights from Reddit Discourse on Adoption of EVs, Plant-based Diets and Solar PV,&rdquo; <em>IIASA</em>, working paper, 2025.</li>
+<li>Pew Research Center, &ldquo;Climate change public opinion survey,&rdquo; 2022/2024.</li>
+<li>Yale Program on Climate Change Communication, &ldquo;Yale climate opinion maps,&rdquo; 2023.</li>
+<li>M. T. Boykoff and T. J. Roberts, &ldquo;Media coverage of climate change: meta-analysis,&rdquo; <em>Global Environmental Change</em>, vol. 17, no. 5, pp. 1&ndash;14, 2007.</li>
+<li>OECD, &ldquo;Climate policy database,&rdquo; 2023.</li>
+<li>IEA, &ldquo;World energy outlook,&rdquo; 2023.</li>
+<li>A. Carlyle, J. Smith, and M. Lee, &ldquo;Automated sentiment analysis of climate discourse on social media,&rdquo; <em>Environmental Communication</em>, vol. 15, no. 6, pp. 738&ndash;758, 2021.</li>
+<li>Green Fox Energy, &ldquo;Residential solar adoption survey,&rdquo; 2025.</li>
+<li>W. Pearce <em>et al.</em>, &ldquo;Climate change on social media: the role of platforms,&rdquo; <em>WIREs Climate Change</em>, vol. 10, p. e604, 2019.</li>
+<li>C. Sunstein, <em>How Change Happens</em>, MIT Press, 2019.</li>
+</ol>
+</div>
+
+<p style="text-align:center;color:#3a5a7a;font-size:0.72em;margin-top:30px">Chowdhary &amp; Eker &mdash; International Institute for Applied Systems Analysis (IIASA)</p>
+
+</body>
+</html>
