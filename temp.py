@@ -91,9 +91,8 @@ for sec in ["food", "transport", "housing"]:
                 temporal_stance[sec][sl][y] = 0
 
 # Compute norm dimension proportions by year per sector
-# For descriptive/injunctive: "present" vs "absent" vs "unclear"
-# For second_order: "1" (strong) vs "0" (none/weak)
-# For perceived_stance: categories
+# For descriptive/injunctive: "explicitly present" vs "absent" vs "unclear"
+# For second_order: "2" (strong) vs "1" (weak) vs "0" (none)
 NORM_DIMS = {
     "1.2.1_descriptive": {"title": "Descriptive Norm", "cats": ["explicitly present", "absent", "unclear"],
                           "colors": ["#7caed6", "#566a7a", "#8a9aa8"]},
@@ -102,8 +101,6 @@ NORM_DIMS = {
     "1.3.3_second_order": {"title": "Second-Order Belief", "cats": ["2", "1", "0"],
                            "display": ["strong", "weak", "none"],
                            "colors": ["#b8a8c8", "#8fbfd9", "#8a9aa8"]},
-    "1.3.1b_perceived_reference_stance": {"title": "Perceived Stance", "cats": ["pro", "against", "neither/mixed"],
-                                          "colors": ["#8fcc8f", "#ff9aa8", "#ffe87a"]},
 }
 
 temporal_norms = {}
@@ -154,9 +151,14 @@ NORMS_Q_LABELS = [
     ("1.2.1_descriptive", "Descriptive Norm"),
     ("1.2.2_injunctive", "Injunctive Norm"),
     ("1.3.1_reference_group", "Reference Group"),
-    ("1.3.1b_perceived_reference_stance", "Perceived Reference Stance"),
     ("1.3.3_second_order", "Second-Order Belief"),
 ]
+
+# Map raw vllm_label values to human-readable display names
+LABEL_DISPLAY = {
+    "1.1_gate": {"0": "absent", "1": "present"},
+    "1.3.3_second_order": {"0": "none", "1": "weak", "2": "strong"},
+}
 
 ALL_QS = []
 # Norms questions (all sectors)
@@ -176,6 +178,14 @@ for sector_key, sec_lower in [("FOOD", "food"), ("TRANSPORT", "transport"), ("HO
 EX_SECTORS = ["food", "transport", "housing"]
 EX_SEC_LABELS = {"food": "FOOD", "transport": "TRANSPORT", "housing": "HOUSING"}
 EX_SEC_COLORS = {"food": "#5ab4ac", "transport": "#af8dc3", "housing": "#f4a460"}
+
+# Count full-dataset label occurrences per question from labeled_data (9000 records)
+full_label_counts = defaultdict(lambda: defaultdict(int))
+for _sec in ["food", "transport", "housing"]:
+    for _rec in labeled_data[_sec]:
+        for _qid, _val in _rec.get("answers", {}).items():
+            if _val is not None and str(_val).strip():
+                full_label_counts[_qid][str(_val).strip().lower()] += 1
 
 def _esc(text):
     return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -242,8 +252,13 @@ for task_type, qid, display_label, sector_filter in ALL_QS:
                 col_headers += f'<div class="ex-col-hdr" style="color:{color}">{lbl_str} {ci}</div>'
 
     # Answer rows
+    # Label display map for this question (e.g. "0"→"none" for second_order)
+    q_label_map = LABEL_DISPLAY.get(qid, {})
+
     answer_rows_html = ""
     for lbl in all_labels:
+        lbl_display = q_label_map.get(lbl, lbl)
+        # Also map reasoning_label for display
         row_cells = ""
         for sec in EX_SECTORS:
             if sector_filter and sector_filter != sec:
@@ -259,7 +274,8 @@ for task_type, qid, display_label, sector_filter in ALL_QS:
                         border_color = "#4ade80" if is_match else "#f87171"
                         conf = _get_conf(s, qid)
                         conf_badge = f'<span class="ex-conf">{conf*100:.0f}%</span>' if conf is not None else ""
-                        rsn = str(s.get("reasoning_label",""))[:25]
+                        rsn_raw = str(s.get("reasoning_label",""))
+                        rsn = q_label_map.get(rsn_raw, rsn_raw)[:25]
                         row_cells += (
                             f'<div class="ex-cell" style="border-left:3px solid {border_color}">'
                             f'{conf_badge}'
@@ -270,17 +286,24 @@ for task_type, qid, display_label, sector_filter in ALL_QS:
                     else:
                         row_cells += '<div class="ex-cell ex-cell-empty"></div>'
 
+        lbl_n = full_label_counts[qid].get(lbl.lower(), 0)
         answer_rows_html += (
             f'<div class="ex-answer-row">'
-            f'<div class="ex-answer-label">{_esc(lbl)}</div>'
+            f'<div class="ex-answer-label">{_esc(lbl_display)}'
+            f' <span class="ex-label-n">n={lbl_n:,}</span></div>'
             f'<div class="ex-9grid">{row_cells}</div>'
             f'</div>'
         )
 
+    n_total = sum(full_label_counts[qid].values()) if qid in full_label_counts else len(samples)
     examples_html += (
         f'<details class="ex-section">'
-        f'<summary><span style="color:{acc_color};font-weight:700">{acc*100:.0f}%</span>'
-        f' {_esc(display_label)} <span style="color:#4a6a8a;font-size:0.8em">({_esc(qid)})</span></summary>'
+        f'<summary>{_esc(display_label)}'
+        f' <span class="ex-sum-meta">'
+        f'<span style="color:#4a6a8a">{_esc(qid)}</span>'
+        f'&nbsp;&nbsp;n={n_total:,}'
+        f'&nbsp;&nbsp;acc=<span style="color:{acc_color};font-weight:700">{acc*100:.0f}%</span>'
+        f'</span></summary>'
         f'<div class="ex-content">'
         f'{prompt_drop}'
         f'<div class="ex-9grid ex-hdr-row">{col_headers}</div>'
@@ -291,10 +314,15 @@ for task_type, qid, display_label, sector_filter in ALL_QS:
 # ═══════════════════════════════════════════════════════════════════
 # Build verification data for JS
 # ═══════════════════════════════════════════════════════════════════
+# Questions excluded from verification displays
+SKIP_QIDS = {"1.3.1b_perceived_reference_stance"}
+
 # Accuracy by question sorted
 acc_data = []
 for task_type in ["norms", "survey"]:
     for qid, m in vr["by_task"][task_type].items():
+        if qid in SKIP_QIDS:
+            continue
         acc_data.append({"q": qid[:35], "acc": m["accuracy"], "type": task_type})
 acc_data.sort(key=lambda x: x["acc"])
 acc_questions = json.dumps([d["q"] for d in acc_data])
@@ -305,6 +333,8 @@ acc_colors = json.dumps(["#ff9aa8" if d["acc"]<0.70 else "#ffb87a" if d["acc"]<0
 est_data = []
 for task_type in ["norms", "survey"]:
     for qid, m in vr["by_task"][task_type].items():
+        if qid in SKIP_QIDS:
+            continue
         for cat, ce in m.get("category_estimation", {}).items():
             err = ce.get("estimation_error", 0)
             if abs(err) >= 2:
@@ -332,6 +362,8 @@ q_highconf_acc = []
 
 for task_type in ["norms", "survey"]:
     for qid, samples in vs.get(task_type, {}).items():
+        if qid in SKIP_QIDS:
+            continue
         q_confs = []
         q_matches = 0
         q_total = 0
@@ -475,7 +507,7 @@ h1{text-align:center;font-size:1.3em;color:#fff;margin-bottom:2px;font-weight:30
 .stat-label{font-size:0.65em;color:#6a8caf;margin-top:2px}
 /* Examples */
 .ex-section{margin-bottom:8px}
-.ex-section summary{cursor:pointer;padding:8px 12px;background:#12203a;border-radius:6px;font-size:0.9em;color:#b0c4d8;list-style:none}
+.ex-section summary{cursor:pointer;padding:8px 12px;background:#12203a;border-radius:6px;font-size:0.9em;color:#b0c4d8;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .ex-section summary::-webkit-details-marker{display:none}
 .ex-section summary::before{content:"\25B6 ";font-size:0.7em;color:#5ab4ac}
 .ex-section[open] summary::before{content:"\25BC ";font-size:0.7em;color:#5ab4ac}
@@ -500,7 +532,9 @@ h1{text-align:center;font-size:1.3em;color:#fff;margin-bottom:2px;font-weight:30
 .ex-conf{position:absolute;top:3px;right:3px;font-size:0.65em;background:#1a3050;padding:1px 4px;border-radius:8px;color:#8fcc8f;font-weight:600}
 .ex-reason-lbl{margin-top:5px;font-size:0.8em;color:#5a7a9a}
 .ex-answer-row{margin-bottom:8px}
-.ex-answer-label{font-size:0.78em;font-weight:700;color:#c0d0e0;padding:4px 0 3px;text-transform:capitalize;letter-spacing:0.5px;border-bottom:1px solid #1a3050;margin-bottom:3px}
+.ex-answer-label{font-size:0.78em;font-weight:700;color:#c0d0e0;padding:4px 0 3px;text-transform:capitalize;letter-spacing:0.5px;border-bottom:1px solid #1a3050;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.ex-label-n{font-size:0.75em;font-weight:400;color:#4a6a8a;text-transform:none;letter-spacing:0}
+.ex-sum-meta{float:right;font-size:0.75em;font-weight:400;color:#6a8caf}
 .ex-prompt-drop{margin-bottom:8px}
 .ex-prompt-drop>summary{font-size:0.72em;color:#4a7aaf;cursor:pointer;padding:3px 0;user-select:none}
 .ex-prompt-box{background:#060c18;border:1px solid #1a3050;border-radius:6px;padding:10px;font-size:0.68em;color:#7a8a9a;font-family:monospace;white-space:pre-wrap;margin-top:5px;max-height:180px;overflow-y:auto}
@@ -542,7 +576,7 @@ h1{text-align:center;font-size:1.3em;color:#fff;margin-bottom:2px;font-weight:30
 <div class="sec-title">Norm Classification Flow</div>
 <button class="info-btn" onclick="toggleInfo(this)">?</button>
 </div>
-<div class="info-popup">Each comment is classified across 4 norm dimensions. Select a sector to trace its 3,000 comments through each dimension. <b>Descriptive</b>: what people do. <b>Injunctive</b>: what people should do. <b>Second-order</b>: beliefs about others' beliefs. <b>Perceived stance</b>: what reference groups think.</div>
+<div class="info-popup">Each comment is classified across 3 norm dimensions. Select a sector to trace its 3,000 comments through each dimension. <b>Descriptive</b>: what people do. <b>Injunctive</b>: what people should do. <b>Second-order</b>: beliefs about others' norms.</div>
 <div class="sankey-toggles">
 <button class="sankey-toggle active" data-sec="Food" onclick="window._sankeySetSector('Food')">Food</button>
 <button class="sankey-toggle" data-sec="Transport" onclick="window._sankeySetSector('Transport')">Transport</button>
@@ -609,12 +643,11 @@ h1{text-align:center;font-size:1.3em;color:#fff;margin-bottom:2px;font-weight:30
 <div class="sec-title">Norm Dimensions Over Time (% by year)</div>
 <button class="info-btn" onclick="toggleInfo(this)">?</button>
 </div>
-<div class="info-popup">How the distribution of norm classifications (descriptive, injunctive, second-order, perceived stance) changes across years. Each stacked area shows proportions within a single dimension.</div>
+<div class="info-popup">How the distribution of norm classifications (descriptive, injunctive, second-order) changes across years. Each stacked area shows proportions within a single dimension.</div>
 <div class="temporal-dim-toggles" style="display:flex;gap:6px;margin-bottom:10px;justify-content:flex-start">
 <button class="sankey-toggle active" data-dim="1.2.1_descriptive" onclick="window._setTemporalDim(this.dataset.dim)">Descriptive</button>
 <button class="sankey-toggle" data-dim="1.2.2_injunctive" onclick="window._setTemporalDim(this.dataset.dim)">Injunctive</button>
 <button class="sankey-toggle" data-dim="1.3.3_second_order" onclick="window._setTemporalDim(this.dataset.dim)">Second-Order</button>
-<button class="sankey-toggle" data-dim="1.3.1b_perceived_reference_stance" onclick="window._setTemporalDim(this.dataset.dim)">Perceived Stance</button>
 </div>
 <div class="grid3">
 <div><div style="text-align:center;color:#5ab4ac;font-size:0.8em;font-weight:600;margin-bottom:2px">FOOD</div><div id="temporal-dim-food"></div></div>
@@ -808,18 +841,18 @@ function initBubbles(){
 
 // ═══════════════ NORMS SANKEY (sectors → dimensions → categories, per-sector links) ═══════════════
 (function(){
-    // Per-sector data: [present/strong/pro, absent/weak/against, unclear/none/mixed]
+    // Per-sector data: [present/strong, absent/weak, unclear/none]
     var SD={
-        Food:     {desc:[874,743,1383],  inj:[288,2526,186],  sec:[377,628,1995], perc:[467,152,2381]},
-        Transport:{desc:[419,2176,405],  inj:[150,2805,45],   sec:[319,480,2201], perc:[888,350,1762]},
-        Housing:  {desc:[395,1957,648],  inj:[206,2735,59],   sec:[362,522,2116], perc:[803,368,1829]}
+        Food:     {desc:[874,743,1383],  inj:[288,2526,186],  sec:[377,628,1995]},
+        Transport:{desc:[419,2176,405],  inj:[150,2805,45],   sec:[319,480,2201]},
+        Housing:  {desc:[395,1957,648],  inj:[206,2735,59],   sec:[362,522,2116]}
     };
-    var secs=['Food','Transport','Housing'],dims=['desc','inj','sec','perc'];
-    // 19 nodes: 0-2 sectors, 3-6 dimensions, 7-18 categories
+    var secs=['Food','Transport','Housing'],dims=['desc','inj','sec'];
+    // 15 nodes: 0-2 sectors, 3-5 dimensions, 6-14 categories
     var baseLabels=['Food<br>3,000','Transport<br>3,000','Housing<br>3,000',
-        'Descriptive<br>Norm','Injunctive<br>Norm','Second-Order<br>Belief','Perceived<br>Stance'];
+        'Descriptive<br>Norm','Injunctive<br>Norm','Second-Order<br>Belief'];
     var catNames=[['Present','Absent','Unclear'],['Present','Absent','Unclear'],
-        ['Strong','Weak','None'],['Pro','Against','Mixed']];
+        ['Strong','Weak','None']];
     // Aggregate category totals
     var catTotals=[];
     dims.forEach(function(d,di){
@@ -841,11 +874,10 @@ function initBubbles(){
     });
     var nl=baseLabels.concat(catLabelsAll);
     var nc=['#5ab4ac','#af8dc3','#f4a460',
-        '#7caed6','#8fbfd9','#b8a8c8','#8fcc8f',
+        '#7caed6','#8fbfd9','#b8a8c8',
         '#7caed6','#566a7a','#8a9aa8',
         '#8fbfd9','#566a7a','#8a9aa8',
-        '#ffb0a0','#8fbfd9','#8a9aa8',
-        '#8fcc8f','#ff9aa8','#ffe87a'];
+        '#ffb0a0','#8fbfd9','#8a9aa8'];
     // Build links: 48 total, organized by sector (0-15 Food, 16-31 Transport, 32-47 Housing)
     var src=[],tgt=[],val=[];
     secs.forEach(function(s,si){
@@ -853,7 +885,7 @@ function initBubbles(){
         dims.forEach(function(d,di){src.push(si);tgt.push(3+di);val.push(3000);});
         // 12 dimension→category links (per sector)
         dims.forEach(function(d,di){
-            SD[s][d].forEach(function(v,ci){src.push(3+di);tgt.push(7+di*3+ci);val.push(v);});
+            SD[s][d].forEach(function(v,ci){src.push(3+di);tgt.push(6+di*3+ci);val.push(v);});
         });
     });
     // Color helpers
@@ -863,7 +895,7 @@ function initBubbles(){
         secs.forEach(function(s){
             var bright='rgba('+SC[s]+',0.45)',dim='rgba('+SC[s]+',0.06)';
             var use=(active==='all'||active===s)?bright:dim;
-            for(var i=0;i<16;i++)c.push(use);
+            for(var i=0;i<12;i++)c.push(use);
         });
         return c;
     }
@@ -880,7 +912,7 @@ function initBubbles(){
             newLabels=baseLabels.concat(catLabelsAll);
         }else{
             // Update dimension labels to show per-sector total
-            var dimLabels=['Descriptive<br>Norm','Injunctive<br>Norm','Second-Order<br>Belief','Perceived<br>Stance'];
+            var dimLabels=['Descriptive<br>Norm','Injunctive<br>Norm','Second-Order<br>Belief'];
             var secLabel=[sec+'<br>3,000'];
             var otherSecs=secs.filter(function(s){return s!==sec});
             var sLabels=secs.map(function(s){return s=== sec?(s+'<br>3,000'):(s+'<br><span style="opacity:0.3">3,000</span>');});
