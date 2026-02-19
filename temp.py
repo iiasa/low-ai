@@ -877,7 +877,7 @@ function initBubbles(){
     // Adaptive scale: largest bubble radius = 42% of column width, so chart stays bounded as data grows
     var maxVal=0;
     sectors.forEach(function(sec){bubbleData[sec].forEach(function(v){if(v>maxVal)maxVal=v;});});
-    var maxAllowedR=cw*0.28;
+    var maxAllowedR=cw*0.18;
     var rScale=maxVal>0?maxAllowedR/Math.sqrt(maxVal):1.5;
     sectors.forEach(function(sec,si){
         var cx=cw*si+cw/2;
