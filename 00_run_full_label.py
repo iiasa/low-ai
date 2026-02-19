@@ -311,7 +311,11 @@ def run_full_label_checkpoints(
 
     # ── Checkpoint loop ───────────────────────────────────────────────────
     start_time     = time.time()
-    checkpoint_num = 0
+    # Start numbering after any existing checkpoint files so we never overwrite them
+    _existing_ckpts = sorted(Path(CHECKPOINT_DIR).glob("checkpoint_*.json")) if Path(CHECKPOINT_DIR).exists() else []
+    checkpoint_num = len(_existing_ckpts)
+    if checkpoint_num:
+        print(f"\n  Continuing from checkpoint {checkpoint_num} (next will be {checkpoint_num+1})")
     last_chkpt_start = start_time
     last_chkpt_n   = 0
 
