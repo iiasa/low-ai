@@ -1394,21 +1394,77 @@ window.addEventListener('load',function(){
 
 <!-- DOCS TAB -->
 <div class="tab-content" id="tab-docs" style="background:#0a1628;padding:20px 0">
-<div style="max-width:1100px;margin:0 auto;padding:0 20px;line-height:1.7">
+<style>
+#docs-toc{width:210px;flex-shrink:0;position:sticky;top:58px;max-height:calc(100vh - 70px);overflow-y:auto;background:#0d1a2e;border:1px solid #1a3050;border-radius:10px;font-size:0.76em;scrollbar-width:thin;scrollbar-color:#1a3050 transparent}
+#docs-toc::-webkit-scrollbar{width:4px}#docs-toc::-webkit-scrollbar-thumb{background:#1a3050;border-radius:4px}
+#docs-toc .toc-head{padding:12px 14px 8px;font-size:0.72em;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#4a6a8a;border-bottom:1px solid #1a3050}
+#docs-toc details{border-bottom:1px solid #0f1d33}
+#docs-toc details summary{list-style:none;cursor:pointer;padding:7px 14px;color:#7a9abf;font-weight:600;display:flex;align-items:center;justify-content:space-between;transition:color 0.15s;user-select:none}
+#docs-toc details summary::-webkit-details-marker{display:none}
+#docs-toc details summary::after{content:"›";font-size:1.1em;transition:transform 0.2s;display:inline-block;color:#3a5a7a}
+#docs-toc details[open] summary::after{transform:rotate(90deg)}
+#docs-toc details summary:hover{color:#fff}
+#docs-toc details summary a{color:inherit;text-decoration:none;flex:1}
+#docs-toc .toc-sub{padding:2px 0 6px 0;background:#081422}
+#docs-toc .toc-sub a{display:block;padding:4px 14px 4px 24px;color:#4a6a8a;text-decoration:none;transition:color 0.15s;line-height:1.3}
+#docs-toc .toc-sub a:hover{color:#8fb8d8}
+#docs-toc .toc-flat a{display:block;padding:7px 14px;color:#7a9abf;font-weight:600;text-decoration:none;border-bottom:1px solid #0f1d33;transition:color 0.15s}
+#docs-toc .toc-flat a:hover{color:#fff}
+</style>
+<div style="max-width:1320px;margin:0 auto;padding:0 20px;display:flex;gap:24px;align-items:flex-start">
+
+<!-- Sidebar TOC -->
+<nav id="docs-toc">
+  <div class="toc-head">Contents</div>
+  <details open>
+    <summary><a href="#intro" onclick="event.stopPropagation()">1. Introduction</a></summary>
+    <div class="toc-sub">
+      <a href="#intro-gap">1.1 Knowledge Gap</a>
+      <a href="#intro-contrib">1.2 Contributions</a>
+    </div>
+  </details>
+  <details>
+    <summary><a href="#data" onclick="event.stopPropagation()">2. Data</a></summary>
+    <div class="toc-sub">
+      <a href="#data-corpus">2.1 Reddit Corpus</a>
+      <a href="#data-sampling">2.2 Sampling</a>
+      <a href="#data-schema">2.3 Labeling Schema</a>
+    </div>
+  </details>
+  <details>
+    <summary><a href="#pipeline" onclick="event.stopPropagation()">3. Pipeline</a></summary>
+    <div class="toc-sub">
+      <a href="#pipe-collect">3.1 Data Collection</a>
+      <a href="#pipe-labeling">3.2 Hierarchical Labeling</a>
+      <a href="#pipe-prompt">3.3 Prompt Optimization</a>
+      <a href="#pipe-audit">3.4 Verification</a>
+    </div>
+  </details>
+  <details>
+    <summary><a href="#dashboard" onclick="event.stopPropagation()">4. Dashboard</a></summary>
+    <div class="toc-sub">
+      <a href="#dash-sources">4.1 Data Sources</a>
+      <a href="#dash-libs">4.2 Libraries</a>
+      <a href="#classification">4.3 Survey Classification</a>
+    </div>
+  </details>
+  <details>
+    <summary><a href="#methods" onclick="event.stopPropagation()">5. Methods</a></summary>
+    <div class="toc-sub">
+      <a href="#methods-tables">Key Data Tables</a>
+    </div>
+  </details>
+  <div class="toc-flat">
+    <a href="#tabref">6. Tab Reference</a>
+    <a href="#limitations">7. Limitations</a>
+    <a href="#refs">References</a>
+  </div>
+</nav>
+
+<!-- Main content -->
+<div style="flex:1;min-width:0;line-height:1.7">
 <h1>CLIMATE DISCOURSE ON REDDIT – LOW-AI Dashboard</h1>
 <p class="subtitle">Data and Methods &mdash; <a href="https://chowdhary-sandeep.github.io/climate_change__4housing_transport_food/" target="_blank">Live Dashboard</a></p>
-
-<nav class="toc">
-<div class="toc-title">Contents</div>
-<a href="#intro">1. Introduction</a>
-<a href="#data">2. Data</a>
-<a href="#pipeline">3. Pipeline</a>
-<a href="#dashboard">4. Dashboard</a>
-<a href="#methods">5. Methods</a>
-<a href="#tabref">6. Tab Reference</a>
-<a href="#limitations">7. Limitations</a>
-<a href="#refs">References</a>
-</nav>
 
 <!-- ================================================================ -->
 <h2 id="intro">1. Introduction</h2>
@@ -1420,10 +1476,10 @@ window.addEventListener('load',function(){
 
 <p>Yet most of what we know about climate norms comes from surveys and experiments<sup>[3,5,7]</sup>&mdash;instruments that are expensive, slow, and limited in temporal resolution<sup>[9]</sup>. Social media platforms, especially Reddit, host continuous, large-scale, naturalistic discussion where normative claims surface organically. No study has systematically extracted the <em>structure</em> of social norms from this discourse&mdash;measuring not just sentiment but the type of norm invoked, the reference group cited, and the stance expressed&mdash;across multiple climate-action sectors simultaneously.</p>
 
-<h3>1.1 Knowledge Gap</h3>
+<h3 id="intro-gap">1.1 Knowledge Gap</h3>
 <p>Traditional measures of societal readiness&mdash;public opinion polls<sup>[10]</sup>, climate opinion maps<sup>[11]</sup>, media content analyses<sup>[12]</sup>, policy adoption indices<sup>[13]</sup>, technology deployment rates<sup>[14]</sup>&mdash;can be slow, costly, or limited in temporal granularity. Social-media sentiment studies exist<sup>[15]</sup> but typically treat sentiment as a single dimension, ignoring the richer norm taxonomy that behavioural science has shown to matter (descriptive vs. injunctive, first- vs. second-order, reference group specificity). Furthermore, no prior work has compared the <em>frame-level</em> content of online discourse with established survey instruments to identify where public attention and survey assumptions diverge.</p>
 
-<h3>1.2 Contributions</h3>
+<h3 id="intro-contrib">1.2 Contributions</h3>
 <div class="contrib">
 <span class="contrib-num">1.</span><span class="contrib-text"><strong>Hierarchical norm extraction</strong> &mdash; Each comment is classified on norm dimensions derived from IPCC AR6 Chapter 5<sup>[2]</sup>. Five dimensions are visualised in the <a class="tab-link" onclick="showTab('norms');return false;" href="#">&#8594;&nbsp;Social Influence</a> tab: <em>norm signal presence</em> (whether any social norm is referenced at all), <em>descriptive norm</em> (what people actually do), <em>injunctive norm</em> (what people feel they should do), and <em>reference group</em> (which social group is cited). How these shift over 2010&ndash;2024 is shown in the <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a> tab, including <em>second-order belief</em> (perceptions of what others think).</span>
 <span class="contrib-num">2.</span><span class="contrib-text"><strong>Sector-specific survey frame labeling</strong> &mdash; Comments are labeled against 29 survey questions drawn from established climate surveys (13 food, 6 transport, 10 housing), enabling direct comparison of Reddit discourse with survey endorsement rates. Results are shown in the <a class="tab-link" onclick="showTab('survey');return false;" href="#">&#8594;&nbsp;Lifestyle Adoption Factors</a> tab as radial charts of driver and barrier salience per sector, and their evolution over time in <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a>.</span>
@@ -1446,7 +1502,7 @@ window.addEventListener('load',function(){
 </div>
 
 <div class="sec">
-<h3>2.1 Reddit Corpus</h3>
+<h3 id="data-corpus">2.1 Reddit Corpus</h3>
 <p>Comments and submissions were collected from <strong>16 subreddits</strong> spanning three behavioural sectors plus nine general climate subreddits. To identify posts relevant to each domain, we applied <strong>sector-specific keyword matching</strong>: each post's text was scanned using case-insensitive regular expressions, and a post was retained if it contained at least one keyword from its sector's list — any single match qualified the post for that sector. Click a sector name to see its full keyword list: <span class="kw-sector food" onclick="toggleKwPanel('kw-food',this)">Food/Diets</span>, <span class="kw-sector transport" onclick="toggleKwPanel('kw-transport',this)">Transport/EVs</span>, <span class="kw-sector housing" onclick="toggleKwPanel('kw-homes',this)">Homes/Solar&nbsp;PV</span>. Across all three sectors this yielded <strong>3.7 million keyword-matched posts</strong> from a raw corpus of ~20 million.</p>
 
 <div id="kw-food" class="kw-panel">
@@ -1528,10 +1584,10 @@ window.addEventListener('load',function(){
 <tr style="border-top:2px solid #1a3050"><td colspan="2"><strong>Total</strong></td><td class="r"><strong>20,066,163</strong></td><td class="r"><strong>3,703,239</strong></td></tr>
 </table>
 
-<h3>2.2 Sampling</h3>
+<h3 id="data-sampling">2.2 Sampling</h3>
 <p>From ??M keyword-matched comments, <strong>??k comments</strong> (??k/sector) were drawn using <strong>equal yearly representation</strong> across 2010&ndash;2024. This design ensures each year contributes equally to the corpus, enabling reliable trend comparisons in the <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a> tab, at the cost of discarding more data from later high-volume years. Even in peak years, we sample ??% of available posts &mdash; still a statistically robust subset for proportional estimates (a random sample of ~1,000 yields ±3% margin of error at 95% confidence).</p>
 
-<h3>2.3 Labeling Schema</h3>
+<h3 id="data-schema">2.3 Labeling Schema</h3>
 
 <p><strong>Social Norms</strong> (7 questions per comment, all sectors):</p>
 <table>
@@ -1594,7 +1650,7 @@ window.addEventListener('load',function(){
 </div>
 
 <div class="sec">
-<h3>3.1 Data Collection</h3>
+<h3 id="pipe-collect">3.1 Data Collection</h3>
 <ol>
 <li>Load CSV exports of Reddit comments/submissions from 16 subreddits (Pushshift/Arctic Shift archives).</li>
 <li>Filter using sector-specific regex keyword matching (case-insensitive, morphological variants).</li>
@@ -1603,7 +1659,7 @@ window.addEventListener('load',function(){
 <li>Cache to <code>paper4data/sector_to_comments_cache.json</code> (3.7M records).</li>
 </ol>
 
-<h3>3.2 Hierarchical Labeling</h3>
+<h3 id="pipe-labeling">3.2 Hierarchical Labeling</h3>
 <ol>
 <li>Load cache; sample with equal yearly representation (ongoing &mdash; 22,900/sector as of latest checkpoint run).</li>
 <li><span style="color:#ff6b6b">Query local vLLM instance (<strong>Qwen3.5-4B</strong> fast labeler, replacing Mistral-7B-Instruct) with hierarchical cascade: gate &rarr; stance &rarr; norms &rarr; reference group &rarr; second-order beliefs; plus sector-specific survey prompts. Note: Qwen3.5-4B is a thinking model &mdash; <code>"enable_thinking": false</code> must be set in vLLM chat template kwargs.</span></li>
@@ -1612,7 +1668,7 @@ window.addEventListener('load',function(){
 <li>Output: <code>paper4data/norms_labels.json</code> &mdash; per-sector arrays of <code>{comment, year, answers, logprobs}</code>.</li>
 </ol>
 
-<h3>3.3 Prompt Optimization</h3>
+<h3 id="pipe-prompt">3.3 Prompt Optimization</h3>
 <p>Evidence-guided refinement from systematic analysis of verification mismatches:</p>
 <ul>
 <li><strong>Descriptive norm</strong>: Model too restrictive &mdash; added self-reports, statistics, observed group behaviour.</li>
@@ -1621,7 +1677,7 @@ window.addEventListener('load',function(){
 <li><strong>Reference group</strong>: Model over-assigned specific groups &mdash; emphasized possessive indicators (my/our).</li>
 </ul>
 
-<h3>3.4 Verification &mdash; Inter-Teacher Audit</h3>
+<h3 id="pipe-audit">3.4 Verification — Inter-Teacher Audit</h3>
 <ol>
 <li><span style="color:#ff6b6b">Random sample of 82,000 corpus comments labeled independently by <strong>Qwen3.5-4B</strong> (fast, zero-shot) and <strong>Qwen3.5-9B</strong> (high-quality ground truth) across all 29 survey questions. Script: <code>inter_teacher_audit/00_audit_round1.py</code>.</span></li>
 <li><span style="color:#ff6b6b">Compute Cohen&rsquo;s &kappa; per question (4B vs 9B) &mdash; primary triage metric. Also compute YES rates for both models to detect systematic 4B over-labeling.</span></li>
@@ -1642,7 +1698,7 @@ window.addEventListener('load',function(){
 <h2 id="dashboard">4. Dashboard</h2>
 <!-- ================================================================ -->
 <div class="sec">
-<h3>4.1 Data Sources</h3>
+<h3 id="dash-sources">4.1 Data Sources</h3>
 <table>
 <tr><th>File</th><th>Contents</th></tr>
 <tr><td><code>paper4data/norms_labels_checkpoints_only.json</code></td><td>Merged checkpoint dataset: 68,700 records with comment, year, answers (7&ndash;21 labels), logprobs</td></tr>
@@ -1656,7 +1712,7 @@ window.addEventListener('load',function(){
 <tr style="color:#ff6b6b"><td><code>paper4data/slm_token_cache/{sector}_200000/</code></td><td>Arrow-format HuggingFace dataset tokenization cache (200k/sector, keyed by sector+sample size)</td></tr>
 </table>
 
-<h3>4.2 Libraries</h3>
+<h3 id="dash-libs">4.2 Libraries</h3>
 <table>
 <tr><th>Library</th><th>Version</th><th>Role</th></tr>
 <tr><td><strong>Plotly.js</strong></td><td>2.27.0</td><td>Gauge, treemap, Sankey, bar charts, scatter plots, stacked area charts</td></tr>
@@ -1782,7 +1838,7 @@ window.addEventListener('load',function(){
 </div>
 
 <div class="sec">
-<h3>Key Data Tables</h3>
+<h3 id="methods-tables">Key Data Tables</h3>
 
 <p><strong>Author Stance (Tab 2, Treemap):</strong></p>
 <table>
@@ -1849,8 +1905,9 @@ window.addEventListener('load',function(){
 <p style="font-size:0.72em;color:#4a6a5a;margin-top:10px"><em>All listed references verified (2026-03-25). Items previously removed: Boykoff &amp; Roberts 2007 (unverified), OECD/IEA generic refs (not directly cited), Carlyle et al. 2021 (likely hallucinated), Green Fox Energy 2025 (unverifiable). One title corrected: Bonan et al. 2020 &mdash; &ldquo;social norms&rdquo; not &ldquo;norms&rdquo;.</em></p>
 </div>
 
-</div>
-</div>
+</div><!-- /main content -->
+</div><!-- /flex wrapper -->
+</div><!-- /tab-docs -->
 
 <!-- ============================================================ -->
 <!-- SITE FOOTER -->
