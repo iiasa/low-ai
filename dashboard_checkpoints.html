@@ -1455,8 +1455,7 @@ window.addEventListener('load',function(){
     </div>
   </details>
   <div class="toc-flat">
-    <a href="#tabref">6. Tab Reference</a>
-    <a href="#limitations">7. Limitations</a>
+    <a href="#limitations">6. Limitations</a>
     <a href="#refs">References</a>
   </div>
 </nav>
@@ -1858,23 +1857,7 @@ window.addEventListener('load',function(){
 </div>
 
 <!-- ================================================================ -->
-<h2 id="tabref">6. Tab &rarr; Plot &rarr; Method Reference</h2>
-<!-- ================================================================ -->
-<div class="sec">
-<div class="ref-grid">
-<span class="ref-tab">1. Social Influence</span><span class="ref-plot">Gauge (norm signal %)</span><span class="ref-method">M4</span>
-<span class="ref-tab">1. Social Influence</span><span class="ref-plot">Treemaps (descriptive &amp; injunctive norm)</span><span class="ref-method">M6</span>
-<span class="ref-tab">1. Social Influence</span><span class="ref-plot">Bubble pack (reference groups)</span><span class="ref-method">M8</span>
-<span class="ref-tab">2. Lifestyle Adoption Factors</span><span class="ref-plot">Radial charts (&times;3 sectors)</span><span class="ref-method">M9</span>
-<span class="ref-tab">3. Temporal</span><span class="ref-plot">Norm dimensions over time (descriptive / injunctive / second-order, togglable)</span><span class="ref-method">M1 &rarr; M2</span>
-<span class="ref-tab">3. Temporal</span><span class="ref-plot">Survey factors over time (&times;3)</span><span class="ref-method">M1 &rarr; M2</span>
-<span class="ref-tab">4. Verification (within Data &amp; Methods)</span><span class="ref-plot">Stat boxes, accuracy by question, estimation errors, confidence analysis</span><span class="ref-method">M3 + M5 + M10</span>
-<span class="ref-tab">5. Sample Posts</span><span class="ref-plot">Sample post comparisons</span><span class="ref-method">M11</span>
-</div>
-</div>
-
-<!-- ================================================================ -->
-<h2 id="limitations">7. Known Limitations</h2>
+<h2 id="limitations">6. Known Limitations</h2>
 <!-- ================================================================ -->
 <div class="sec">
 <p>Analysis of 66,300 labeled comments (22,100/sector) reveals a systematic tension between the gate question (<em>1.1 — does the comment reference a social norm?</em>) and the downstream dimension questions. In <strong>8.5%</strong> of cases the gate returns <em>no norm signal</em> yet the descriptive norm question independently identifies an <em>explicitly present</em> descriptive norm; a further <strong>2.4%</strong> have gate=0 alongside an injunctive norm marked <em>present</em>. Conversely, <strong>3.0%</strong> of comments pass the gate yet show no norm evidence in either downstream dimension. This indicates the gate prompt is simultaneously too conservative (misses ~11% of real norms) and occasionally over-triggers (~3% false positives). Downstream dimension labels (descriptive, injunctive) should therefore be treated as more reliable than the gate alone when computing norm prevalence. A revised gate prompt aligned more closely with the descriptive/injunctive questions is planned for the next labeling iteration.</p>
