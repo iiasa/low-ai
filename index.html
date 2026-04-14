@@ -28,6 +28,19 @@ h1{text-align:center;font-size:1.3em;color:#fff;margin-bottom:2px;font-weight:30
 .info-btn:hover{background:#1a3050;color:#fff;border-color:#5ab4ac}
 .info-popup{display:none;position:absolute;top:40px;right:10px;background:#1a3050;border:1px solid #2a4060;border-radius:8px;padding:12px 14px;font-size:0.78em;color:#b0c4d8;line-height:1.5;max-width:350px;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.5)}
 .info-popup.show{display:block}
+.floating-note-wrap{position:absolute;top:42px;right:12px;z-index:11}
+.floating-note-btn{width:28px;height:28px;border-radius:50%;border:1px solid #3a5a7a;background:#12203a;color:#b784ff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:all 0.2s}
+.floating-note-btn:hover{background:#1a3050;color:#fff;border-color:#b784ff}
+.floating-note-panel{display:none;position:absolute;top:34px;right:0;width:min(560px,78vw);max-height:540px;overflow:auto;background:#151f38;border:1px solid #5d4a87;border-radius:10px;padding:14px 16px;color:#d8cff6;line-height:1.55;font-size:0.78em;box-shadow:0 10px 28px rgba(0,0,0,0.45)}
+.floating-note-panel.show{display:block}
+.floating-note-panel h4{font-size:0.9em;color:#fff;margin-bottom:8px}
+.floating-note-panel p{margin-bottom:10px}
+.floating-note-panel ul{margin:6px 0 10px 18px}
+.floating-note-panel li{margin-bottom:6px}
+.floating-note-user{color:#ffb6c8}
+.floating-note-ai{color:#d8cff6}
+.floating-note-close{position:absolute;top:8px;right:10px;background:none;border:none;color:#8f7bc6;cursor:pointer;font-size:16px}
+.floating-note-close:hover{color:#fff}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .grid2>*,.grid3>*{min-width:0;overflow:hidden}
@@ -240,6 +253,9 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
 .annot-btn-cancel{padding:6px 14px;background:none;border:1px solid #2a4060;border-radius:6px;color:#6a8caf;font-size:0.8em;cursor:pointer;font-family:inherit}
 .annot-btn-cancel:hover{border-color:#5ab4ac;color:#fff}
 .annot-count-badge{display:inline-block;background:#1a4040;border:1px solid #2a5a4a;border-radius:10px;padding:1px 7px;font-size:0.85em;color:#5ab4ac;margin-left:6px;vertical-align:middle}
+.rev-purple{color:#c49fc4!important}
+.rev-purple a{color:#d8a8ff!important}
+.rev-del{text-decoration:line-through;text-decoration-color:#c49fc4;text-decoration-thickness:1.5px}
 
 
 </style>
@@ -264,18 +280,50 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
 
 <!-- TAB 1: NORMS (presence + dimensions + reference groups) -->
 <div class="tab-content" id="tab-norms">
+<div class="rev-purple" style="margin-bottom:12px;font-size:0.82em;line-height:1.55">
+<strong>Updated 2026-04-10:</strong> the social-influence panels below now use the <strong>`v2` social-norms schema</strong> on a fixed <strong>30,000-comment sample</strong> from Reddit: <strong>10,000 comments per sector</strong> (`food`, `transport`, `housing`), loaded from <code>paper4data/sector_to_comments_cache_10k_sample.json</code>. This is a sector-balanced sample for the current methods pass, not the larger year-stratified survey/SLM sample used elsewhere in the dashboard.
+</div>
 <div style="display:flex;gap:16px;align-items:stretch">
 <div class="sec" style="flex:1;min-width:0">
 <div class="sec-header">
 <div class="sec-title">Does the comment reference a social norm?</div>
 <button class="info-btn" onclick="toggleInfo(this)">?</button>
 </div>
-<div class="info-popup">Gate question (1.1): Each comment is first classified as containing a social norm or not. A social norm is any reference to what people do (descriptive) or should do (injunctive) regarding climate actions. Food discussions contain norms most often (40%), while transport/housing are lower.</div>
+<div class="info-popup"><span class="rev-purple"><span class="rev-del">Gate question (1.1): Each comment is first classified as containing a social norm or not. A social norm is any reference to what people do (descriptive) or should do (injunctive) regarding climate actions. Food discussions contain norms most often (40%), while transport/housing are lower.</span><br><br>`v2` gate question (1.1): each comment is first screened for <strong>norm-relevant discourse</strong>. This is broader than a narrow textbook norm detector: it includes explicit descriptive or injunctive norms, but can also capture Reddit-style public normative performance and group-positioning talk. Current display uses <strong>pass-1 labels from 10k comments per sector</strong>.</span></div>
+<div class="floating-note-wrap" style="top:42px;right:42px">
+<button class="floating-note-btn" onclick="toggleFloatingNote(this)" title="Open review note">&#128172;</button>
+<div class="floating-note-panel">
+<button class="floating-note-close" onclick="toggleFloatingNote(this)">&#215;</button>
+<h4>Review Note: current semicircle gauge is misleading</h4>
+<p class="floating-note-user"><strong>User comment:</strong> we need to chage the visualization to soemthing other plot type, as this semicircle is misleading, the 3 sectors do not add up to 100 or soemting, so putting htem in a pie chart is bad.</p>
+<p class="floating-note-ai"><strong>Assessment:</strong> correct. This is not a part-to-whole composition, so a pie / half-donut encoding is the wrong geometry.</p>
+<p class="floating-note-ai">The three displayed values are independent within-sector prevalence rates:</p>
+<ul class="floating-note-ai">
+<li><strong>Food:</strong> <code>41.9%</code> = <code>4,192 / 10,000</code></li>
+<li><strong>Transport:</strong> <code>16.7%</code> = <code>1,671 / 10,000</code></li>
+<li><strong>Housing:</strong> <code>13.5%</code> = <code>1,347 / 10,000</code></li>
+</ul>
+<p class="floating-note-ai">Those values are not supposed to sum to 100%. The center value <code>24.0%</code> is a separate overall prevalence across the combined <code>30,000</code>-comment sample.</p>
+<p class="floating-note-ai"><strong>Why the current chart is misleading:</strong></p>
+<ul class="floating-note-ai">
+<li>a pie / donut implies parts of one total</li>
+<li>the sector slices visually suggest composition rather than separate rates</li>
+<li>the center total and the outer slices are on different denominators, but the chart makes them look like one coherent pie system</li>
+</ul>
+<p class="floating-note-ai"><strong>Better replacements:</strong></p>
+<ul class="floating-note-ai">
+<li>three side-by-side progress bars or lollipop bars for sector prevalence, plus a separate overall stat box</li>
+<li>a grouped bar chart with counts and percentages annotated</li>
+<li>three sector cards with mini-bars and one separate overall metric card</li>
+</ul>
+<p class="floating-note-ai"><strong>Recommended next version:</strong> replace this with a small bar panel: one bar per sector, all on the same 0-50% axis, and keep the <code>24.0%</code> overall as a separate centered headline above or beside the bars.</p>
+</div>
+</div>
 <div class="gauge-clip"><div id="gauge-chart"></div></div>
 <div style="text-align:center;margin-top:6px">
-<span style="color:#5ab4ac;font-size:0.85em">&#9679; Food 40.5%</span> &nbsp;
-<span style="color:#af8dc3;font-size:0.85em">&#9679; Transport 14.6%</span> &nbsp;
-<span style="color:#f4a460;font-size:0.85em">&#9679; Housing 17.9%</span>
+<span style="color:#5ab4ac;font-size:0.85em">&#9679; Food 41.9%</span> &nbsp;
+<span style="color:#af8dc3;font-size:0.85em">&#9679; Transport 16.7%</span> &nbsp;
+<span style="color:#f4a460;font-size:0.85em">&#9679; Housing 13.5%</span>
 </div>
 </div>
 <div class="sec" style="flex:2;min-width:0">
@@ -283,9 +331,125 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
 <div class="sec-title">Social groups mentioned by Reddit users</div>
 <button class="info-btn" onclick="toggleInfo(this)">?</button>
 </div>
-<div class="info-popup">Which social groups does the speaker reference when discussing climate actions? Shows the count of mentions per reference group category across sectors. Size = frequency of mention.</div>
+<div class="info-popup"><span class="rev-purple"><span class="rev-del">Which social groups does the speaker reference when discussing climate actions? Shows the count of mentions per reference group category across sectors. Size = frequency of mention.</span><br><br>`v2` reference-group categories are broader and Reddit-aware: <strong>general public</strong>, <strong>identity group</strong>, <strong>other reddit users</strong>, <strong>online community</strong>, and smaller interpersonal groups. <strong>This panel is filtered to comments where either descriptive norm = present or injunctive norm = present.</strong> Bubble size = comment count in that norm-bearing subset; % = share of all cross-sector reference-group mentions within the filtered subset.</span></div>
+<div class="floating-note-wrap">
+<button class="floating-note-btn" onclick="toggleFloatingNote(this)" title="Open review note">&#128172;</button>
+<div class="floating-note-panel">
+<button class="floating-note-close" onclick="toggleFloatingNote(this)">&#215;</button>
+<h4>Review Note: `general public` may be too broad</h4>
+<p class="floating-note-user"><strong>User comment:</strong> i think general public category is horsehit, doesnt detect anything, check few examples in each sector for injuctiveand descriptive present. check youself 5 examples.</p>
+<p class="floating-note-ai">I checked <strong>15 consensus examples total</strong>: <strong>5 per sector</strong> from <code>v2</code>, restricted to comments where <code>reference_group = general public</code> and either <code>descriptive</code> or <code>injunctive</code> was present.</p>
+<p class="floating-note-ai"><strong>My read:</strong> <code>general public</code> is overused and partly functioning as a fallback bucket, not a clean category.</p>
+<p class="floating-note-ai"><strong>Food</strong></p>
+<ul class="floating-note-ai">
+<li><code>if3lckl</code>: “ask random people how they feel...” -> valid <code>general public</code></li>
+<li><code>gu06q0o</code>: “society and culture as a whole is not there yet”, “most people...” -> valid <code>general public</code></li>
+<li><code>igxornx</code>: “plenty of people think it’s okay...” -> valid <code>general public</code></li>
+<li><code>gc6dsub</code>: mostly argument about vegan cat food / meat eaters -> weak, probably <code>identity group</code> or no clear group</li>
+<li><code>jnbsedo</code>: mostly direct advice to one person -> wrong / no clear reference group</li>
+</ul>
+<p class="floating-note-ai"><strong>Food verdict:</strong> about <strong>3/5</strong> defensible; <strong>2/5</strong> look like fallback behavior.</p>
+<p class="floating-note-ai"><strong>Transport</strong></p>
+<ul class="floating-note-ai">
+<li><code>jjfq01l</code>: “this is the stuff people think about when looking at EV range” -> valid <code>general public</code></li>
+<li><code>lqy7rk9</code>: generic “generally”, “most likely” -> weak</li>
+<li><code>lraro41</code>: prevalence of seeing Model 3 / Cybertruck more often -> descriptive trend, but not clearly a reference group</li>
+<li><code>kopmzih</code>: product complaint, no public group -> wrong</li>
+<li><code>lurv586</code>: “most of the folks who had them loved them” -> better as <code>identity group</code> / owners, not <code>general public</code></li>
+</ul>
+<p class="floating-note-ai"><strong>Transport verdict:</strong> only about <strong>1-2/5</strong> clearly good; this is the weakest sector for <code>general public</code>.</p>
+<p class="floating-note-ai"><strong>Housing</strong></p>
+<ul class="floating-note-ai">
+<li><code>i7h19u5</code>: “folks talk about...” -> weak but plausible <code>general public</code></li>
+<li><code>cvewf1z</code>: “these peoples' lack of trust...” -> not <code>general public</code>; some specific crowd / other group</li>
+<li><code>hs7d56e</code>: “Most homeowners can charge at home...” -> <code>identity group</code> (<code>homeowners</code>), not <code>general public</code></li>
+<li><code>jfh8yaz</code>: “if we get to mass EV adoption...” -> no actual reference group</li>
+<li><code>ky4db8s</code>: large climate argument, but no clean public reference group for the norm claim -> wrong / no clear group</li>
+</ul>
+<p class="floating-note-ai"><strong>Housing verdict:</strong> maybe <strong>1/5</strong> clearly acceptable; <code>general public</code> is mostly absorbing cases that should be <code>identity group</code> or <code>no clear group</code>.</p>
+<p class="floating-note-ai"><strong>Bottom line:</strong> <code>general public</code> is not completely useless, but it is too broad and currently catching at least three different things:</p>
+<ul class="floating-note-ai">
+<li>real broad-public references: <code>people</code>, <code>most people</code>, <code>society</code>, <code>the public</code>, <code>everyone</code></li>
+<li>subgroup references that should be <code>identity group</code>: <code>homeowners</code>, <code>EV owners</code>, <code>drivers</code>, <code>vegans</code>, <code>meat eaters</code>, <code>workers</code></li>
+<li>comments with no explicit reference group at all: generic argument, advice, product evaluation, prevalence statement</li>
+</ul>
+<p class="floating-note-ai"><strong>What I think is wrong in the schema/prompt:</strong> the model is implicitly solving “if there is any social implication, which group is closest?” instead of the stricter task “is there an explicitly recoverable reference group in this comment?”</p>
+<p class="floating-note-ai"><strong>What I would change next:</strong></p>
+<ul class="floating-note-ai">
+<li>Tighten <code>general public</code>: only allow when there are explicit cues like <code>people</code>, <code>most people</code>, <code>everyone</code>, <code>society</code>, <code>the public</code>, <code>consumers</code>, <code>households</code>, <code>Americans</code>, etc.</li>
+<li>Route subgroup nouns to <code>identity group</code>: <code>homeowners</code>, <code>EV owners</code>, <code>drivers</code>, <code>vegans</code>, <code>meat eaters</code>, <code>workers</code>, etc.</li>
+<li>Add or allow a true <code>no clear reference group</code>: otherwise the model will keep dumping these into <code>general public</code></li>
+</ul>
+<p class="floating-note-ai">That third point is the real fix. Right now the taxonomy is under-specified because it forces a positive group choice too often.</p>
+<hr style="border:none;border-top:1px solid #3e3560;margin:12px 0">
+<h4>Review Note: `identity group` is also too broad</h4>
+<p class="floating-note-ai">I checked <strong>15 more consensus examples total</strong>: <strong>5 per sector</strong> from <code>v2</code>, restricted to comments where <code>reference_group = identity group</code> and either <code>descriptive</code> or <code>injunctive</code> was present.</p>
+<p class="floating-note-ai"><strong>My read:</strong> <code>identity group</code> is more defensible than <code>general public</code>, but it is still too broad because it mixes at least three different things:</p>
+<ul class="floating-note-ai">
+<li>actual social or moral identity groups: <code>vegans</code>, <code>Republicans</code>, environmentalists</li>
+<li>ownership / user segments: <code>EV buyers</code>, people with home charging, Tesla users, Volt owners</li>
+<li>broad practical cohorts that may not be identities at all: <code>homeowners</code>, renters, North American users</li>
+</ul>
+<p class="floating-note-ai"><strong>Food</strong></p>
+<ul class="floating-note-ai">
+<li><code>h2rfflc</code>: explicit discussion of veganism and what counts as vegan -> valid <code>identity group</code></li>
+<li><code>jzbkstt</code>: “most vegans” / “another person who follows a WFPBNO lifestyle” -> valid <code>identity group</code></li>
+<li><code>dwb8avl</code>: “social pressure to continue eating meat” -> weak; this is closer to <code>general public</code> or no clear group</li>
+<li><code>eaegz5p</code>: no clear group, mostly judgment about pet owners -> weak</li>
+<li><code>hgstmh</code>: “vegan knitter”, “the rest of the community” -> valid <code>identity group</code></li>
+</ul>
+<p class="floating-note-ai"><strong>Food verdict:</strong> about <strong>3/5</strong> clearly good; the failures come from generic moral talk with no explicit group anchor.</p>
+<p class="floating-note-ai"><strong>Transport</strong></p>
+<ul class="floating-note-ai">
+<li><code>kga6ho6</code>: “EV buyers”, “buyers without home charging” -> plausible, but this is a user segment rather than a social identity</li>
+<li><code>l2bp266</code>: “smaller/aerodynamic EV cars like the Bolt/Model 3/Ioniq 6” -> not a reference group, just product comparison</li>
+<li><code>if65eb7</code>: “people who live outside North America and have actual experience using a Tesla with a CCS port” -> very specific user cohort, arguably not an identity group</li>
+<li><code>ke47nr1</code>: almost no recoverable group at all -> weak</li>
+<li><code>kcnb6q2</code>: no clear group -> weak</li>
+</ul>
+<p class="floating-note-ai"><strong>Transport verdict:</strong> this is the noisiest use of <code>identity group</code>. It often absorbs market segments, owners, or even comments with no group reference.</p>
+<p class="floating-note-ai"><strong>Housing</strong></p>
+<ul class="floating-note-ai">
+<li><code>ecxeg2o</code>: “individuals”, renters, consumers making personal choices -> mixed; partly a broad cohort, not a crisp identity</li>
+<li><code>iw56amd</code>: “Republicans” -> valid <code>identity group</code></li>
+<li><code>k54nlxj</code>: “people rotting their brain with right wing nonsense” -> valid ideological group, though hostile wording</li>
+<li><code>jzhel5t</code>: “oil company profits” -> organization / industry actor, not identity group</li>
+<li><code>dp58i23</code>: sarcastic direct address, no clear group -> weak</li>
+</ul>
+<p class="floating-note-ai"><strong>Housing verdict:</strong> about <strong>2-3/5</strong> defensible. The category works better for ideological blocs than for infrastructure / lifestyle comments.</p>
+<p class="floating-note-ai"><strong>Bottom line:</strong> <code>identity group</code> is currently doing too much work. It collapses:</p>
+<ul class="floating-note-ai">
+<li>moral / political identities</li>
+<li>behavioral communities</li>
+<li>owners / users / market segments</li>
+<li>broad life-situation cohorts</li>
+</ul>
+<p class="floating-note-ai"><strong>What I think is wrong in the schema/prompt:</strong> the prompt treats any subgroup reference as an identity-bearing group, but many of these are just practical cohorts or user segments. That makes the category look substantive even when the social mechanism is unclear.</p>
+<p class="floating-note-ai"><strong>What I would change next for `identity group`:</strong></p>
+<ul class="floating-note-ai">
+<li>Reserve <code>identity group</code> for explicit social, political, moral, or community identities: <code>vegans</code>, <code>Republicans</code>, environmentalists, conservatives, drivers as a self-identified group, etc.</li>
+<li>Split out a separate <code>user / owner cohort</code> bucket if you want to keep <code>EV buyers</code>, <code>Tesla owners</code>, <code>homeowners</code>, renters, people with home charging, etc.</li>
+<li>Otherwise, if you do not want another category, the prompt should explicitly say that practical cohorts without a clear social identity should map to <code>other</code> or <code>no clear group</code>, not <code>identity group</code>.</li>
+</ul>
+<p class="floating-note-ai">So the most represented category is not useless, but it is overloaded. Right now it mixes genuine identity-based norm audiences with operational market segments, which weakens the theoretical interpretation of the plot.</p>
+<hr style="border:none;border-top:1px solid #3e3560;margin:12px 0">
+<h4>Possible resolution without making infinite more work</h4>
+<p class="floating-note-ai">The practical fix is <strong>not</strong> to keep adding more and more reference-group categories.</p>
+<p class="floating-note-ai"><strong>Lowest-work resolution:</strong></p>
+<ul class="floating-note-ai">
+<li>keep the current broad category family</li>
+<li>tighten the prompt so <code>general public</code> requires explicit broad-public cues like <code>people</code>, <code>most people</code>, <code>society</code>, <code>everyone</code></li>
+<li>tighten <code>identity group</code> so it only covers explicit social / political / moral / community identities</li>
+<li>send weak or underspecified cases to <code>other</code> rather than forcing them into <code>general public</code> or <code>identity group</code></li>
+</ul>
+<p class="floating-note-ai"><strong>If we allow one small schema change:</strong> add a single fallback like <code>no clear reference group</code>. That would absorb the current garbage cases without forcing us to invent many new categories.</p>
+<p class="floating-note-ai"><strong>Recommended path:</strong> do one prompt-tightening pass first, audit again on a small sample, and only add <code>no clear reference group</code> if the forced-assignment problem still persists. That keeps the theory disciplined and avoids infinite annotation work.</p>
+</div>
+</div>
 <div id="bubble-pack" class="bubble-chart"></div>
-<div style="text-align:center;color:#6a8caf;font-size:0.72em;margin-top:4px">Count = comments mentioning that social group &nbsp;&middot;&nbsp; % = share of all cross-sector group mentions</div>
+<div style="text-align:center;color:#b784ff;font-size:0.72em;margin-top:4px">Updated 2026-04-10: filtered to norm-bearing comments only, defined here as descriptive = present or injunctive = present in the `v2` pass-1 labels.</div>
+<div style="text-align:center;color:#ff6b6b;font-size:0.72em;margin-top:6px">Possible next version: make the top-level groups clickable rather than treating this as a final flat bubble pack. One mode could collapse close-tie groups (for example: family + friends + partner/spouse) into one icon; another could open <strong>general public</strong> into its own sub-bubbles; another could open <strong>identity group</strong> into its own sub-bubbles. <strong>Current limitation:</strong> the present dataset does <em>not</em> contain explicit structured subcategory labels inside <code>general public</code> or <code>identity group</code>; we only have the top-level reference-group label plus raw comment text. So this view is feasible only after an additional extraction / relabeling step for those subtypes.</div>
+<div style="text-align:center;color:#6a8caf;font-size:0.72em;margin-top:4px">Count = comments mentioning that social group &nbsp;&middot;&nbsp; % = share of all cross-sector group mentions in the filtered norm-bearing subset</div>
 <div class="legend" id="bubble-legend"></div>
 </div>
 </div>
@@ -294,7 +458,7 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
 <div class="sec-title">Descriptive or Injunctive Norm</div>
 <button class="info-btn" onclick="toggleInfo(this)">?</button>
 </div>
-<div class="info-popup"><b>Descriptive norm</b>: references to what people do (observed behaviour). <b>Injunctive norm</b>: references to what people should do (social approval/disapproval). Area = comment count; colour intensity = Present (bright) / Absent (mid) / Unclear (faint).</div>
+<div class="info-popup"><span class="rev-purple"><span class="rev-del"><b>Descriptive norm</b>: references to what people do (observed behaviour). <b>Injunctive norm</b>: references to what people should do (social approval/disapproval). Area = comment count; colour intensity = Present (bright) / Absent (mid) / Unclear (faint).</span><br><br><b>Descriptive norm</b>: explicit commonness / normality / trend language about what people do. <b>Injunctive norm</b>: approval, disapproval, praise, blame, ridicule, or prescriptive force about what people should do. Area = comment count in the `v2` 10k-per-sector sample.</span></div>
 <div class="grid2" style="margin-top:8px">
 <div><div style="text-align:center;color:#b0c4d8;font-size:0.82em;font-weight:600;margin-bottom:4px;letter-spacing:1px">DESCRIPTIVE NORM</div><div id="treemap-desc"></div></div>
 <div><div style="text-align:center;color:#b0c4d8;font-size:0.82em;font-weight:600;margin-bottom:4px;letter-spacing:1px">INJUNCTIVE NORM</div><div id="treemap-inj"></div></div>
@@ -305,11 +469,12 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
 <div class="sec-title">Norm Dimensions Over Time (% by year)</div>
 <button class="info-btn" onclick="toggleInfo(this)">?</button>
 </div>
-<div class="info-popup">% of comments per year where the norm dimension is <b>present</b>. Each line is a sector.</div>
+<div class="info-popup"><span class="rev-purple"><span class="rev-del">% of comments per year where the norm dimension is <b>present</b>. Each line is a sector.</span><br><br>This temporal panel is still based on the earlier social-norms iteration and has <strong>not yet been rerun on the `v2` 10k-per-sector sample</strong>. The static panels above are current; this time-series panel should be treated as legacy until refreshed.</span></div>
 <div class="temporal-dim-toggles" style="display:flex;gap:6px;margin-bottom:10px;justify-content:flex-start">
 <button class="sankey-toggle active" data-dim="1.2.1_descriptive" onclick="window._setTemporalDim(this.dataset.dim)">Descriptive</button>
 <button class="sankey-toggle" data-dim="1.2.2_injunctive" onclick="window._setTemporalDim(this.dataset.dim)">Injunctive</button>
 </div>
+<div class="rev-purple" style="margin-bottom:10px;font-size:0.78em">Legacy temporal lines retained for now. The `v2` update in this tab currently applies to the gauge, reference-group bubbles, and descriptive/injunctive treemaps above.</div>
 <div id="temporal-dim-combined"></div>
 </div>
 </div>
@@ -374,9 +539,9 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
       <span class="vlabel" style="flex:none">Temporal patterns (% yes by year)</span>
     </div>
   </div>
-  <div style="flex:1"><div id="temporal-survey-food"></div></div>
-  <div style="flex:1"><div id="temporal-survey-transport"></div></div>
-  <div style="flex:1"><div id="temporal-survey-housing"></div></div>
+  <div style="flex:1;width:0"><div id="temporal-survey-food" style="width:100%"></div></div>
+  <div style="flex:1;width:0"><div id="temporal-survey-transport" style="width:100%"></div></div>
+  <div style="flex:1;width:0"><div id="temporal-survey-housing" style="width:100%"></div></div>
 </div>
 
 </div>
@@ -392,6 +557,9 @@ Each cell shows <b style="color:#e0e0e0">2 cases where labeler &amp; verifier ag
 &nbsp;&nbsp;<span style="color:#4ade80">&#9646;</span> Labeler &amp; verifier agree &nbsp;&nbsp;
 <span style="color:#f87171">&#9646;</span> Labeler &amp; verifier disagree &nbsp;&nbsp;
 Confidence % = logprob of fast model prediction.
+</div>
+<div class="rev-purple" style="margin-bottom:14px;font-size:0.8em;line-height:1.55">
+Possible next replacement for this tab: use the interactive data-view app instead of maintaining a large static examples page. The current local prototype already supports direct browsing of full comments and labels from <code>v1</code> / <code>v2</code>; a later version could be deployed on Hugging Face Spaces so this tab becomes a live filtered data browser rather than a fixed example dump.
 </div>
 <details class="ex-section"><summary>meat reduction - health <span class="ex-sum-meta"><span style="color:#4a6a8a">diet_1</span>&nbsp;&nbsp;n=23,000&nbsp;&nbsp;acc=<span style="color:#ff9aa8;font-weight:700">70%</span></span></summary><div class="ex-content"><details class="ex-prompt-drop" open><summary>Read exact prompt &amp; choices sent to the LLM</summary><div class="ex-prompt-box">Check whether the text links reducing meat consumption to health considerations (health benefits/risks, cholesterol, weight, disease, wellness). Direction does not matter. Output YES if health is used as a reason or concern, otherwise NO.</div></details><div class="ex-9grid ex-sec-hdr-row"><div class="ex-sec-hdr" style="color:#5ab4ac;grid-column:span 3">FOOD</div><div class="ex-sec-hdr ex-col-na" style="grid-column:span 3">—</div><div class="ex-sec-hdr ex-col-na" style="grid-column:span 3">—</div></div><div class="ex-9grid ex-hdr-row"><div class="ex-col-hdr" style="color:#5ab4ac">Ex 1</div><div class="ex-col-hdr" style="color:#5ab4ac">Ex 2</div><div class="ex-col-hdr" style="color:#5ab4ac">Ex 3</div><div class="ex-col-hdr ex-col-na">—</div><div class="ex-col-hdr ex-col-na">—</div><div class="ex-col-hdr ex-col-na">—</div><div class="ex-col-hdr ex-col-na">—</div><div class="ex-col-hdr ex-col-na">—</div><div class="ex-col-hdr ex-col-na">—</div></div><div class="ex-answer-row"><div class="ex-answer-label">no <span class="ex-label-n">n=21,635</span> <span class="ex-label-acc" style="color:#8fcc8f;font-size:0.8em;font-weight:600">acc=96%</span></div><div class="ex-9grid"><div class="ex-cell" style="border-left:3px solid #4ade80"><span class="ex-conf">99%</span><div class="ex-comment">This is literally just a menu. Literally just a list of items you can already buy. Nothing new. Why don’t they start serving vegan crumbles or vegan cheese?</div><div class="ex-reason-lbl">Verify: <b>no</b></div></div><div class="ex-cell" style="border-left:3px solid #4ade80"><span class="ex-conf">73%</span><div class="ex-comment">It’s a vegan activist event where everyone stands in a square shape holding up screens with footage of local farm animal cruelty while wearing masks. Some people talk to people who linger around watching it, asking them …</div><div class="ex-reason-lbl">Verify: <b>no</b></div></div><div class="ex-cell" style="border-left:3px solid #f87171"><span class="ex-conf">98%</span><div class="ex-comment">No cat should ever have a vegan diet. When cats don’t eat meat, they go blind due to lack of taurine. Stop pushing your diet on animals.</div><div class="ex-reason-lbl">Verify: <b>yes</b></div></div><div class="ex-cell ex-cell-na"></div><div class="ex-cell ex-cell-na"></div><div class="ex-cell ex-cell-na"></div><div class="ex-cell ex-cell-na"></div><div class="ex-cell ex-cell-na"></div><div class="ex-cell ex-cell-na"></div></div></div><div class="ex-answer-row"><div class="ex-answer-label">yes <span class="ex-label-n">n=1,365</span> <span class="ex-label-acc" style="color:#ff9aa8;font-size:0.8em;font-weight:600">acc=51%</span></div><div class="ex-9grid"><div class="ex-cell" style="border-left:3px solid #4ade80"><span class="ex-conf">99%</span><div class="ex-comment">the leading doctors in the field of diabetics research all recommend a plant based diet with minimal to no animal protein and she can't have milk because milk whether it is full fat or no fat is a trigger for her blood s…</div><div class="ex-reason-lbl">Verify: <b>yes</b></div></div><div class="ex-cell" style="border-left:3px solid #4ade80"><span class="ex-conf">93%</span><div class="ex-comment">Don't think we are some vegan paradise though. The amount of dumb shit I get thrown at me for being vegan is infuriating. The dairy industry is massive here, and it's destroying our rivers to the point where if you go in…</div><div class="ex-reason-lbl">Verify: <b>YES</b></div></div><div class="ex-cell" style="border-left:3px solid #f87171"><span class="ex-conf">68%</span><div class="ex-comment">Tell him: 
 
@@ -963,13 +1131,19 @@ function showTab(id) {
     if(id==='survey'){setTimeout(function(){if(window._animateSurvey)window._animateSurvey();},200);setTimeout(function(){if(window._drawSurveyLines)window._drawSurveyLines();},350);}
 }
 function toggleInfo(btn){var p=btn.parentElement.nextElementSibling;if(p&&p.classList.contains('info-popup'))p.classList.toggle('show');}
+function toggleFloatingNote(el){
+  var wrap = el.closest('.floating-note-wrap');
+  if(!wrap) return;
+  var panel = wrap.querySelector('.floating-note-panel');
+  if(panel) panel.classList.toggle('show');
+}
 var PC={displayModeBar:false,responsive:true};
 var DB='rgba(0,0,0,0)';
 var DL={paper_bgcolor:DB,plot_bgcolor:DB,font:{color:'#ffffff',family:'Inter,sans-serif',size:10},legend:{font:{size:14,color:'#ffffff'},orientation:'h',x:0.5,xanchor:'center',y:-0.22,yanchor:'top'}};
 
 // ═══════════════ GAUGE (animated from 0, replayable) ═══════════════
 (function(){
-    var _gp={"food": 40.5, "transport": 14.6, "housing": 17.9};var f=_gp.food,t=_gp.transport,h=_gp.housing,avg=(f+t+h)/3,vis=f+t+h;
+    var _gp={"food": 41.9, "transport": 16.7, "housing": 13.5};var f=_gp.food,t=_gp.transport,h=_gp.housing,avg=(f+t+h)/3,vis=f+t+h;
     Plotly.newPlot('gauge-chart',[{
         values:[0.01,0.01,0.01,0.03],labels:['Food','Transport','Housing',''],
         marker:{colors:['#5ab4ac','#af8dc3','#f4a460','rgba(0,0,0,0)'],line:{color:'#12203a',width:4}},
@@ -1001,9 +1175,9 @@ var DL={paper_bgcolor:DB,plot_bgcolor:DB,font:{color:'#ffffff',family:'Inter,san
 
 // ═══════════════ BUBBLES ═══════════════
 var bubbleData={
-    categories:['family','partner/spouse','friends','coworkers','neighbors','local community','political tribe','online community','other reddit user'],
-    colors:['#e07878','#c8b448','#4db86e','#48aed0','#7878cc','#d05890','#96c040','#e09850','#9898a8'],
-    Food:[1128, 424, 2136, 615, 87, 605, 10, 157, 306],Transport:[338, 48, 248, 1359, 158, 396, 32, 68, 284],Housing:[305, 28, 203, 1954, 389, 613, 36, 53, 345]
+    categories:['general public','identity group','other reddit users','other','online community','family','partner/spouse','friends','coworkers','local community','neighbors'],
+    colors:['#48aed0','#4db86e','#b05aa0','#9898a8','#e09850','#e07878','#c8b448','#69c27d','#6e84df','#d05890','#8b7ddd'],
+    Food:[591,3559,278,15,275,207,158,123,34,4,1],Transport:[1499,808,435,22,191,25,17,19,23,13,8],Housing:[1562,178,377,26,333,9,4,15,43,10,29]
 };
 function initBubbles(){
     var el=document.getElementById('bubble-pack');if(!el)return;el.innerHTML='';
@@ -1078,7 +1252,7 @@ function initBubbles(){
 
 // ═══════════════ NORM TREEMAPS (descriptive + injunctive) ═══════════════
 (function(){
-    var SD={"Food": {"desc": [6708, 5749, 10543], "inj": [2132, 19620, 1248], "sec": [3035, 4731, 15233]}, "Transport": {"desc": [3413, 16444, 3143], "inj": [1100, 21547, 353], "sec": [2311, 4011, 16678]}, "Housing": {"desc": [3320, 14517, 5163], "inj": [1570, 20931, 499], "sec": [2950, 4115, 15934]}};
+    var SD={"Food": {"desc": [1100, 8892, 8], "inj": [4903, 5079, 18]}, "Transport": {"desc": [945, 9052, 3], "inj": [2463, 7536, 1]}, "Housing": {"desc": [680, 9312, 8], "inj": [2163, 7837, 0]}};
     var secs=['Food','Transport','Housing'];
     var SC={Food:'90,180,172',Transport:'175,141,195',Housing:'244,164,96'};
     var catNames=['Present','Absent','Unclear'];
@@ -1307,7 +1481,7 @@ setTimeout(function(){
     var tNorms={"food": {"1.2.1_descriptive": {"explicitly present": {"2010": 29.2, "2011": 31.3, "2012": 32.5, "2013": 33.1, "2014": 31.6, "2015": 31.6, "2016": 31.5, "2017": 30.1, "2018": 28.9, "2019": 28.3, "2020": 29.6, "2021": 27.2, "2022": 26.2, "2023": 24.0, "2024": 23.8}, "absent": {"2010": 26.0, "2011": 22.8, "2012": 23.2, "2013": 21.9, "2014": 23.3, "2015": 23.0, "2016": 22.7, "2017": 25.9, "2018": 26.4, "2019": 23.5, "2020": 24.0, "2021": 25.4, "2022": 25.6, "2023": 30.1, "2024": 30.0}, "unclear": {"2010": 44.7, "2011": 45.9, "2012": 44.3, "2013": 45.0, "2014": 45.1, "2015": 45.4, "2016": 45.8, "2017": 43.9, "2018": 44.7, "2019": 48.1, "2020": 46.4, "2021": 47.4, "2022": 48.2, "2023": 45.9, "2024": 46.2}}, "1.2.2_injunctive": {"present": {"2010": 7.1, "2011": 8.9, "2012": 8.1, "2013": 9.0, "2014": 9.0, "2015": 10.2, "2016": 9.2, "2017": 8.5, "2018": 8.5, "2019": 8.9, "2020": 10.0, "2021": 9.8, "2022": 10.7, "2023": 10.5, "2024": 10.4}, "absent": {"2010": 88.6, "2011": 86.0, "2012": 87.3, "2013": 86.5, "2014": 85.9, "2015": 84.0, "2016": 85.9, "2017": 86.2, "2018": 85.7, "2019": 86.1, "2020": 84.8, "2021": 83.6, "2022": 83.4, "2023": 84.1, "2024": 82.1}, "unclear": {"2010": 4.3, "2011": 5.2, "2012": 4.7, "2013": 4.5, "2014": 5.2, "2015": 5.7, "2016": 4.9, "2017": 5.3, "2018": 5.8, "2019": 5.0, "2020": 5.2, "2021": 6.6, "2022": 5.8, "2023": 5.4, "2024": 7.6}}, "1.3.3_second_order": {"2": {"2010": 11.5, "2011": 11.2, "2012": 11.4, "2013": 12.8, "2014": 12.6, "2015": 11.7, "2016": 13.0, "2017": 12.8, "2018": 11.8, "2019": 11.2, "2020": 12.8, "2021": 14.5, "2022": 16.8, "2023": 17.2, "2024": 16.1}, "1": {"2010": 19.8, "2011": 22.0, "2012": 21.4, "2013": 21.7, "2014": 21.9, "2015": 23.4, "2016": 23.6, "2017": 17.8, "2018": 17.7, "2019": 17.6, "2020": 18.8, "2021": 19.6, "2022": 22.2, "2023": 19.5, "2024": 22.1}, "0": {"2010": 68.7, "2011": 66.9, "2012": 67.2, "2013": 65.5, "2014": 65.6, "2015": 64.8, "2016": 63.4, "2017": 69.4, "2018": 70.5, "2019": 71.2, "2020": 68.4, "2021": 65.9, "2022": 61.0, "2023": 63.3, "2024": 61.9}}}, "transport": {"1.2.1_descriptive": {"explicitly present": {"2010": 0, "2011": 0, "2012": 0, "2013": 15.5, "2014": 15.1, "2015": 14.4, "2016": 13.3, "2017": 13.1, "2018": 15.4, "2019": 15.5, "2020": 13.4, "2021": 12.9, "2022": 15.7, "2023": 17.3, "2024": 16.9}, "absent": {"2010": 0, "2011": 0, "2012": 0, "2013": 67.6, "2014": 69.9, "2015": 71.7, "2016": 73.4, "2017": 72.3, "2018": 71.2, "2019": 70.8, "2020": 73.3, "2021": 74.3, "2022": 70.7, "2023": 69.3, "2024": 70.6}, "unclear": {"2010": 0, "2011": 0, "2012": 0, "2013": 16.9, "2014": 15.0, "2015": 13.9, "2016": 13.3, "2017": 14.6, "2018": 13.4, "2019": 13.7, "2020": 13.2, "2021": 12.8, "2022": 13.7, "2023": 13.4, "2024": 12.5}}, "1.2.2_injunctive": {"present": {"2010": 0, "2011": 0, "2012": 0, "2013": 3.7, "2014": 5.4, "2015": 5.1, "2016": 4.8, "2017": 4.6, "2018": 4.1, "2019": 4.9, "2020": 4.6, "2021": 4.8, "2022": 5.8, "2023": 4.5, "2024": 4.2}, "absent": {"2010": 0, "2011": 0, "2012": 0, "2013": 94.9, "2014": 93.0, "2015": 93.0, "2016": 93.4, "2017": 94.0, "2018": 94.7, "2019": 93.3, "2020": 94.0, "2021": 93.9, "2022": 92.3, "2023": 94.1, "2024": 94.4}, "unclear": {"2010": 0, "2011": 0, "2012": 0, "2013": 1.4, "2014": 1.5, "2015": 1.9, "2016": 1.8, "2017": 1.4, "2018": 1.2, "2019": 1.8, "2020": 1.4, "2021": 1.3, "2022": 1.9, "2023": 1.4, "2024": 1.4}}, "1.3.3_second_order": {"2": {"2010": 0, "2011": 0, "2012": 0, "2013": 9.6, "2014": 10.3, "2015": 10.7, "2016": 10.2, "2017": 9.3, "2018": 10.3, "2019": 10.2, "2020": 10.3, "2021": 9.2, "2022": 10.8, "2023": 9.1, "2024": 10.4}, "1": {"2010": 0, "2011": 0, "2012": 0, "2013": 17.8, "2014": 16.9, "2015": 17.8, "2016": 16.8, "2017": 17.0, "2018": 15.8, "2019": 18.2, "2020": 18.6, "2021": 17.6, "2022": 18.0, "2023": 18.4, "2024": 16.8}, "0": {"2010": 0, "2011": 0, "2012": 0, "2013": 72.5, "2014": 72.7, "2015": 71.5, "2016": 73.1, "2017": 73.8, "2018": 73.9, "2019": 71.6, "2020": 71.2, "2021": 73.2, "2022": 71.3, "2023": 72.6, "2024": 72.9}}}, "housing": {"1.2.1_descriptive": {"explicitly present": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 11.2, "2015": 12.0, "2016": 11.4, "2017": 12.5, "2018": 13.6, "2019": 14.9, "2020": 15.0, "2021": 16.1, "2022": 17.9, "2023": 16.3, "2024": 16.4}, "absent": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 68.6, "2015": 66.4, "2016": 68.9, "2017": 66.0, "2018": 64.9, "2019": 61.8, "2020": 60.6, "2021": 59.4, "2022": 56.9, "2023": 60.9, "2024": 62.2}, "unclear": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 20.2, "2015": 21.6, "2016": 19.7, "2017": 21.5, "2018": 21.5, "2019": 23.2, "2020": 24.4, "2021": 24.5, "2022": 25.2, "2023": 22.8, "2024": 21.5}}, "1.2.2_injunctive": {"present": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 5.0, "2015": 6.4, "2016": 5.8, "2017": 6.8, "2018": 6.1, "2019": 6.9, "2020": 6.4, "2021": 7.2, "2022": 8.4, "2023": 7.3, "2024": 7.9}, "absent": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 93.2, "2015": 91.1, "2016": 92.2, "2017": 91.4, "2018": 91.5, "2019": 91.1, "2020": 91.5, "2021": 90.6, "2022": 89.4, "2023": 90.1, "2024": 89.9}, "unclear": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 1.8, "2015": 2.5, "2016": 2.0, "2017": 1.8, "2018": 2.4, "2019": 1.9, "2020": 2.0, "2021": 2.2, "2022": 2.2, "2023": 2.6, "2024": 2.2}}, "1.3.3_second_order": {"2": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 12.1, "2015": 11.2, "2016": 10.2, "2017": 12.1, "2018": 11.9, "2019": 12.9, "2020": 14.2, "2021": 12.6, "2022": 13.8, "2023": 13.6, "2024": 16.1}, "1": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 17.0, "2015": 15.9, "2016": 17.0, "2017": 17.9, "2018": 16.9, "2019": 16.5, "2020": 17.1, "2021": 20.4, "2022": 20.6, "2023": 18.6, "2024": 18.5}, "0": {"2010": 0, "2011": 0, "2012": 0, "2013": 0, "2014": 70.9, "2015": 72.9, "2016": 72.7, "2017": 70.1, "2018": 71.1, "2019": 70.6, "2020": 68.8, "2021": 67.0, "2022": 65.6, "2023": 67.7, "2024": 65.4}}}};
     var normDims={"1.2.1_descriptive": {"title": "Descriptive Norm", "cats": ["explicitly present", "absent", "unclear"], "colors": ["#7caed6", "#566a7a", "#8a9aa8"]}, "1.2.2_injunctive": {"title": "Injunctive Norm", "cats": ["present", "absent", "unclear"], "colors": ["#8fbfd9", "#566a7a", "#8a9aa8"]}, "1.3.3_second_order": {"title": "Second-Order Belief", "cats": ["2", "1", "0"], "display": ["strong", "weak", "none"], "colors": ["#b8a8c8", "#8fbfd9", "#8a9aa8"]}};
     var tSurvey={"food":{"diet_1":{"2010":8.6,"2011":12.2,"2012":11.2,"2013":10.6,"2014":9.2,"2015":8.7,"2016":9.0,"2017":9.5,"2018":8.3,"2019":8.2,"2020":8.8,"2021":6.8,"2022":7.0,"2023":8.0,"2024":9.3},"diet_2":{"2010":19.6,"2011":17.7,"2012":17.8,"2013":18.4,"2014":18.5,"2015":18.0,"2016":16.6,"2017":18.2,"2018":18.9,"2019":18.0,"2020":20.0,"2021":23.0,"2022":22.2,"2023":24.1,"2024":24.2},"diet_3":{"2010":4.3,"2011":3.1,"2012":4.3,"2013":3.8,"2014":3.8,"2015":5.0,"2016":4.5,"2017":4.5,"2018":5.3,"2019":5.6,"2020":5.5,"2021":4.4,"2022":4.8,"2023":3.5,"2024":4.1},"diet_4":{"2010":6.7,"2011":6.4,"2012":6.1,"2013":6.3,"2014":5.5,"2015":6.1,"2016":7.1,"2017":6.0,"2018":7.6,"2019":9.2,"2020":6.7,"2021":6.4,"2022":7.4,"2023":6.5,"2024":4.9},"diet_5":{"2010":4.1,"2011":3.1,"2012":4.0,"2013":4.0,"2014":3.7,"2015":4.5,"2016":4.4,"2017":4.2,"2018":5.4,"2019":4.3,"2020":5.4,"2021":4.0,"2022":4.2,"2023":4.4,"2024":3.8},"diet_6":{"2010":3.2,"2011":3.6,"2012":3.8,"2013":4.1,"2014":3.6,"2015":4.5,"2016":3.6,"2017":4.3,"2018":3.5,"2019":4.5,"2020":5.1,"2021":3.6,"2022":3.8,"2023":3.4,"2024":3.4},"diet_8":{"2010":0.1,"2011":0.2,"2012":0.1,"2013":0.2,"2014":0.3,"2015":0.1,"2016":0.3,"2017":0.2,"2018":0.3,"2019":0.3,"2020":0.3,"2021":0.2,"2022":0.2,"2023":0.5,"2024":0.4},"diet_9":{"2010":12.3,"2011":13.3,"2012":13.5,"2013":13.6,"2014":14.0,"2015":13.3,"2016":13.4,"2017":13.0,"2018":12.1,"2019":13.0,"2020":12.4,"2021":10.5,"2022":10.5,"2023":9.6,"2024":10.1},"diet_10":{"2010":10.2,"2011":10.9,"2012":11.1,"2013":12.4,"2014":10.6,"2015":11.5,"2016":11.3,"2017":9.2,"2018":9.3,"2019":11.8,"2020":10.7,"2021":9.0,"2022":9.2,"2023":7.3,"2024":7.8},"diet_11":{"2010":5.3,"2011":3.6,"2012":4.4,"2013":4.3,"2014":4.3,"2015":4.3,"2016":4.4,"2017":4.0,"2018":4.0,"2019":4.8,"2020":4.7,"2021":4.4,"2022":4.9,"2023":4.4,"2024":4.5},"diet_13":{"2010":15.6,"2011":16.4,"2012":15.7,"2013":17.2,"2014":17.9,"2015":17.0,"2016":16.0,"2017":15.5,"2018":15.6,"2019":15.4,"2020":15.9,"2021":16.7,"2022":17.0,"2023":18.1,"2024":20.1},"diet_14":{"2010":11.0,"2011":14.4,"2012":13.5,"2013":13.5,"2014":12.8,"2015":13.3,"2016":12.8,"2017":11.9,"2018":11.7,"2019":12.9,"2020":12.8,"2021":12.4,"2022":14.5,"2023":12.9,"2024":12.6},"diet_17":{"2010":3.7,"2011":4.0,"2012":3.8,"2013":3.6,"2014":3.9,"2015":3.3,"2016":3.9,"2017":2.9,"2018":4.1,"2019":2.5,"2020":3.3,"2021":4.4,"2022":4.7,"2023":3.5,"2024":4.3}},"transport":{"ev_1":{"2010":0,"2011":0,"2012":0,"2013":5.7,"2014":7.6,"2015":5.3,"2016":5.2,"2017":6.1,"2018":5.3,"2019":4.1,"2020":4.2,"2021":3.7,"2022":3.5,"2023":3.4,"2024":3.2},"ev_2":{"2010":0.0,"2011":14.3,"2012":12.7,"2013":18.4,"2014":14.7,"2015":16.6,"2016":16.8,"2017":15.8,"2018":17.7,"2019":17.9,"2020":16.0,"2021":15.6,"2022":17.5,"2023":16.9,"2024":15.9},"ev_3":{"2010":0,"2011":0,"2012":0,"2013":6.5,"2014":6.4,"2015":4.2,"2016":5.0,"2017":5.0,"2018":5.1,"2019":4.1,"2020":3.9,"2021":3.8,"2022":4.5,"2023":5.4,"2024":4.8},"ev_4":{"2010":18.2,"2011":21.4,"2012":17.5,"2013":24.8,"2014":21.5,"2015":18.9,"2016":18.2,"2017":21.4,"2018":20.0,"2019":19.3,"2020":18.4,"2021":19.9,"2022":22.0,"2023":23.9,"2024":21.7},"ev_5":{"2010":0,"2011":0,"2012":0,"2013":4.1,"2014":5.2,"2015":4.3,"2016":4.6,"2017":4.0,"2018":3.8,"2019":4.2,"2020":3.7,"2021":4.8,"2022":4.1,"2023":3.8,"2024":4.7},"ev_6":{"2010":0,"2011":0,"2012":0,"2013":3.9,"2014":4.5,"2015":5.0,"2016":4.1,"2017":3.9,"2018":4.8,"2019":4.9,"2020":3.4,"2021":4.6,"2022":6.0,"2023":5.5,"2024":5.3}},"housing":{"solar_1":{"2010":7.0,"2011":3.1,"2012":5.7,"2013":7.7,"2014":7.8,"2015":9.7,"2016":9.4,"2017":9.0,"2018":8.5,"2019":8.7,"2020":8.7,"2021":10.2,"2022":13.5,"2023":13.9,"2024":12.2},"solar_2":{"2010":41.9,"2011":21.2,"2012":29.8,"2013":23.5,"2014":17.4,"2015":14.2,"2016":11.5,"2017":13.1,"2018":14.8,"2019":17.2,"2020":15.5,"2021":13.7,"2022":11.1,"2023":11.5,"2024":13.2},"solar_3":{"2010":0,"2011":0,"2012":0,"2013":0,"2014":3.3,"2015":2.9,"2016":4.3,"2017":4.5,"2018":4.4,"2019":4.1,"2020":5.4,"2021":4.3,"2022":4.4,"2023":5.3,"2024":6.5},"solar_4":{"2010":0.0,"2011":4.4,"2012":13.3,"2013":12.5,"2014":11.6,"2015":13.0,"2016":13.2,"2017":13.0,"2018":11.6,"2019":12.5,"2020":12.1,"2021":14.2,"2022":17.6,"2023":17.8,"2024":15.6},"solar_5":{"2010":16.3,"2011":9.4,"2012":21.1,"2013":23.5,"2014":24.0,"2015":19.9,"2016":18.4,"2017":21.2,"2018":19.4,"2019":21.9,"2020":21.3,"2021":22.6,"2022":20.7,"2023":19.8,"2024":19.2},"solar_6":{"2010":0,"2011":0,"2012":0,"2013":0,"2014":4.2,"2015":3.7,"2016":3.7,"2017":4.0,"2018":3.4,"2019":4.6,"2020":4.9,"2021":4.5,"2022":5.6,"2023":6.9,"2024":8.3},"solar_7":{"2010":0,"2011":0,"2012":0,"2013":0,"2014":0.8,"2015":1.1,"2016":0.4,"2017":1.1,"2018":1.4,"2019":1.7,"2020":1.5,"2021":1.1,"2022":2.1,"2023":1.9,"2024":3.4},"solar_8":{"2010":0,"2011":0,"2012":0,"2013":0,"2014":0.8,"2015":0.6,"2016":0.7,"2017":0.7,"2018":1.1,"2019":1.0,"2020":0.9,"2021":0.9,"2022":1.2,"2023":1.1,"2024":1.5},"solar_9":{"2010":0,"2011":0,"2012":0,"2013":0,"2014":2.4,"2015":2.7,"2016":3.5,"2017":3.3,"2018":3.8,"2019":5.7,"2020":5.7,"2021":5.4,"2022":6.0,"2023":7.1,"2024":6.2},"solar_10":{"2010":0,"2011":0,"2012":0,"2013":0,"2014":4.9,"2015":5.4,"2016":6.4,"2017":5.6,"2018":7.4,"2019":7.8,"2020":9.9,"2021":9.2,"2022":8.9,"2023":11.1,"2024":10.3}}};
-    var surveyLabels={"diet_1": "meat reduction - health", "diet_2": "plant-based eating - social prompting", "diet_9": "plant-based choices - taste", "diet_11": "plant-based eating - barriers", "diet_13": "plant-based choices - cost", "diet_14": "food choice - animal welfare", "ev_2": "EVs - purchase cost", "ev_4": "EV adoption - infrastructure", "solar_1": "home solar - cost savings", "solar_2": "home solar - environmental benefit", "solar_4": "home solar - payback concerns", "solar_5": "home solar - climate suitability"};
+    var surveyLabels={"diet_1": "meat reduction - health", "diet_2": "food choice - animal welfare", "diet_9": "plant-based choices - taste", "diet_11": "plant-based choices - cost", "diet_13": "plant-based eating - social prompting", "diet_14": "plant-based eating - barriers", "ev_2": "EVs - purchase cost", "ev_4": "EV adoption - infrastructure", "solar_1": "home solar - cost savings", "solar_2": "home solar - environmental benefit", "solar_4": "home solar - payback concerns", "solar_5": "home solar - climate suitability"};
     // ⬤ UPDATED 2026-03-25 — restricted to 12 Type (iii) trackable questions only
     // 17 excluded: 9 corpus-rare (YES 9B <5%), 8 mental-state constructs (κ <0.45)
     // Source: ModernBERT+LoRA SLM, 200k stratified sample/sector (seed=42)
@@ -1455,7 +1629,8 @@ window.addEventListener('load',function(){
     </div>
   </details>
   <div class="toc-flat">
-    <a href="#limitations">6. Limitations</a>
+    <a href="#tabref">6. Tab Reference</a>
+    <a href="#limitations">7. Limitations</a>
     <a href="#refs">References</a>
   </div>
 </nav>
@@ -1469,18 +1644,18 @@ window.addEventListener('load',function(){
 <h2 id="intro">1. Introduction</h2>
 <!-- ================================================================ -->
 <div class="sec">
-<p>Climate mitigation requires more than technological solutions&mdash;it depends on collective behavioural shifts shaped by social and cultural processes<sup>[1,2]</sup>. Social norms&mdash;shared expectations about what is typical or approved within a group&mdash;have emerged as powerful levers for encouraging climate-relevant behaviours<sup>[3,4]</sup>. <strong>Descriptive norms</strong> (what people <em>do</em>) and <strong>injunctive norms</strong> (what people <em>should</em> do) interact to shape energy conservation<sup>[5]</sup>, dietary choices, and technology adoption<sup>[6]</sup>. <strong>Second-order normative beliefs</strong>&mdash;beliefs about what others <em>believe</em> others do&mdash;have proven critical predictors of behaviour change, sometimes more so than first-order norms<sup>[7]</sup>. Trending norms, where a behaviour is growing even if still a minority practice, can be communicated to accelerate adoption<sup>[8]</sup>.</p>
+<p>Climate mitigation requires more than technological solutions&mdash;it depends on collective behavioural shifts shaped by social and cultural processes<sup>[1,2]</sup>. Social norms&mdash;shared expectations about what is typical or approved within a group&mdash;have emerged as powerful levers for encouraging climate-relevant behaviours<sup>[3,4]</sup>. <strong>Descriptive norms</strong> (what people <em>do</em>) and <strong>injunctive norms</strong> (what people <em>should</em> do) interact to shape energy conservation<sup>[5]</sup>, dietary choices, and technology adoption<sup>[6]</sup>. <span class="rev-purple"><span class="rev-del"><strong>Second-order normative beliefs</strong>&mdash;beliefs about what others <em>believe</em> others do&mdash;have proven critical predictors of behaviour change, sometimes more so than first-order norms<sup>[7]</sup>. Trending norms, where a behaviour is growing even if still a minority practice, can be communicated to accelerate adoption<sup>[8]</sup>.</span> The current social-influence implementation does <strong>not</strong> visualize second-order beliefs. In this phase, the dashboard is restricted to four active `v2` social-norm labels: <strong>gate</strong>, <strong>descriptive</strong>, <strong>injunctive</strong>, and <strong>reference group</strong>. Those prompts were revised from the literature-grounded synthesis in <code>2_social_norms/social_norms_definitions_report.md</code>, not written ad hoc.</span></p>
 
 <p>Three domains sit at the heart of individual-level climate mitigation: <span class="badge transport">Transport</span> electric vehicles, <span class="badge food">Food</span> plant-based diets, and <span class="badge housing">Housing</span> residential solar photovoltaics. Together, these sectors account for a large share of household carbon footprints, and public discourse around them is rapidly evolving.</p>
 
 <p>Yet most of what we know about climate norms comes from surveys and experiments<sup>[3,5,7]</sup>&mdash;instruments that are expensive, slow, and limited in temporal resolution<sup>[9]</sup>. Social media platforms, especially Reddit, host continuous, large-scale, naturalistic discussion where normative claims surface organically. No study has systematically extracted the <em>structure</em> of social norms from this discourse&mdash;measuring not just sentiment but the type of norm invoked, the reference group cited, and the stance expressed&mdash;across multiple climate-action sectors simultaneously.</p>
 
 <h3 id="intro-gap">1.1 Knowledge Gap</h3>
-<p>Traditional measures of societal readiness&mdash;public opinion polls<sup>[10]</sup>, climate opinion maps<sup>[11]</sup>, media content analyses<sup>[12]</sup>, policy adoption indices<sup>[13]</sup>, technology deployment rates<sup>[14]</sup>&mdash;can be slow, costly, or limited in temporal granularity. Social-media sentiment studies exist<sup>[15]</sup> but typically treat sentiment as a single dimension, ignoring the richer norm taxonomy that behavioural science has shown to matter (descriptive vs. injunctive, first- vs. second-order, reference group specificity). Furthermore, no prior work has compared the <em>frame-level</em> content of online discourse with established survey instruments to identify where public attention and survey assumptions diverge.</p>
+<p>Traditional measures of societal readiness&mdash;public opinion polls<sup>[10]</sup>, climate opinion maps<sup>[11]</sup>, media content analyses<sup>[12]</sup>, policy adoption indices<sup>[13]</sup>, technology deployment rates<sup>[14]</sup>&mdash;can be slow, costly, or limited in temporal granularity. Social-media sentiment studies exist<sup>[15]</sup> but typically treat sentiment as a single dimension, ignoring the richer norm taxonomy that behavioural science has shown to matter <span class="rev-purple"><span class="rev-del">(descriptive vs. injunctive, first- vs. second-order, reference group specificity)</span>(descriptive vs. injunctive, reference group specificity, and the difference between strict norm statements and public normative performances in Reddit-style discourse).</span> Furthermore, no prior work has compared the <em>frame-level</em> content of online discourse with established survey instruments to identify where public attention and survey assumptions diverge.</p>
 
 <h3 id="intro-contrib">1.2 Contributions</h3>
 <div class="contrib">
-<span class="contrib-num">1.</span><span class="contrib-text"><strong>Hierarchical norm extraction</strong> &mdash; Each comment is classified on norm dimensions derived from IPCC AR6 Chapter 5<sup>[2]</sup>. Five dimensions are visualised in the <a class="tab-link" onclick="showTab('norms');return false;" href="#">&#8594;&nbsp;Social Influence</a> tab: <em>norm signal presence</em> (whether any social norm is referenced at all), <em>descriptive norm</em> (what people actually do), <em>injunctive norm</em> (what people feel they should do), and <em>reference group</em> (which social group is cited). How these shift over 2010&ndash;2024 is shown in the <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a> tab, including <em>second-order belief</em> (perceptions of what others think).</span>
+<span class="contrib-num">1.</span><span class="contrib-text"><strong>Hierarchical norm extraction</strong> &mdash; Each comment is classified on norm dimensions derived from IPCC AR6 Chapter 5<sup>[2]</sup>. <span class="rev-purple"><span class="rev-del">Five dimensions are visualised in the <a class="tab-link" onclick="showTab('norms');return false;" href="#">&#8594;&nbsp;Social Influence</a> tab: <em>norm signal presence</em> (whether any social norm is referenced at all), <em>descriptive norm</em> (what people actually do), <em>injunctive norm</em> (what people feel they should do), and <em>reference group</em> (which social group is cited). How these shift over 2010&ndash;2024 is shown in the <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a> tab, including <em>second-order belief</em> (perceptions of what others think).</span> The current <a class="tab-link" onclick="showTab('norms');return false;" href="#">&#8594;&nbsp;Social Influence</a> tab uses <strong>four active `v2` labels</strong> on a fixed <strong>30,000-comment sample</strong> (`10,000` per sector): <em>norm-relevant discourse / gate</em>, <em>descriptive norm</em>, <em>injunctive norm</em>, and <em>reference group</em>. The time-series chart retained in that tab is legacy and has not yet been rerun on `v2`.</span></span>
 <span class="contrib-num">2.</span><span class="contrib-text"><strong>Sector-specific survey frame labeling</strong> &mdash; Comments are labeled against 29 survey questions drawn from established climate surveys (13 food, 6 transport, 10 housing), enabling direct comparison of Reddit discourse with survey endorsement rates. Results are shown in the <a class="tab-link" onclick="showTab('survey');return false;" href="#">&#8594;&nbsp;Lifestyle Adoption Factors</a> tab as radial charts of driver and barrier salience per sector, and their evolution over time in <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a>.</span>
 <span class="contrib-num">3.</span><span class="contrib-text"><strong>Temporal trend analysis</strong> &mdash; Year-stratified sampling (2010&ndash;2024) allows tracking of how social influence patterns and adoption factor salience change over 15 years. Both norm dimensions and survey-frame factors are shown as time series in the <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a> tab.</span>
 <span class="contrib-num">4.</span><span class="contrib-text"><strong>Verification pipeline</strong> &mdash; A secondary LLM re-labels a stratified sample of 1,800 posts (50 per question) to quantify labeling reliability, with logprob-based confidence scoring. Accuracy statistics and representative post examples are browsable in the <a class="tab-link" onclick="showTab('examples');return false;" href="#">&#8594;&nbsp;Sample Posts</a> tab.</span>
@@ -1584,21 +1759,116 @@ window.addEventListener('load',function(){
 </table>
 
 <h3 id="data-sampling">2.2 Sampling</h3>
-<p>From ??M keyword-matched comments, <strong>??k comments</strong> (??k/sector) were drawn using <strong>equal yearly representation</strong> across 2010&ndash;2024. This design ensures each year contributes equally to the corpus, enabling reliable trend comparisons in the <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a> tab, at the cost of discarding more data from later high-volume years. Even in peak years, we sample ??% of available posts &mdash; still a statistically robust subset for proportional estimates (a random sample of ~1,000 yields ±3% margin of error at 95% confidence).</p>
+<p><span class="rev-purple"><span class="rev-del">From ??M keyword-matched comments, <strong>??k comments</strong> (??k/sector) were drawn using <strong>equal yearly representation</strong> across 2010&ndash;2024. This design ensures each year contributes equally to the corpus, enabling reliable trend comparisons in the <a class="tab-link" onclick="showTab('temporal');return false;" href="#">&#8594;&nbsp;Temporal</a> tab, at the cost of discarding more data from later high-volume years. Even in peak years, we sample ??% of available posts &mdash; still a statistically robust subset for proportional estimates (a random sample of ~1,000 yields ?3% margin of error at 95% confidence).</span> For the <strong>current social-influence tab</strong>, the displayed `v2` results come from a fixed <strong>30,000-comment sample</strong> drawn from the sector caches: <strong>10,000 comments each</strong> for `food`, `transport`, and `housing`. The exact file used in the run is <code>paper4data/sector_to_comments_cache_10k_sample.json</code>. In this dashboard pass it should be read as a <strong>fixed sector-balanced sample</strong> prepared upstream from <code>paper4data/sector_to_comments_cache.json</code>, not as the larger year-stratified temporal sample used elsewhere in the project.</span></p>
 
 <h3 id="data-schema">2.3 Labeling Schema</h3>
 
-<p><strong>Social Norms</strong> (7 questions per comment, all sectors):</p>
+<p><strong>Social Norms</strong> <span class="rev-purple"><span class="rev-del">(7 questions per comment, all sectors)</span>(current dashboard slice: 4 active `v2` questions per comment, all sectors)</span>:</p>
 <table>
 <tr><th>ID</th><th>Question</th><th>Options</th></tr>
 <tr><td><code>1.1_gate</code></td><td>Does the comment reference a social norm?</td><td>yes / no</td></tr>
-<tr><td><code>1.1.1_stance</code></td><td>Author&rsquo;s stance toward the climate action</td><td>pro / against / against&nbsp;part.&nbsp;but&nbsp;pro / neither-mixed / pro&nbsp;but&nbsp;lack&nbsp;of&nbsp;options</td></tr>
-<tr><td><code>1.2.1_descriptive</code></td><td>Descriptive norm present?</td><td>explicitly present / absent / unclear</td></tr>
+<tr class="rev-purple"><td><span class="rev-del"><code>1.1.1_stance</code></span></td><td><span class="rev-del">Author&rsquo;s stance toward the climate action</span></td><td><span class="rev-del">pro / against / against&nbsp;part.&nbsp;but&nbsp;pro / neither-mixed / pro&nbsp;but&nbsp;lack&nbsp;of&nbsp;options</span></td></tr>
+<tr><td><code>1.2.1_descriptive</code></td><td>Descriptive norm present?</td><td><span class="rev-purple"><span class="rev-del">explicitly present</span>present</span> / absent / unclear</td></tr>
 <tr><td><code>1.2.2_injunctive</code></td><td>Injunctive norm present?</td><td>present / absent / unclear</td></tr>
-<tr><td><code>1.3.1_reference_group</code></td><td>Which social group is referenced?</td><td>family / partner / friends / coworkers / neighbors / local&nbsp;community / political&nbsp;tribe / online&nbsp;community / other&nbsp;reddit&nbsp;user / other</td></tr>
-<tr><td><code>1.3.1b_perceived_stance</code></td><td>Stance attributed to reference group</td><td>pro / against / neither-mixed</td></tr>
-<tr><td><code>1.3.3_second_order</code></td><td>Second-order normative belief</td><td>0 (none) / 1 (weak) / 2 (strong)</td></tr>
+<tr><td><code>1.3.1_reference_group</code></td><td>Which social group is referenced?</td><td><span class="rev-purple"><span class="rev-del">family / partner / friends / coworkers / neighbors / local&nbsp;community / political&nbsp;tribe / online&nbsp;community / other&nbsp;reddit&nbsp;user / other</span>coworkers / family / friends / general&nbsp;public / identity&nbsp;group / local&nbsp;community / neighbors / online&nbsp;community / other / other&nbsp;reddit&nbsp;users / partner/spouse</span></td></tr>
+<tr class="rev-purple"><td><span class="rev-del"><code>1.3.1b_perceived_stance</code></span></td><td><span class="rev-del">Stance attributed to reference group</span></td><td><span class="rev-del">pro / against / neither-mixed</span></td></tr>
+<tr class="rev-purple"><td><span class="rev-del"><code>1.3.3_second_order</code></span></td><td><span class="rev-del">Second-order normative belief</span></td><td><span class="rev-del">0 (none) / 1 (weak) / 2 (strong)</span></td></tr>
 </table>
+
+<div class="rev-purple" style="font-size:0.84em;line-height:1.7;margin:12px 0 8px">
+<strong>Prompt motivation.</strong> These four active social-norm prompts were derived from the definitions review in <code>2_social_norms/social_norms_definitions_report.md</code>. The revision explicitly separates: (i) descriptive commonness / normality claims, (ii) injunctive approval / disapproval signals, (iii) reference networks, and (iv) norm-relevant discourse that includes public evaluative performances on Reddit. The prompts were therefore motivated by the literature review rather than ad hoc prompt writing.
+</div>
+
+<details class="rev-purple" style="margin:10px 0 14px">
+<summary style="cursor:pointer;font-weight:600">Exact `v2` social-norm prompts used in the current dashboard slice</summary>
+<div style="margin-top:10px">
+<div style="margin-bottom:10px"><strong><code>1.1_gate</code></strong></div>
+<pre style="white-space:pre-wrap;background:#0a1628;border:1px solid #4a305a;border-radius:8px;padding:12px;font-size:0.76em;color:#d7b8e8">Does the comment contain NORM-RELEVANT DISCOURSE?
+
+Code YES when the comment contains at least one of these:
+1. a claim about what a relevant group typically does
+2. a claim about what a relevant group approves, disapproves, expects, pressures, praises, shames, or criticizes
+3. a public evaluative or prescriptive stance that marks the behavior as acceptable, unacceptable, admirable, embarrassing, mocked, or expected in the forum, even if the group is implicit
+
+Code NO when the comment is only:
+- an individual's own behavior or preference with no wider evaluative force
+- technical facts, product facts, or market facts
+- company behavior or news
+- a neutral question
+- a generic statistic with no clear claim about what a relevant group typically does or expects
+
+Important for Reddit:
+- A lone self-report like 'I am vegan' or 'I drive an EV' is NOT enough by itself.
+- A single anecdote about one person is NOT enough by itself.
+- But a visible public condemnation or praise can still be norm-relevant even when the group is implied rather than named.
+
+Answer with exactly one word: yes or no.</pre>
+<div style="margin:12px 0 10px"><strong><code>1.2.1_descriptive</code></strong></div>
+<pre style="white-space:pre-wrap;background:#0a1628;border:1px solid #4a305a;border-radius:8px;padding:12px;font-size:0.76em;color:#d7b8e8">Does the comment express a DESCRIPTIVE NORM?
+
+Descriptive norms are claims about what members of a relevant social group typically do, commonly do, are expected to do because 'that's what people do', or what is becoming normal in that group.
+
+Code PRESENT when the comment says or clearly implies that:
+- most / many / people like X do Y
+- a behavior is common, typical, normal, routine, mainstream, or taken-for-granted in a group
+- a relevant group habitually does the behavior
+- a behavior is framed as becoming more normal or more common in a group
+
+Code ABSENT when the comment is only:
+- a lone self-report like 'I am vegan' or 'I drive an EV'
+- one anecdote about one person
+- a technical or demographic statistic that does not indicate what a relevant group typically does
+- approval, disapproval, praise, blame, or prescription without any commonness/normality claim
+- product, policy, or company information
+
+Code UNCLEAR only when the comment hints at group typicality or normality but the group or prevalence signal is too vague.
+
+Answer with exactly one of: present, absent, unclear.</pre>
+<div style="margin:12px 0 10px"><strong><code>1.2.2_injunctive</code></strong></div>
+<pre style="white-space:pre-wrap;background:#0a1628;border:1px solid #4a305a;border-radius:8px;padding:12px;font-size:0.76em;color:#d7b8e8">Does the comment express an INJUNCTIVE NORM?
+
+Injunctive norms are signals about what is approved, disapproved, expected, praised, mocked, shamed, or criticized.
+
+Code PRESENT when the comment says or clearly implies that:
+- people think someone should or should not do something
+- a behavior is socially approved or disapproved
+- people face pressure, criticism, shame, praise, ridicule, or sanction for compliance or noncompliance
+- a socially shared rule of appropriateness is being invoked
+- the speaker publicly praises, blames, ridicules, or condemns the behavior in a way that contributes to visible approval/disapproval in the forum
+
+Code ABSENT when the comment is only:
+- technical analysis or factual description
+- a descriptive claim about what people do
+- personal logistics or self-report with no evaluative force
+- a pure taste statement with no real social-regulatory force
+
+Code UNCLEAR only when the comment has evaluative or prescriptive force but it is not clear whether it is functioning as a social-regulatory judgment or just a personal taste statement.
+
+Answer with exactly one of: present, absent, unclear.</pre>
+<div style="margin:12px 0 10px"><strong><code>1.3.1_reference_group</code></strong></div>
+<pre style="white-space:pre-wrap;background:#0a1628;border:1px solid #4a305a;border-radius:8px;padding:12px;font-size:0.76em;color:#d7b8e8">Which REFERENCE GROUP is relevant for the norm claim?
+
+A reference group is the social group whose behavior, beliefs, approval, or expectations matter in the comment.
+
+This can include:
+- direct ties: family, partner/spouse, friends, coworkers, neighbors
+- local publics: local community
+- online publics: online community, other reddit users
+- salient identity groups: vegans, EV owners, climate people, conservatives, liberals, etc.
+- broad publics: people, everyone, society, the public
+
+Use OTHER only when there is no meaningful social referent.
+
+Important for Reddit:
+- The group does NOT need to be personally possessed with 'my'.
+- 'People on this sub' can be an online community.
+- 'Vegans' or 'EV drivers' can be an identity group.
+- Generic 'people' or 'society' should usually be general public, not other.
+- Do NOT assign online community only because the comment appears on Reddit; there should be some textual cue or a genuinely public generalized audience.
+
+Answer with exactly one of: coworkers, family, friends, general public, identity group, local community, neighbors, online community, other, other reddit users, partner/spouse.</pre>
+</div>
+</details>
 
 <p><strong>Survey Frame Questions</strong> (sector-specific, binary yes/no):</p>
 <table>
@@ -1609,6 +1879,7 @@ window.addEventListener('load',function(){
 </table>
 
 <p><strong>Total labels:</strong> 21,300 &times; 7 norms + 7,100 &times; 13 + 7,100 &times; 6 + 7,100 &times; 10 = <strong>150,000 individual labels</strong></p>
+<p class="rev-purple"><strong>Current social-influence pass only:</strong> `30,000` comments (`10,000` per sector) &times; `4` active social-norm questions &times; `2` passes = <strong>`240,000` model calls</strong>. The static social-influence visuals currently shown use the `v2` pass-1 outputs from that run.</p>
 </div>
 
 <!-- ================================================================ -->
@@ -1660,8 +1931,9 @@ window.addEventListener('load',function(){
 
 <h3 id="pipe-labeling">3.2 Hierarchical Labeling</h3>
 <ol>
-<li>Load cache; sample with equal yearly representation (ongoing &mdash; 22,900/sector as of latest checkpoint run).</li>
+<li><span class="rev-purple"><span class="rev-del">Load cache; sample with equal yearly representation (ongoing &mdash; 22,900/sector as of latest checkpoint run).</span> For the current social-influence tab, load the fixed `v2` sample file <code>paper4data/sector_to_comments_cache_10k_sample.json</code> containing <strong>10,000 comments per sector</strong>.</span></li>
 <li><span style="color:#ff6b6b">Query local vLLM instance (<strong>Qwen3.5-4B</strong> fast labeler, replacing Mistral-7B-Instruct) with hierarchical cascade: gate &rarr; stance &rarr; norms &rarr; reference group &rarr; second-order beliefs; plus sector-specific survey prompts. Note: Qwen3.5-4B is a thinking model &mdash; <code>"enable_thinking": false</code> must be set in vLLM chat template kwargs.</span></li>
+<li class="rev-purple">For the current social-influence tab, the active run is the `v2` social-norms pass with <strong>Qwen/Qwen3.5-9B</strong> on <strong>30,000 comments total</strong> (`10,000` per sector), evaluated on four active labels only. The repeatability rerun is stored in <code>2_social_norms/results_v2</code>.</li>
 <li>Collect both label and <strong>log-probability</strong> (confidence score) for each response.</li>
 <li>Safety net: recheck &ldquo;against&rdquo; stance labels for &ldquo;pro but lack of options&rdquo; misclassification.</li>
 <li>Output: <code>paper4data/norms_labels.json</code> &mdash; per-sector arrays of <code>{comment, year, answers, logprobs}</code>.</li>
@@ -1670,10 +1942,10 @@ window.addEventListener('load',function(){
 <h3 id="pipe-prompt">3.3 Prompt Optimization</h3>
 <p>Evidence-guided refinement from systematic analysis of verification mismatches:</p>
 <ul>
-<li><strong>Descriptive norm</strong>: Model too restrictive &mdash; added self-reports, statistics, observed group behaviour.</li>
-<li><strong>Gate question</strong>: Model too broad &mdash; excluded corporate mentions, technical facts, questions.</li>
+<li><span class="rev-purple"><span class="rev-del"><strong>Descriptive norm</strong>: Model too restrictive &mdash; added self-reports, statistics, observed group behaviour.</span><strong>Descriptive norm</strong>: prompt tightened around explicit commonness / normality / trend language; lone self-report and generic statistics no longer count by default.</span></li>
+<li><span class="rev-purple"><span class="rev-del"><strong>Gate question</strong>: Model too broad &mdash; excluded corporate mentions, technical facts, questions.</span><strong>Gate question</strong>: reframed as <em>norm-relevant discourse</em> so it can capture public normative performances on Reddit without collapsing into generic factual talk.</span></li>
 <li><strong>Perceived stance</strong>: Model defaulted to &ldquo;neither/mixed&rdquo; &mdash; added inference rules for tone, framing, sarcasm.</li>
-<li><strong>Reference group</strong>: Model over-assigned specific groups &mdash; emphasized possessive indicators (my/our).</li>
+<li><span class="rev-purple"><span class="rev-del"><strong>Reference group</strong>: Model over-assigned specific groups &mdash; emphasized possessive indicators (my/our).</span><strong>Reference group</strong>: broadened beyond intimate ties to include <em>general public</em>, <em>identity group</em>, and <em>other reddit users</em>, consistent with the literature on relevant reference networks and online publics.</span></li>
 </ul>
 
 <h3 id="pipe-audit">3.4 Verification — Inter-Teacher Audit</h3>
@@ -1714,7 +1986,7 @@ window.addEventListener('load',function(){
 <h3 id="dash-libs">4.2 Libraries</h3>
 <table>
 <tr><th>Library</th><th>Version</th><th>Role</th></tr>
-<tr><td><strong>Plotly.js</strong></td><td>2.27.0</td><td>Gauge, treemap, bar charts, scatter plots, stacked area charts</td></tr>
+<tr><td><strong>Plotly.js</strong></td><td>2.27.0</td><td>Gauge, treemap, Sankey, bar charts, scatter plots, stacked area charts</td></tr>
 <tr><td><strong>D3.js</strong></td><td>v7</td><td>Bubble pack layout, radial/spoke charts</td></tr>
 </table>
 
@@ -1792,7 +2064,7 @@ window.addEventListener('load',function(){
 <div class="method-card">
 <div class="method-id">M4</div>
 <div class="method-name">Gauge &mdash; Norm Prevalence</div>
-<div class="method-desc">Plotly pie (hole: 0.65, clipped to half). Food 40.2%, Transport 14.7%, Housing 18.1%. 30-step animation with cubic ease-out.</div>
+<div class="method-desc"><span class="rev-purple"><span class="rev-del">Plotly pie (hole: 0.65, clipped to half). Food 40.2%, Transport 14.7%, Housing 18.1%. 30-step animation with cubic ease-out.</span> Plotly pie (hole: 0.65, clipped to half). Current social-influence gauge uses the `v2` fixed sample (`10,000` comments per sector): Food <strong>41.9%</strong> (`4,192 / 10,000`), Transport <strong>16.7%</strong> (`1,671 / 10,000`), Housing <strong>13.5%</strong> (`1,347 / 10,000`). 30-step animation with cubic ease-out.</span></div>
 </div>
 <div class="method-card">
 <div class="method-id">M5</div>
@@ -1801,8 +2073,8 @@ window.addEventListener('load',function(){
 </div>
 <div class="method-card">
 <div class="method-id">M6</div>
-<div class="method-name">Treemap &mdash; Norm Type</div>
-<div class="method-desc">Two Plotly treemaps (descriptive norm, injunctive norm). Root &rarr; Sector &rarr; Presence category (Present / Absent / Unclear). Area = comment count; colour intensity encodes presence level. Side-by-side layout within the Social Norms tab.</div>
+<div class="method-name">Sankey &mdash; Norm Flow</div>
+<div class="method-desc">19 nodes, 48 links (16/sector). Per-sector toggle: bright 0.45 opacity, dim 0.06. Category labels update dynamically.</div>
 </div>
 <div class="method-card">
 <div class="method-id">M7</div>
@@ -1812,7 +2084,7 @@ window.addEventListener('load',function(){
 <div class="method-card">
 <div class="method-id">M8</div>
 <div class="method-name">Bubble Pack &mdash; Ref Groups</div>
-<div class="method-desc">D3 force simulation. r = sqrt(count) &times; rScale (adaptive: largest bubble &le; 28% of column width). 9 categories &times; 3 sectors with staggered reveal animation.</div>
+<div class="method-desc"><span class="rev-purple"><span class="rev-del">D3 force simulation. r = sqrt(count) &times; rScale (adaptive: largest bubble &le; 28% of column width). 9 categories &times; 3 sectors with staggered reveal animation.</span> D3 force simulation. r = sqrt(count) &times; rScale (adaptive: largest bubble &le; 28% of column width). Current bubble pack uses <strong>11 `v2` reference-group categories</strong> and is <strong>filtered to norm-bearing comments only</strong>: comments where descriptive = present or injunctive = present. Subset size = <strong>10,935 comments</strong> (`5,260` food, `3,080` transport, `2,595` housing); the plotted bubble counts exclude `ERROR` rows, leaving <strong>10,891</strong> usable reference-group assignments. Staggered reveal animation retained.</span></div>
 </div>
 <div class="method-card">
 <div class="method-id">M9</div>
@@ -1850,14 +2122,40 @@ window.addEventListener('load',function(){
 <p><strong>Norm Signal Prevalence (Tab 1, Gauge):</strong></p>
 <table>
 <tr><th>Sector</th><th class="r">% with norm signal</th><th class="r">Count</th></tr>
-<tr><td><span class="badge food">Food</span></td><td class="r">40.2%</td><td class="r">16,476 / 41,000</td></tr>
-<tr><td><span class="badge transport">Transport</span></td><td class="r">14.7%</td><td class="r">6,030 / 41,000</td></tr>
-<tr><td><span class="badge housing">Housing</span></td><td class="r">18.1%</td><td class="r">7,410 / 41,000</td></tr>
+<tr class="rev-purple"><td><span class="badge food">Food</span></td><td class="r"><span class="rev-del">40.2%</span> 41.9%</td><td class="r"><span class="rev-del">16,476 / 41,000</span> 4,192 / 10,000</td></tr>
+<tr class="rev-purple"><td><span class="badge transport">Transport</span></td><td class="r"><span class="rev-del">14.7%</span> 16.7%</td><td class="r"><span class="rev-del">6,030 / 41,000</span> 1,671 / 10,000</td></tr>
+<tr class="rev-purple"><td><span class="badge housing">Housing</span></td><td class="r"><span class="rev-del">18.1%</span> 13.5%</td><td class="r"><span class="rev-del">7,410 / 41,000</span> 1,347 / 10,000</td></tr>
 </table>
+
+<p><strong>Reference Groups (Tab 1, Bubble Pack):</strong></p>
+<p class="rev-purple"><span class="rev-del">Reference-group bubbles summarize all labeled comments in the social-influence run.</span> Reference-group bubbles now summarize only the subset where <strong>descriptive = present</strong> or <strong>injunctive = present</strong> in the `v2` pass-1 labels. This yields <strong>10,935 filtered comments</strong> across the fixed `30,000`-comment sample. After excluding `ERROR` reference-group outputs, the plotted denominator is <strong>10,891</strong> comments.</p>
+<table>
+<tr><th>Sector</th><th class="r">Filtered comments</th><th class="r">Plotted ref-group rows</th><th>Top groups in filtered subset</th></tr>
+<tr class="rev-purple"><td><span class="badge food">Food</span></td><td class="r">5,260</td><td class="r">5,245</td><td>identity group 3,559; general public 591; other reddit users 278</td></tr>
+<tr class="rev-purple"><td><span class="badge transport">Transport</span></td><td class="r">3,080</td><td class="r">3,060</td><td>general public 1,499; identity group 808; other reddit users 435</td></tr>
+<tr class="rev-purple"><td><span class="badge housing">Housing</span></td><td class="r">2,595</td><td class="r">2,586</td><td>general public 1,562; other reddit users 377; online community 333</td></tr>
+</table>
+<p class="rev-purple" style="font-size:0.8em;margin-top:8px">Pipeline note for next iteration: decide whether this filter should remain a <em>post-labeling dashboard filter</em> or become an explicit <em>prefiltering stage</em> before full reference-group labeling, since the current view does not use the full screened sample.</p>
 </div>
 
 <!-- ================================================================ -->
-<h2 id="limitations">6. Known Limitations</h2>
+<h2 id="tabref">6. Tab &rarr; Plot &rarr; Method Reference</h2>
+<!-- ================================================================ -->
+<div class="sec">
+<div class="ref-grid">
+<span class="ref-tab">1. Social Influence</span><span class="ref-plot">Gauge (norm signal %)</span><span class="ref-method">M4</span>
+<span class="ref-tab">1. Social Influence</span><span class="ref-plot">Treemaps (descriptive &amp; injunctive norm)</span><span class="ref-method">M6</span>
+<span class="ref-tab">1. Social Influence</span><span class="ref-plot">Bubble pack (reference groups)</span><span class="ref-method">M8</span>
+<span class="ref-tab">2. Lifestyle Adoption Factors</span><span class="ref-plot">Radial charts (&times;3 sectors)</span><span class="ref-method">M9</span>
+<span class="ref-tab">3. Temporal</span><span class="ref-plot">Norm dimensions over time (descriptive / injunctive / second-order, togglable)</span><span class="ref-method">M1 &rarr; M2</span>
+<span class="ref-tab">3. Temporal</span><span class="ref-plot">Survey factors over time (&times;3)</span><span class="ref-method">M1 &rarr; M2</span>
+<span class="ref-tab">4. Verification (within Data &amp; Methods)</span><span class="ref-plot">Stat boxes, accuracy by question, estimation errors, confidence analysis</span><span class="ref-method">M3 + M5 + M10</span>
+<span class="ref-tab">5. Sample Posts</span><span class="ref-plot">Sample post comparisons</span><span class="ref-method">M11</span>
+</div>
+</div>
+
+<!-- ================================================================ -->
+<h2 id="limitations">7. Known Limitations</h2>
 <!-- ================================================================ -->
 <div class="sec">
 <p>Analysis of 66,300 labeled comments (22,100/sector) reveals a systematic tension between the gate question (<em>1.1 — does the comment reference a social norm?</em>) and the downstream dimension questions. In <strong>8.5%</strong> of cases the gate returns <em>no norm signal</em> yet the descriptive norm question independently identifies an <em>explicitly present</em> descriptive norm; a further <strong>2.4%</strong> have gate=0 alongside an injunctive norm marked <em>present</em>. Conversely, <strong>3.0%</strong> of comments pass the gate yet show no norm evidence in either downstream dimension. This indicates the gate prompt is simultaneously too conservative (misses ~11% of real norms) and occasionally over-triggers (~3% false positives). Downstream dimension labels (descriptive, injunctive) should therefore be treated as more reliable than the gate alone when computing norm prevalence. A revised gate prompt aligned more closely with the descriptive/injunctive questions is planned for the next labeling iteration.</p>
