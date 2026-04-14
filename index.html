@@ -319,7 +319,7 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
 <p class="floating-note-ai"><strong>Recommended next version:</strong> replace this with a small bar panel: one bar per sector, all on the same 0-50% axis, and keep the <code>24.0%</code> overall as a separate centered headline above or beside the bars.</p>
 </div>
 </div>
-<div class="gauge-clip"><div id="gauge-chart"></div></div>
+<div id="lollipop-chart" style="width:100%;max-width:380px;margin:0 auto"></div>
 <div style="text-align:center;margin-top:6px">
 <span style="color:#5ab4ac;font-size:0.85em">&#9679; Food 41.9%</span> &nbsp;
 <span style="color:#af8dc3;font-size:0.85em">&#9679; Transport 16.7%</span> &nbsp;
@@ -1141,34 +1141,81 @@ var PC={displayModeBar:false,responsive:true};
 var DB='rgba(0,0,0,0)';
 var DL={paper_bgcolor:DB,plot_bgcolor:DB,font:{color:'#ffffff',family:'Inter,sans-serif',size:10},legend:{font:{size:14,color:'#ffffff'},orientation:'h',x:0.5,xanchor:'center',y:-0.22,yanchor:'top'}};
 
-// ═══════════════ GAUGE (animated from 0, replayable) ═══════════════
+// ═══════════════ LOLLIPOP CHART (animated from 0) ═══════════════
 (function(){
-    var _gp={"food": 41.9, "transport": 16.7, "housing": 13.5};var f=_gp.food,t=_gp.transport,h=_gp.housing,avg=(f+t+h)/3,vis=f+t+h;
-    Plotly.newPlot('gauge-chart',[{
-        values:[0.01,0.01,0.01,0.03],labels:['Food','Transport','Housing',''],
-        marker:{colors:['#5ab4ac','#af8dc3','#f4a460','rgba(0,0,0,0)'],line:{color:'#12203a',width:4}},
-        hole:0.65,direction:'clockwise',sort:false,rotation:270,
-        textposition:'none',type:'pie',showlegend:false,
-        hovertemplate:'<b>%{label}</b><br>%{value:.1f}%<extra></extra>'
-    }],Object.assign({},DL,{height:440,margin:{t:5,b:5,l:5,r:5},
-        annotations:[
-            {text:'<b>0.0%</b>',x:0.5,y:0.55,font:{size:46,color:'#fff'},showarrow:false},
-            {text:'of comments contain social norm',x:0.5,y:0.48,font:{size:12,color:'#b0c4d8'},showarrow:false},
-        ]
-    }),PC);
-    var _gTimer=null;
+    var _gp={food:41.9,transport:16.7,housing:13.5};
+    var sectors=[
+        {key:'food',label:'Food',color:'#5ab4ac',value:_gp.food,count:'4,192 / 10,000'},
+        {key:'transport',label:'Transport',color:'#af8dc3',value:_gp.transport,count:'1,671 / 10,000'},
+        {key:'housing',label:'Housing',color:'#f4a460',value:_gp.housing,count:'1,347 / 10,000'}
+    ];
+    var container=document.getElementById('lollipop-chart');
+    if(!container)return;
+    var W=container.clientWidth||380,H=200;
+    var svg=d3.select('#lollipop-chart').append('svg').attr('viewBox','0 0 '+W+' '+H).style('width','100%').style('height',H+'px');
+    var margin={top:15,bottom:30,left:10,right:15};
+    var chartW=W-margin.left-margin.right,chartH=H-margin.top-margin.bottom;
+    var maxVal=50;
+    var xScale=d3.scaleLinear().domain([0,maxVal]).range([0,chartW]);
+    var yScale=d3.scaleBand().domain(sectors.map(function(d){return d.key;})).range([0,chartH]).padding(0.55);
+    var g=svg.append('g').attr('transform','translate('+margin.left+','+margin.top+')');
+    // Grid lines
+    [10,20,30,40,50].forEach(function(v){
+        g.append('line').attr('x1',xScale(v)).attr('x2',xScale(v))
+            .attr('y1',0).attr('y2',chartH)
+            .attr('stroke','#1a2a40').attr('stroke-width',1).attr('stroke-dasharray','3,3');
+        g.append('text').attr('x',xScale(v)).attr('y',-5).attr('text-anchor','middle')
+            .attr('fill','#6a8caf').attr('font-size','9').text(v+'%');
+    });
+    // Axis label
+    g.append('text').attr('x',chartW/2).attr('y',chartH+24).attr('text-anchor','middle')
+        .attr('fill','#4a6a8a').attr('font-size','9').text('% of comments with norm signal');
+    // Lines and dots (animated)
+    sectors.forEach(function(s){
+        var y=yScale(s.key)+yScale.bandwidth()/2;
+        var x=xScale(0),endX=xScale(s.value);
+        // Line
+        var line=g.append('line').attr('x1',x).attr('x2',x).attr('y1',y).attr('y2',y)
+            .attr('stroke',s.color).attr('stroke-width',2).attr('stroke-linecap','round');
+        // Dot
+        var dot=g.append('circle').attr('cx',x).attr('cy',y).attr('r',0)
+            .attr('fill',s.color).attr('stroke','#0a1628').attr('stroke-width',1.5);
+        // Label right of dot
+        var label=g.append('text').attr('x',endX+8).attr('y',y+4).attr('fill',s.color)
+            .attr('font-size','11').attr('font-weight','700').attr('opacity',0)
+            .text(s.value.toFixed(1)+'%');
+        // Count below
+        var countLabel=g.append('text').attr('x',endX+8).attr('y',y+17).attr('fill','#4a6a8a')
+            .attr('font-size','8').attr('opacity',0).text(s.count);
+        // Animate
+        line.transition().duration(900).ease(d3.easeCubicOut).attr('x2',endX);
+        dot.transition().delay(100).duration(900).ease(d3.easeCubicOut)
+            .attr('cx',endX).attr('r',7);
+        label.transition().delay(600).duration(400).attr('opacity',1);
+        countLabel.transition().delay(700).duration(400).attr('opacity',1);
+    });
     window._animateGauge=function(){
-        if(_gTimer)clearInterval(_gTimer);
-        Plotly.restyle('gauge-chart',{values:[[0.01,0.01,0.01,0.03]]});
-        Plotly.relayout('gauge-chart',{'annotations[0].text':'<b>0.0%</b>'});
-        var steps=30,step=0;
-        _gTimer=setInterval(function(){
-            step++;var p=step/steps;var ease=1-Math.pow(1-p,3);
-            var cf=f*ease,ct=t*ease,ch=h*ease,cv=(cf+ct+ch);
-            Plotly.restyle('gauge-chart',{values:[[cf,ct,ch,cv]]});
-            Plotly.relayout('gauge-chart',{'annotations[0].text':'<b>'+((cf+ct+ch)/3).toFixed(1)+'%</b>'});
-            if(step>=steps)clearInterval(_gTimer);
-        },30);
+        svg.selectAll('*').remove();
+        var xScale=d3.scaleLinear().domain([0,maxVal]).range([0,chartW]);
+        var yScale=d3.scaleBand().domain(sectors.map(function(d){return d.key;})).range([0,chartH]).padding(0.55);
+        var g=svg.append('g').attr('transform','translate('+margin.left+','+margin.top+')');
+        [10,20,30,40,50].forEach(function(v){
+            g.append('line').attr('x1',xScale(v)).attr('x2',xScale(v)).attr('y1',0).attr('y2',chartH).attr('stroke','#1a2a40').attr('stroke-width',1).attr('stroke-dasharray','3,3');
+            g.append('text').attr('x',xScale(v)).attr('y',-5).attr('text-anchor','middle').attr('fill','#6a8caf').attr('font-size','9').text(v+'%');
+        });
+        g.append('text').attr('x',chartW/2).attr('y',chartH+24).attr('text-anchor','middle').attr('fill','#4a6a8a').attr('font-size','9').text('% of comments with norm signal');
+        sectors.forEach(function(s){
+            var y=yScale(s.key)+yScale.bandwidth()/2;
+            var endX=xScale(s.value);
+            var line=g.append('line').attr('x1',xScale(0)).attr('x2',xScale(0)).attr('y1',y).attr('y2',y).attr('stroke',s.color).attr('stroke-width',2).attr('stroke-linecap','round');
+            var dot=g.append('circle').attr('cx',xScale(0)).attr('cy',y).attr('r',0).attr('fill',s.color).attr('stroke','#0a1628').attr('stroke-width',1.5);
+            var label=g.append('text').attr('x',endX+8).attr('y',y+4).attr('fill',s.color).attr('font-size','11').attr('font-weight','700').attr('opacity',0).text(s.value.toFixed(1)+'%');
+            var countLabel=g.append('text').attr('x',endX+8).attr('y',y+17).attr('fill','#4a6a8a').attr('font-size','8').attr('opacity',0).text(s.count);
+            line.transition().duration(900).ease(d3.easeCubicOut).attr('x2',endX);
+            dot.transition().delay(100).duration(900).ease(d3.easeCubicOut).attr('cx',endX).attr('r',7);
+            label.transition().delay(600).duration(400).attr('opacity',1);
+            countLabel.transition().delay(700).duration(400).attr('opacity',1);
+        });
     };
     window._animateGauge();
 })();
