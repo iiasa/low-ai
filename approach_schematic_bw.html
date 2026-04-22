@@ -1,0 +1,172 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Approach Schematic</title>
+<style>
+  :root{
+    --bg:#f8f8f6;
+    --panel:#ffffff;
+    --ink:#111111;
+    --sub:#5c5c5c;
+    --line:#1c1c1c;
+    --shadow:#e7e7e2;
+    --rare-bg:#f7f1e8;
+    --rare-border:#ae7b2e;
+    --weak-bg:#f7ecec;
+    --weak-border:#9f4b4b;
+    --keep-bg:#eef5ef;
+    --keep-border:#3d7a57;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",Arial,sans-serif}
+  .canvas{width:100%;max-width:none;margin:0 auto;padding:24px 24px 30px;position:relative;overflow:hidden}
+  h1{margin:0 0 22px;font-size:24px;line-height:1.15;font-weight:500;color:var(--sub);letter-spacing:.01em}
+  .box{background:var(--panel);border:2px solid var(--line);border-radius:18px;box-shadow:5px 6px 0 var(--shadow)}
+  .ticket{min-height:96px;padding:16px 20px}
+  .micro{font-size:11px;line-height:1.2;color:var(--sub);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px}
+  .big{font-size:28px;line-height:1.08;font-weight:400}
+  .top-merge{position:relative;margin-bottom:12px}
+  .top-merge.box{padding:16px 20px;min-height:96px}
+  .top-merge-inner{display:grid;grid-template-columns:1fr 120px 1fr;gap:14px;align-items:center}
+  .top-cell{min-width:0}
+  .top-cell.right{text-align:left}
+  .mid-separator{position:relative;height:52px;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+  .mid-separator::before{content:"";position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);width:2px;background:var(--line)}
+  .mid-separator span{position:relative;background:var(--panel);padding:4px 8px}
+  .v-arrow{width:3px;height:40px;background:var(--line)}
+  .v-arrow::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:16px solid var(--line)}
+  .top-to-middle{display:block;margin:12px 0 10px}
+  .right-drop{display:block;margin:0 auto}
+  .middle-label{min-height:68px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:16px;color:#333;margin-bottom:14px;padding:14px 18px}
+  .split-row{position:relative;height:58px;margin-bottom:10px}
+  .split-row .stem{position:absolute;left:50%;top:0;transform:translateX(-50%);width:3px;height:16px;background:var(--line)}
+  .split-row .junction{position:absolute;left:25%;right:25%;top:26px;height:3px;background:var(--line)}
+  .split-row .drop{position:absolute;top:26px;width:3px;height:20px;background:var(--line)}
+  .split-row .drop.left{left:25%}
+  .split-row .drop.right{right:25%}
+  .split-row .drop::after{content:"";position:absolute;left:50%;bottom:-1px;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid var(--line)}
+  .split-row .diag-right::before{left:auto;right:-1px;border-right:none;border-left:16px solid var(--line)}
+  .cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+  .column{padding:14px;min-width:0}
+  .column.right{min-height:0}
+  .col-title{display:flex;gap:8px;align-items:baseline;margin-bottom:16px;flex-wrap:wrap}
+  .col-title .main{font-size:16px;font-weight:700}.col-title .sub{font-size:16px;color:var(--sub)}
+  .inner-box{border-radius:14px;padding:16px;min-height:88px}
+  .inner-title{font-size:16px;line-height:1.2;margin-bottom:10px;color:var(--ink)}
+  .inner-title.subtle{color:var(--sub)}
+  .body{font-size:13px;line-height:1.5}.step-gap{margin-top:14px}.tiny-arrow{margin:10px auto 10px;height:28px}
+  .outcomes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+  .outcome{border-radius:14px;padding:14px 12px;min-height:110px;box-shadow:none}
+  .outcome .title{font-size:16px;line-height:1.2;font-weight:700;margin-bottom:10px}
+  .outcome .desc{font-size:13px;line-height:1.4}
+  .outcome.rare{background:var(--rare-bg);border:2px solid var(--rare-border)}
+  .outcome.weak{background:var(--weak-bg);border:2px solid var(--weak-border)}
+  .outcome.keep{background:var(--keep-bg);border:2px solid var(--keep-border)}
+  .measure-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
+  .measure{border-radius:10px;min-height:42px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 10px;font-size:13px;line-height:1.2}
+  .bottom-wrap{margin-top:14px}
+  .bottom-box{min-height:68px;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px 18px;font-size:15px;line-height:1.4}
+  @media (max-width:760px){
+    .canvas{padding:32px}
+    .cols{grid-template-columns:1fr}
+    .top-row,.top-to-middle{grid-template-columns:1fr;gap:18px}
+    .h-arrow{height:46px;width:3px;margin:0 auto;background:var(--line)}
+    .h-arrow::before{display:none}
+    .h-arrow::after{left:50%;top:auto;bottom:-1px;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:16px solid var(--line);border-bottom:none}
+    .split-row{height:96px}
+    .split-row .junction{left:20%;right:20%}
+    .split-row .drop.left{left:20%}
+    .split-row .drop.right{right:20%}
+  }
+</style>
+</head>
+<body>
+  <main class="canvas">
+    <h1>SCHEMATIC SHOWING OUR APPROACH</h1>
+
+    <section class="box top-merge">
+      <div class="top-merge-inner">
+        <div class="top-cell left">
+          <div class="micro">RAW REDDIT CORPUS</div>
+          <div class="big">20.1M posts</div>
+        </div>
+        <div class="mid-separator"><span>regex filter</span></div>
+        <div class="top-cell right">
+          <div class="micro">MATCHED POSTS</div>
+          <div class="big">3.7M sector-matched posts</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="top-to-middle">
+      <div class="v-arrow right-drop" aria-hidden="true"></div>
+    </div>
+
+    <section class="box middle-label">LLM based labelling of sample (up to 30,000 comments)</section>
+
+    <div class="split-row" aria-hidden="true"><div class="stem"></div><div class="junction"></div><div class="drop left"></div><div class="drop right"></div></div>
+
+    <section class="cols">
+      <div class="box column left">
+        <div class="col-title">
+          <div class="main">Survey questions</div>
+          <div class="sub">(Lifestyle Adoption Factors)</div>
+        </div>
+        <div class="box inner-box">
+          <div class="inner-title subtle">Question set</div>
+          <div class="body">29 survey questions · 82k example sample · repeated 9B labeling for robustness</div>
+        </div>
+        <div class="v-arrow tiny-arrow" aria-hidden="true"></div>
+        <div class="box inner-box step-gap">
+          <div class="inner-title">Decision rule</div>
+          <div class="body">Questions are grouped by frequency in the audit data and small language model training quality.</div>
+        </div>
+        <div class="v-arrow tiny-arrow" aria-hidden="true"></div>
+        <div class="outcomes">
+          <div class="outcome rare">
+            <div class="title">Rare</div>
+            <div class="desc">Below 5% in the audit data</div>
+          </div>
+          <div class="outcome weak">
+            <div class="title">Not reliable enough to scale</div>
+            <div class="desc">Not rare, but small language model results are too weak</div>
+          </div>
+          <div class="outcome keep">
+            <div class="title">Reliable and kept</div>
+            <div class="desc">Frequent enough and strong enough to scale</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="box column right">
+        <div class="col-title">
+          <div class="main">Social norms</div>
+          <div class="sub">(Social Influence)</div>
+        </div>
+        <div class="box inner-box">
+          <div class="inner-title subtle">Working sample</div>
+          <div class="body">Fixed 10k / sector sample = 30k comments · repeated 9B labeling · manual checking</div>
+        </div>
+        <div class="v-arrow tiny-arrow" aria-hidden="true"></div>
+        <div class="box inner-box step-gap">
+          <div class="inner-title">What is measured</div>
+          <div class="measure-grid">
+            <div class="box measure">Gate</div>
+            <div class="box measure">Descriptive norm</div>
+            <div class="box measure">Injunctive norm</div>
+            <div class="box measure">Reference group</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="bottom-wrap">
+      <section class="box bottom-box">small language model trained on the 30k LLM-labelled samples to scale labeling to the full 3.7M matched comments</section>
+    </div>
+  </main>
+</body>
+</html>
+
+
