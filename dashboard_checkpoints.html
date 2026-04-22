@@ -238,7 +238,7 @@ ol, #tab-docs ul{margin:8px 0 12px 22px;font-size:0.88em}
 .annot-toggle-btn.active{background:#1a4040}
 body.annot-mode *{cursor:crosshair!important}
 body.annot-mode .annot-toggle-btn{cursor:pointer!important}
-.annot-note{position:fixed;z-index:999;min-width:220px;max-width:300px;background:#1a3040;border:1px solid #2a5060;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);font-size:0.75em;font-family:inherit}
+.annot-note{position:absolute;z-index:999;min-width:220px;max-width:300px;background:#1a3040;border:1px solid #2a5060;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);font-size:0.75em;font-family:inherit}
 .annot-note-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#12283a;border-radius:8px 8px 0 0;cursor:move;user-select:none}
 .annot-note-author{color:#5ab4ac;font-weight:600;font-size:0.9em}
 .annot-note-date{color:#3a5a6a;font-size:0.85em}
@@ -248,6 +248,7 @@ body.annot-mode .annot-toggle-btn{cursor:pointer!important}
 .annot-note-body{padding:8px 10px;color:#a0c0d0;line-height:1.5;word-break:break-word}
 .annot-note.minimized .annot-note-body{display:none}
 .annot-note.minimized{min-width:0}
+.annot-target-flash{outline:3px solid #5ab4ac !important;outline-offset:4px;box-shadow:0 0 0 6px rgba(90,180,172,0.18) !important;transition:all 0.2s ease}
 .annot-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;align-items:center;justify-content:center}
 .annot-modal.show{display:flex}
 .annot-modal-box{background:#0f1d33;border:1px solid #2a4060;border-radius:12px;padding:22px;width:420px;max-width:95vw}
@@ -1977,8 +1978,11 @@ function toggleKwPanel(id, triggerEl) {
       sectionId: sec ? sec.id : 'page',
       tab: (document.querySelector('.tab-content.active') || {id:''}).id.replace('tab-',''),
       x: Math.round(e.clientX / window.innerWidth * 100),
-      y: Math.round(e.clientY / window.innerHeight * 100)
+      y: Math.round(e.clientY / window.innerHeight * 100),
+      docX: Math.round(e.pageX),
+      docY: Math.round(e.pageY)
     };
+    if(sec){ flashAnnotationTarget(sec); }
     document.getElementById('annotText').value = '';
     document.getElementById('annotModal').classList.add('show');
   }, true);
@@ -1998,6 +2002,8 @@ function toggleKwPanel(id, triggerEl) {
       tab: meta.tab,
       x: meta.x,
       y: meta.y,
+      docX: meta.docX,
+      docY: meta.docY,
       dashboard: 'current'
     }, null, 2) + '\n```';
     var url = 'https://github.com/' + GITHUB_REPO + '/issues/new'
