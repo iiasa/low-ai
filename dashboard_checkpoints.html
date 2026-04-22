@@ -237,7 +237,9 @@ ol, #tab-docs ul{margin:8px 0 12px 22px;font-size:0.88em}
 .annot-toggle-btn:hover,.annot-toggle-btn.active{border-color:#5ab4ac;color:#fff;background:#1a3050}
 .annot-toggle-btn.active{background:#1a4040}
 body.annot-mode *{cursor:crosshair!important}
-body.annot-mode .annot-toggle-btn{cursor:pointer!important}
+body.annot-mode .annot-toggle-btn, body.annot-mode .annot-note, body.annot-mode .annot-note *, body.annot-mode .annot-modal, body.annot-mode .annot-modal *{cursor:pointer!important}
+body.annot-mode .tab-content.active, body.annot-mode .tab-content.active *, body.annot-mode .sec, body.annot-mode .sec *, body.annot-mode svg, body.annot-mode canvas, body.annot-mode iframe{pointer-events:none!important}
+body.annot-mode .annot-toggle-btn, body.annot-mode .annot-toggle-btn *, body.annot-mode .annot-note, body.annot-mode .annot-note *, body.annot-mode .annot-modal, body.annot-mode .annot-modal *{pointer-events:auto!important}
 .annot-note{position:absolute;z-index:999;min-width:220px;max-width:300px;background:#1a3040;border:1px solid #2a5060;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);font-size:0.75em;font-family:inherit}
 .annot-note-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#12283a;border-radius:8px 8px 0 0;cursor:move;user-select:none}
 .annot-note-author{color:#5ab4ac;font-weight:600;font-size:0.9em}
