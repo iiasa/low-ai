@@ -2119,9 +2119,10 @@ function toggleKwPanel(id, triggerEl) {
 
   function renderNote(issue){
     var meta = {};
-    try { meta = JSON.parse((issue.body.match(/```json
-([\s\S]*?)
-```/) || [])[1] || '{}'); } catch(e){}
+    try {
+      var metaMatch = issue.body.match(/```json\s*([\s\S]*?)\s*```/);
+      meta = JSON.parse((metaMatch || [])[1] || '{}');
+    } catch(e){}
     var text = issue.body.replace(/---[\s\S]*$/, '').trim();
     var note = document.createElement('div');
     note.className = 'annot-note';
