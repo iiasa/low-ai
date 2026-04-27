@@ -820,13 +820,16 @@ function renderWordClouds() {
   ['food','transport','housing'].forEach(function(s){ renderWordCloud(s); });
 }
 
-function showTab(id) {
+function showTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
     document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
-    document.getElementById('tab-'+id).classList.add('active');
-    event.target.classList.add('active');
+    var tabEl = document.getElementById('tab-'+id);
+    if(tabEl) tabEl.classList.add('active');
+    var activeBtn = btn || Array.from(document.querySelectorAll('.tab-btn')).find(function(b){
+        return ((b.getAttribute('onclick')||'').indexOf("showTab('"+id+"')") !== -1);
+    });
+    if(activeBtn) activeBtn.classList.add('active');
     if (id === 'survey') { setTimeout(renderWordClouds, 80); }
-    // Re-trigger section animations
     document.querySelectorAll('#tab-'+id+' .sec').forEach(function(c,i){
         c.style.animation='none';c.offsetHeight;
         c.style.animation='fadeSlideUp 0.5s ease-out '+(i*0.08)+'s both';
@@ -838,6 +841,7 @@ function showTab(id) {
     window.dispatchEvent(new Event('resize'));
     if(id==='norms'){setTimeout(function(){if(window._animateGauge)window._animateGauge();},100);setTimeout(function(){if(window._animateNorms)window._animateNorms();},100);setTimeout(initBubbles,200);setTimeout(function(){if(window._drawNormDim)window._drawNormDim();},350);}
     if(id==='survey'){setTimeout(function(){if(window._animateSurvey)window._animateSurvey();},200);setTimeout(function(){if(window._drawSurveyLines)window._drawSurveyLines();},350);setTimeout(function(){window._renderSurveySingle&&window._renderSurveySingle();},400);}
+    if(window.updateNotesForActiveTab){ setTimeout(window.updateNotesForActiveTab, 20); }
 }
 function toggleInfo(btn){var p=btn.parentElement.nextElementSibling;if(p&&p.classList.contains('info-popup'))p.classList.toggle('show');}
 
@@ -2029,20 +2033,96 @@ function toggleKwPanel(id, triggerEl) {
         issues = issues.filter(function(issue){ return issue && issue.title && issue.title.indexOf(ISSUE_PREFIX) === 0; });
         document.getElementById('annotCount').textContent = issues.length;
         issues.forEach(function(issue){ renderNote(issue); });
+        updateNotesForActiveTab();
       })
       .catch(function(){ document.getElementById('annotCount').textContent = '?'; });
   }
 
+  function normalizeAnnotTab(tab){
+    tab = (tab || '').toLowerCase();
+    if(tab === 'docs') return 'docs';
+    if(tab === 'survey') return 'survey';
+    if(tab === 'norms' || tab === 'social' || tab === 'social-influence') return 'norms';
+    return tab;
+  }
+
+  function getActiveAnnotTab(){
+    var active = document.querySelector('.tab-content.active');
+    return active ? active.id.replace('tab-','') : '';
+  }
+
+  function flashAnnotationTarget(el){
+    if(!el) return;
+    el.classList.add('annot-target-flash');
+    setTimeout(function(){ el.classList.remove('annot-target-flash'); }, 1800);
+  }
+
+  function resolveAnnotTarget(meta){
+    if(!meta) return null;
+    if(meta.section && meta.section !== 'page'){
+      return document.getElementById(meta.section);
+    }
+    var tab = normalizeAnnotTab(meta.tab);
+    return tab ? document.getElementById('tab-' + tab) : null;
+  }
+
+  function focusAnnotation(meta){
+    var tab = normalizeAnnotTab(meta.tab);
+    if(tab && tab !== getActiveAnnotTab()) showTab(tab);
+    setTimeout(function(){
+      var target = resolveAnnotTarget(meta);
+      if(target){
+        target.scrollIntoView({behavior:'smooth', block:'center'});
+        flashAnnotationTarget(target);
+      }
+    }, 150);
+  }
+
+  function placeNoteFromMeta(note, meta, idx){
+    var left = null, top = null;
+    if(typeof meta.docX === 'number' && typeof meta.docY === 'number'){
+      left = meta.docX + 14;
+      top = meta.docY - 16;
+    } else if(typeof meta.x === 'number' && typeof meta.y === 'number'){
+      left = Math.round((meta.x / 100) * Math.max(document.documentElement.scrollWidth, window.innerWidth));
+      top = Math.round((meta.y / 100) * Math.max(document.documentElement.scrollHeight, window.innerHeight));
+    }
+    if(left == null || top == null){
+      note.style.left = 'auto';
+      note.style.right = '24px';
+      note.style.top = (80 + idx * 30) + 'px';
+      return;
+    }
+    var maxLeft = Math.max(16, document.documentElement.clientWidth - 340);
+    note.style.left = Math.max(16, Math.min(left, maxLeft)) + 'px';
+    note.style.top = Math.max(80, top) + 'px';
+    note.style.right = 'auto';
+  }
+
+  window.updateNotesForActiveTab = function(){
+    var activeTab = getActiveAnnotTab();
+    notes.forEach(function(note, idx){
+      var tab = note.dataset.tab || '';
+      note.style.display = (!tab || tab === activeTab) ? 'block' : 'none';
+      if(note.style.display !== 'none'){
+        try { placeNoteFromMeta(note, JSON.parse(note.dataset.meta || '{}'), idx); } catch(e){}
+      }
+    });
+  };
+
   function renderNote(issue){
     var meta = {};
-    try { meta = JSON.parse((issue.body.match(/```json\n([\s\S]*?)\n```/) || [])[1] || '{}'); } catch(e){}
+    try { meta = JSON.parse((issue.body.match(/```json
+([\s\S]*?)
+```/) || [])[1] || '{}'); } catch(e){}
     var text = issue.body.replace(/---[\s\S]*$/, '').trim();
     var note = document.createElement('div');
     note.className = 'annot-note';
-    // Position: sticky near top-right by default, offset by index
     var idx = notes.length;
-    note.style.cssText = 'top:' + (80 + idx * 30) + 'px;right:24px;';
     note.dataset.issueId = issue.number;
+    note.dataset.tab = normalizeAnnotTab(meta.tab);
+    note.dataset.meta = JSON.stringify(meta || {});
+    placeNoteFromMeta(note, meta, idx);
     note.innerHTML =
       '<div class="annot-note-header" onmousedown="dragNote(event,this.parentNode)">' +
         '<span class="annot-note-author">' + (issue.user ? issue.user.login : 'user') + '</span>' +
@@ -2054,6 +2134,10 @@ function toggleKwPanel(id, triggerEl) {
         '</span>' +
       '</div>' +
       '<div class="annot-note-body">' + (meta.tab ? '<span style="color:#5ab4ac;font-size:0.9em">[' + meta.tab + (meta.section ? ' / ' + meta.section : '') + ']</span><br>' : '') + text + '</div>';
+    note.addEventListener('click', function(ev){
+      if(ev.target.closest('a,button')) return;
+      focusAnnotation(meta);
+    });
     document.body.appendChild(note);
     notes.push(note);
   }
