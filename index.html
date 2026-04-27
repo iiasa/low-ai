@@ -239,7 +239,9 @@ ol, #tab-docs ul{margin:8px 0 12px 22px;font-size:0.88em}
 body.annot-mode *{cursor:crosshair!important}
 body.annot-mode .annot-toggle-btn, body.annot-mode .annot-note, body.annot-mode .annot-note *, body.annot-mode .annot-modal, body.annot-mode .annot-modal *{cursor:pointer!important}
 body.annot-mode .tab-content.active, body.annot-mode .tab-content.active *, body.annot-mode .sec, body.annot-mode .sec *, body.annot-mode svg, body.annot-mode canvas, body.annot-mode iframe{pointer-events:none!important}
-body.annot-mode .annot-toggle-btn, body.annot-mode .annot-toggle-btn *, body.annot-mode .annot-note, body.annot-mode .annot-note *, body.annot-mode .annot-modal, body.annot-mode .annot-modal *{pointer-events:auto!important}
+body.annot-mode .annot-toggle-btn, body.annot-mode .annot-toggle-btn *, body.annot-mode .annot-note, body.annot-mode .annot-note *, body.annot-mode .annot-modal, body.annot-mode .annot-modal *, body.annot-mode .annot-capture{pointer-events:auto!important}
+.annot-capture{display:none;position:fixed;inset:0;z-index:950;background:transparent}
+body.annot-mode .annot-capture{display:block}
 .annot-note{position:absolute;z-index:999;min-width:220px;max-width:300px;background:#1a3040;border:1px solid #2a5060;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.5);font-size:0.75em;font-family:inherit}
 .annot-note-header{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#12283a;border-radius:8px 8px 0 0;cursor:move;user-select:none}
 .annot-note-author{color:#5ab4ac;font-weight:600;font-size:0.9em}
@@ -1643,14 +1645,14 @@ code{background:#f3f7fa !important}
 <div class="stat"><div class="stat-val" style="color:#5ab4ac">20.1M</div><div class="stat-label">Total Posts</div></div>
 <div class="stat"><div class="stat-val" style="color:#af8dc3">16</div><div class="stat-label">Subreddits</div></div>
 <div class="stat"><div class="stat-val" style="color:#f4a460">3.7M</div><div class="stat-label">Keyword Matched</div></div>
-<div class="stat"><div class="stat-val" style="color:#8fcc8f">21,300</div><div class="stat-label">Labeled Comments (checkpoint)</div></div>
-<div class="stat"><div class="stat-val" style="color:#ffb87a">~277K</div><div class="stat-label">Total Labels</div></div>
+<div class="stat"><div class="stat-val" style="color:#3c7f4c;background:#eef9f0">21,300</div><div class="stat-label">Labeled Comments (checkpoint)</div></div>
+<div class="stat"><div class="stat-val" style="color:#b96a19;background:#fff4e8">~277K</div><div class="stat-label">Total Labels</div></div>
 <div class="stat"><div class="stat-val" style="color:#b0c4d8">15</div><div class="stat-label">Years (2010&ndash;24)</div></div>
 </div>
 
 <div class="sec">
 <h3 id="data-corpus">2.1 Reddit Corpus</h3>
-<p>Comments and submissions were collected from <strong>16 subreddits</strong> spanning three behavioural sectors plus nine general climate subreddits. To identify posts relevant to each domain, we applied <strong>sector-specific keyword matching</strong>: each post's text was scanned using case-insensitive regular expressions, and a post was retained if it contained at least one keyword from its sector's list — any single match qualified the post for that sector. Click a sector name to see its full keyword list: <span class="kw-sector food" onclick="toggleKwPanel('kw-food',this)">Food/Diets</span>, <span class="kw-sector transport" onclick="toggleKwPanel('kw-transport',this)">Transport/EVs</span>, <span class="kw-sector housing" onclick="toggleKwPanel('kw-homes',this)">Homes/Solar&nbsp;PV</span>. Across all three sectors this yielded <strong>3.7 million keyword-matched posts</strong> from a raw corpus of ~20 million.</p>
+<p>Comments and submissions were collected from <strong>16 subreddits</strong> spanning three behavioural sectors plus nine general climate subreddits. To identify posts relevant to each domain, we applied <strong>sector-specific keyword matching</strong>: each post's text was scanned using case-insensitive regular expressions, and a post was retained if it contained at least one keyword from its sector's list — any single match qualified the post for that sector. Click a sector name to see its full keyword list: <span class="kw-sector food" onclick="toggleKwPanel('kw-food',this)">Food/Diets</span>, <span class="kw-sector transport" onclick="toggleKwPanel('kw-transport',this)">Transport/EVs</span>, <span class="kw-sector housing" onclick="toggleKwPanel('kw-homes',this)">Homes/Solar&nbsp;PV</span>. Across all three sectors this yielded <strong>3.7 million keyword-matched posts</strong> from a raw corpus of ~20 million. Climate-focused subreddits do contribute materially after filtering; for example, the saved regex outputs contain <strong>18,332</strong> matched items from <code>r/climate</code>, <strong>10,737</strong> from <code>r/climatechange</code>, and <strong>13,894</strong> from <code>r/climateskeptics</code>.</p>
 
 <div id="kw-food" class="kw-panel">
  <div class="kw-panel-title food">Food/Diets</div>
@@ -1754,11 +1756,11 @@ code{background:#f3f7fa !important}
 </table>
 
 <div class="rev-purple" style="font-size:0.84em;line-height:1.7;margin:12px 0 8px">
-<strong>Prompt motivation.</strong> These four active social-norm prompts were derived from the definitions review in <code>2_social_norms/social_norms_definitions_report.md</code>. The revision explicitly separates: (i) descriptive commonness / normality claims, (ii) injunctive approval / disapproval signals, (iii) reference networks, and (iv) norm-relevant discourse that includes public evaluative performances on Reddit. The prompts were therefore motivated by the literature review rather than ad hoc prompt writing.
+<strong>Prompt motivation.</strong> <span class="rev-del">These four active social-norm prompts were derived from the definitions review in <code>2_social_norms/social_norms_definitions_report.md</code>. The revision explicitly separates: (i) descriptive commonness / normality claims, (ii) injunctive approval / disapproval signals, (iii) reference networks, and (iv) norm-relevant discourse that includes public evaluative performances on Reddit. The prompts were therefore motivated by the literature review rather than ad hoc prompt writing.</span> <span style="color:#c73333">These four active social-norm prompts are derived from the public definitions review in <a href="https://github.com/chowdhary-sandeep/climate_change__4housing_transport_food/blob/02_working_folder/02_working_folder/2_social_norms/social_norms_definitions_report.md" target="_blank" rel="noopener">social_norms_definitions_report.md</a>. The same public workflow now exposes both the social-norm prompts and the survey-question prompts instead of only the norm side.</span>
 </div>
 
 <div class="rev-purple" style="margin:10px 0 14px;padding:12px 14px;border:1px solid #d9e2ea;border-radius:12px;background:#ffffff;color:#1d2a36">
-<strong>Full prompts and row-level data:</strong> for readers who want to inspect the exact social-norm prompts and browse the underlying labeled comments, use the interactive data view: <a href="https://huggingface.co/spaces/echoboi/social-norms-data-view" target="_blank" rel="noopener">Hugging Face data view</a>.
+<strong>Full prompts and row-level data:</strong> <span class="rev-del">for readers who want to inspect the exact social-norm prompts and browse the underlying labeled comments, use the interactive data view: <a href="https://huggingface.co/spaces/echoboi/social-norms-data-view" target="_blank" rel="noopener">Hugging Face data view</a>.</span> <span style="color:#c73333">for readers who want to inspect the exact social-norm prompts, the survey-question prompts, and the underlying labeled comments, use the interactive data view: <a href="https://huggingface.co/spaces/echoboi/social-norms-data-view" target="_blank" rel="noopener">Hugging Face data view</a>. The survey-question schema is also public in <a href="https://github.com/chowdhary-sandeep/climate_change__4housing_transport_food/blob/02_working_folder/02_working_folder/schema/00_vllm_survey_question_final.json" target="_blank" rel="noopener">00_vllm_survey_question_final.json</a>.</span>
 </div>
 
 <p><strong>Survey Frame Questions</strong> (sector-specific, binary yes/no):</p>
@@ -1804,49 +1806,49 @@ code{background:#f3f7fa !important}
 </div><h2 id="results">4. Results</h2>
 <!-- ================================================================ -->
 <div class="sec">
-<h3 id="classification" style="color:#ff6b6b">4.3 Survey Question Classification - current dashboard checkpoint on 29 questions</h3>
+<div style="display:flex;align-items:center;gap:8px"><h3 id="classification" style="color:#ff6b6b;margin:0">4.3 Survey Question Classification - current dashboard checkpoint on 29 questions</h3><div class="floating-note-wrap" style="position:relative;display:inline-block"><button class="floating-note-btn" onclick="toggleFloatingNote(this)" title="Open review note">&#128172;</button><div class="floating-note-panel"><button class="floating-note-close" onclick="toggleFloatingNote(this)">&#215;</button><h4>Light-theme review note</h4><p>Row tints in this table were strengthened after supervisor review because the earlier light-theme colors were too faint to see reliably. The categories are unchanged; only the visibility of the encoding has been improved.</p></div></div></div>
 <p>The survey-question classification now combines three things: a <strong>9B-vs-9B robustness check</strong>, the <strong>percentage occurance</strong> of each signal in the audit data, and the <strong>existing SLM training results</strong>. The purpose is not to ask only whether a strong annotator can reproduce the same label twice. It is also to ask whether a question is common enough to matter in Reddit discourse, and whether it can be scaled into the larger inference stage without introducing too much noise.</p>
 <p>The first distinction is between <strong>repeatability</strong> and <strong>usefulness</strong>. The completed 9B pass 1 versus 9B pass 2 rerun tells us whether the strong annotator is internally stable on the same audited survey rows. That matters, but it is not the main rule used to decide what stays in the dashboard. A question can be stable under repeated 9B labeling and still be too rare to support a useful plot, or too weak under the existing SLM results to justify large-sample inference.</p>
-<p>The second distinction is between <strong>rarity</strong> and <strong>scaleability</strong>. In this build, questions are treated as <strong>Rare</strong> when the YES rate in 9B pass 1 is below <strong>5%</strong>. For questions that are not rare, the next filter is whether the existing SLM training result was good enough to scale the construct into the larger survey path. If it was not, the question remains part of the methods story rather than the main plots. This still does not eliminate cases where llm might be reliably wrong, which is a limitation of the llm's intelligence and also the ambiguity of the question.</p>
+<p>The second distinction is between <strong>rarity</strong> and <strong>scaleability</strong>. In this build, questions are treated as <strong>Rare</strong> when the YES rate in 9B pass 1 is below <strong>5%</strong>. For questions that are not rare, the next filter is whether the existing SLM training result was good enough to scale the construct into the larger survey path. If it was not, the question remains part of the methods story rather than the main plots. This still does not eliminate cases where llm might be reliably wrong, which is a limitation of the llm's intelligence and also the ambiguity of the question. <span style="color:#c73333">Some substantively important questions therefore remain in the analysis even when they are not shown in the final radar plots; for example, environmental concern is still present in the food question set, but a question such as <code>diet_3</code> is currently classified as Rare under the restored 5% rule.</span></p>
 <p>This table uses the completed <code>round1_audit_9b_pass2.csv</code> rerun for the robustness checkpoint, together with the previously established SLM training results already documented in the survey notebooks.</p>
 <table style="font-size:0.82em">
 <tr><th style="color:#ff6b6b">Category</th><th>Criterion</th><th class="r">n</th><th>Current dashboard build?</th><th>Reason</th></tr>
-<tr><td style="color:#8fcc8f"><strong>reliable and kept</strong></td><td>YES 9B pass 1 &ge; 5% and SLM training good enough to scale</td><td class="r">9</td><td>yes</td><td>frequent enough to matter in the corpus and reliable enough to send into the large-sample survey path</td></tr>
-<tr><td style="color:#ffb87a"><strong>Rare</strong></td><td>YES 9B pass 1 &lt; 5%, regardless of whether repeatability is otherwise strong</td><td class="r">17</td><td>no</td><td>signal too infrequent to support a useful dashboard view under the restored 5% threshold</td></tr>
-<tr><td style="color:#ff9aa8"><strong>not reliable enough to scale with current SLM</strong></td><td>YES 9B pass 1 &ge; 5% but the existing SLM result was not good enough to justify large-sample inference</td><td class="r">3</td><td>no</td><td>interesting substantively, but not strong enough for the current scaled dashboard branch</td></tr>
+<tr><td style="color:#3c7f4c;background:#eef9f0"><strong>reliable and kept</strong></td><td>YES 9B pass 1 &ge; 5% and SLM training good enough to scale</td><td class="r">9</td><td>yes</td><td>frequent enough to matter in the corpus and reliable enough to send into the large-sample survey path</td></tr>
+<tr><td style="color:#b96a19;background:#fff4e8"><strong>Rare</strong></td><td>YES 9B pass 1 &lt; 5%, regardless of whether repeatability is otherwise strong</td><td class="r">17</td><td>no</td><td>signal too infrequent to support a useful dashboard view under the restored 5% threshold</td></tr>
+<tr><td style="color:#b84c63;background:#fff0f3"><strong>not reliable enough to scale with current SLM</strong></td><td>YES 9B pass 1 &ge; 5% but the existing SLM result was not good enough to justify large-sample inference</td><td class="r">3</td><td>no</td><td>interesting substantively, but not strong enough for the current scaled dashboard branch</td></tr>
 </table>
-<p style="color:#ff6b6b;margin-top:10px"><strong>Full question-by-question classification:</strong><span style="color:#c8a2ff">Green rows = reliable and kept. Orange rows = Rare. Red rows = not reliable enough to scale with current SLM.</span></p>
+<p style="color:#ff6b6b;margin-top:10px"><strong>Full question-by-question classification:</strong><span style="color:#c8a2ff">Green rows = reliable and kept. Orange rows = Rare. Red rows = not reliable enough to scale with current SLM.</span></p><p style="margin-top:8px">This table is the smaller <strong>9B robustness checkpoint</strong>. The radar and temporal plots in the <strong>Lifestyle Adoption Factors</strong> tab come from the later <strong>large-sample small language model inference stage</strong>, so those plotted values will not necessarily match this table exactly.</p>
 <table style="font-size:0.77em">
 <tr><th>QID</th><th>Survey wording (abbreviated)</th><th>Category</th><th class="r">9B vs 9B ?</th><th class="r">YES 9B pass 1</th><th>Current dashboard build?</th><th>Notes</th></tr>
-<tr style="color:#ffb87a"><td>ev_1</td><td>EVs better for environment than gas</td><td>Rare</td><td class="r">0.989</td><td class="r">3.8%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#8fcc8f"><td>ev_2</td><td>EVs cost more up front</td><td>reliable and kept</td><td class="r">0.982</td><td class="r">12.4%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#ffb87a"><td>ev_3</td><td>EVs cheaper to charge than fuel</td><td>Rare</td><td class="r">0.988</td><td class="r">1.6%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#8fcc8f"><td>ev_4</td><td>Confident U.S. will build enough chargers</td><td>reliable and kept</td><td class="r">0.996</td><td class="r">10.3%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#ffb87a"><td>ev_5</td><td>EVs more fun to drive</td><td>Rare</td><td class="r">0.976</td><td class="r">3.4%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ffb87a"><td>ev_6</td><td>EVs more reliable than gas</td><td>Rare</td><td class="r">0.984</td><td class="r">3.9%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#8fcc8f"><td>solar_1</td><td>Home solar: major cost savings</td><td>reliable and kept</td><td class="r">0.990</td><td class="r">11.1%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#8fcc8f"><td>solar_2</td><td>Solar helps environment</td><td>reliable and kept</td><td class="r">0.984</td><td class="r">9.1%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#ffb87a"><td>solar_3</td><td>Solar tech will become obsolete</td><td>Rare</td><td class="r">0.965</td><td class="r">1.1%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#8fcc8f"><td>solar_4</td><td>Hard to recover investment</td><td>reliable and kept</td><td class="r">0.981</td><td class="r">6.8%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#8fcc8f"><td>solar_5</td><td>Insufficient local sunshine</td><td>reliable and kept</td><td class="r">0.981</td><td class="r">5.7%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#ffb87a"><td>solar_6</td><td>Concerns about installer quality</td><td>Rare</td><td class="r">0.995</td><td class="r">4.2%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ffb87a"><td>solar_7</td><td>Inadequate post-install support</td><td>Rare</td><td class="r">0.966</td><td class="r">1.8%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ffb87a"><td>solar_8</td><td>Willing to pay for maintenance plan</td><td>Rare</td><td class="r">1.000</td><td class="r">0.0%</td><td>no</td><td>near-zero signal in the audit data</td></tr>
-<tr style="color:#ffb87a"><td>solar_9</td><td>System generates what was promised</td><td>Rare</td><td class="r">0.956</td><td class="r">1.8%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ffb87a"><td>solar_10</td><td>Lacks confidence using system</td><td>Rare</td><td class="r">1.000</td><td class="r">2.5%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#8fcc8f"><td>diet_1</td><td>Meat reduction: health reason</td><td>reliable and kept</td><td class="r">0.988</td><td class="r">8.9%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#8fcc8f"><td>diet_2</td><td>Animal welfare importance</td><td>reliable and kept</td><td class="r">0.985</td><td class="r">20.0%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#ffb87a"><td>diet_3</td><td>Climate link when choosing food</td><td>Rare</td><td class="r">0.988</td><td class="r">2.5%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ffb87a"><td>diet_4</td><td>Willing to adopt plant-based meat</td><td>Rare</td><td class="r">0.962</td><td class="r">2.7%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ffb87a"><td>diet_5</td><td>Willing to eat less red meat</td><td>Rare</td><td class="r">0.988</td><td class="r">2.9%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ff9aa8"><td>diet_6</td><td>Willing to reduce dairy</td><td>not reliable enough to scale with current SLM</td><td class="r">0.982</td><td class="r">5.7%</td><td>no</td><td>not rare, but the existing SLM result was too weak to keep</td></tr>
-<tr style="color:#ffb87a"><td>diet_8</td><td>Willing to eat lab-grown meat</td><td>Rare</td><td class="r">1.000</td><td class="r">0.2%</td><td>no</td><td>near-zero signal in the audit data</td></tr>
-<tr style="color:#8fcc8f"><td>diet_9</td><td>Taste driver/barrier for plant-based</td><td>reliable and kept</td><td class="r">0.988</td><td class="r">7.4%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
-<tr style="color:#ffb87a"><td>diet_10</td><td>Convenience importance for plant-based</td><td>Rare</td><td class="r">0.988</td><td class="r">3.6%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ffb87a"><td>diet_11</td><td>Price barrier for plant-based</td><td>Rare</td><td class="r">1.000</td><td class="r">4.4%</td><td>no</td><td>strong robustness, but still below the restored 5% rarity threshold</td></tr>
-<tr style="color:#ff9aa8"><td>diet_13</td><td>Nobody asked them to eat plant-based</td><td>not reliable enough to scale with current SLM</td><td class="r">0.984</td><td class="r">5.2%</td><td>no</td><td>not rare, but the existing SLM result remained too weak</td></tr>
-<tr style="color:#ff9aa8"><td>diet_14</td><td>Knowledge/effort barrier</td><td>not reliable enough to scale with current SLM</td><td class="r">0.981</td><td class="r">5.7%</td><td>no</td><td>not rare, but the existing SLM result remained too weak</td></tr>
-<tr style="color:#ffb87a"><td>diet_17</td><td>Prefer meals with meat/dairy (identity)</td><td>Rare</td><td class="r">0.991</td><td class="r">1.1%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>ev_1</td><td>EVs better for environment than gas</td><td>Rare</td><td class="r">0.989</td><td class="r">3.8%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>ev_2</td><td>EVs cost more up front</td><td>reliable and kept</td><td class="r">0.982</td><td class="r">12.4%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>ev_3</td><td>EVs cheaper to charge than fuel</td><td>Rare</td><td class="r">0.988</td><td class="r">1.6%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>ev_4</td><td>Confident U.S. will build enough chargers</td><td>reliable and kept</td><td class="r">0.996</td><td class="r">10.3%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>ev_5</td><td>EVs more fun to drive</td><td>Rare</td><td class="r">0.976</td><td class="r">3.4%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>ev_6</td><td>EVs more reliable than gas</td><td>Rare</td><td class="r">0.984</td><td class="r">3.9%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>solar_1</td><td>Home solar: major cost savings</td><td>reliable and kept</td><td class="r">0.990</td><td class="r">11.1%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>solar_2</td><td>Solar helps environment</td><td>reliable and kept</td><td class="r">0.984</td><td class="r">9.1%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>solar_3</td><td>Solar tech will become obsolete</td><td>Rare</td><td class="r">0.965</td><td class="r">1.1%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>solar_4</td><td>Hard to recover investment</td><td>reliable and kept</td><td class="r">0.981</td><td class="r">6.8%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>solar_5</td><td>Insufficient local sunshine</td><td>reliable and kept</td><td class="r">0.981</td><td class="r">5.7%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>solar_6</td><td>Concerns about installer quality</td><td>Rare</td><td class="r">0.995</td><td class="r">4.2%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>solar_7</td><td>Inadequate post-install support</td><td>Rare</td><td class="r">0.966</td><td class="r">1.8%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>solar_8</td><td>Willing to pay for maintenance plan</td><td>Rare</td><td class="r">1.000</td><td class="r">0.0%</td><td>no</td><td>near-zero signal in the audit data</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>solar_9</td><td>System generates what was promised</td><td>Rare</td><td class="r">0.956</td><td class="r">1.8%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>solar_10</td><td>Lacks confidence using system</td><td>Rare</td><td class="r">1.000</td><td class="r">2.5%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>diet_1</td><td>Meat reduction: health reason</td><td>reliable and kept</td><td class="r">0.988</td><td class="r">8.9%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>diet_2</td><td>Animal welfare importance</td><td>reliable and kept</td><td class="r">0.985</td><td class="r">20.0%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>diet_3</td><td>Climate link when choosing food</td><td>Rare</td><td class="r">0.988</td><td class="r">2.5%</td><td>no</td><td><span class="rev-del">below the restored 5% rarity threshold</span> <span style="color:#c73333">environmental-concern item; below the restored 5% rarity threshold</span></td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>diet_4</td><td>Willing to adopt plant-based meat</td><td>Rare</td><td class="r">0.962</td><td class="r">2.7%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>diet_5</td><td>Willing to eat less red meat</td><td>Rare</td><td class="r">0.988</td><td class="r">2.9%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b84c63;background:#fff0f3"><td>diet_6</td><td>Willing to reduce dairy</td><td>not reliable enough to scale with current SLM</td><td class="r">0.982</td><td class="r">5.7%</td><td>no</td><td>not rare, but the existing SLM result was too weak to keep</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>diet_8</td><td>Willing to eat lab-grown meat</td><td>Rare</td><td class="r">1.000</td><td class="r">0.2%</td><td>no</td><td>near-zero signal in the audit data</td></tr>
+<tr style="color:#3c7f4c;background:#eef9f0"><td>diet_9</td><td>Taste driver/barrier for plant-based</td><td>reliable and kept</td><td class="r">0.988</td><td class="r">7.4%</td><td>yes</td><td>kept for large-sample survey inference</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>diet_10</td><td>Convenience importance for plant-based</td><td>Rare</td><td class="r">0.988</td><td class="r">3.6%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>diet_11</td><td>Price barrier for plant-based</td><td>Rare</td><td class="r">1.000</td><td class="r">4.4%</td><td>no</td><td>strong robustness, but still below the restored 5% rarity threshold</td></tr>
+<tr style="color:#b84c63;background:#fff0f3"><td>diet_13</td><td>Nobody asked them to eat plant-based</td><td>not reliable enough to scale with current SLM</td><td class="r">0.984</td><td class="r">5.2%</td><td>no</td><td>not rare, but the existing SLM result remained too weak</td></tr>
+<tr style="color:#b84c63;background:#fff0f3"><td>diet_14</td><td>Knowledge/effort barrier</td><td>not reliable enough to scale with current SLM</td><td class="r">0.981</td><td class="r">5.7%</td><td>no</td><td>not rare, but the existing SLM result remained too weak</td></tr>
+<tr style="color:#b96a19;background:#fff4e8"><td>diet_17</td><td>Prefer meals with meat/dairy (identity)</td><td>Rare</td><td class="r">0.991</td><td class="r">1.1%</td><td>no</td><td>below the restored 5% rarity threshold</td></tr>
 </table>
 </div>
 
@@ -1857,7 +1859,7 @@ code{background:#f3f7fa !important}
 <div class="plot-note-grid">
   <div class="plot-note-card"><h4>Corpus keywords</h4><p>Word clouds summarize the most frequent matched terms in each sector. They describe the topical makeup of the Reddit corpus before any survey-style or norm-style labeling.</p></div>
   <div class="plot-note-card"><h4>Lifestyle factors</h4><p>Radial plots show only the survey questions that were kept after the rarity and small language model quality screens. Values are estimated shares of Reddit comments where each association is present.</p></div>
-  <div class="plot-note-card"><h4>Survey time trends</h4><p>Year-by-year lines track those kept survey associations through time in the larger inference sample. They are the temporal view of the same kept question set shown in the radial plots.</p></div>
+  <div class="plot-note-card"><h4>Survey time trends</h4><p>Year-by-year lines track those kept survey associations through time in the larger inference sample. They are the temporal view of the same kept question set shown in the radial plots. <span style="color:#c73333">Questions that remain in the analysis but are classed as Rare or not reliable enough to scale are not shown in these plots.</span></p></div>
   <div class="plot-note-card"><h4>Norm signal</h4><p>The norm prevalence panel shows the share of sampled comments in each sector that are coded as norm-relevant discourse.</p></div>
   <div class="plot-note-card"><h4>Reference groups</h4><p>The bubble view counts which social groups are mentioned in norm-bearing comments. It is based on the filtered subset where descriptive or injunctive norm is present.</p></div>
   <div class="plot-note-card"><h4>Norm type composition</h4><p>The descriptive and injunctive treemaps show how often those labels are present, absent, or unclear in each sector.</p></div>
@@ -1882,7 +1884,7 @@ code{background:#f3f7fa !important}
 <li><a href="https://www.nature.com/articles/s41562-018-0434-0" target="_blank" rel="noopener">J. Jachimowicz <em>et al.</em>, &ldquo;The critical role of second-order normative beliefs in predicting energy conservation,&rdquo; <em>Nature Human Behaviour</em>, vol. 2, pp. 757&ndash;764, 2018.</a></li>
 <li><a href="https://journals.sagepub.com/doi/abs/10.1177/1948550617734615" target="_blank" rel="noopener">C. Mortensen <em>et al.</em>, &ldquo;Trending norms: A lever for encouraging behaviors performed by the minority,&rdquo; <em>Social Psychological and Personality Science</em>, vol. 10, pp. 201&ndash;210, 2019.</a></li>
 <!-- Chowdhary & Eker 2025 working paper removed — to be added when formally published -->
-<li><a href="https://www.pewresearch.org/topic/science/environment-and-nature/climate-change/" target="_blank" rel="noopener">Pew Research Center, &ldquo;Climate change public opinion survey,&rdquo; 2022/2024.</a><em style="color:#c09040">[add exact survey URL]</em></li>
+<li><span class="rev-del"><a href="https://www.pewresearch.org/topic/science/environment-and-nature/climate-change/" target="_blank" rel="noopener">Pew Research Center, &ldquo;Climate change public opinion survey,&rdquo; 2022/2024.</a><em style="color:#c09040">[add exact survey URL]</em></span> <span style="color:#c73333">Pew Research Center, <a href="https://www.pewresearch.org/science/2024/06/27/majorities-of-americans-prioritize-renewable-energy-back-steps-on-fossil-fuels/" target="_blank" rel="noopener">&ldquo;Majorities of Americans prioritize renewable energy, back steps on fossil fuels,&rdquo;</a> 2024; see also <a href="https://www.pewresearch.org/science/2024/07/23/americans-views-of-and-experiences-with-electric-vehicles/" target="_blank" rel="noopener">&ldquo;Americans' views of and experiences with electric vehicles,&rdquo;</a> 2024.</span></li>
 <li><a href="https://climatecommunication.yale.edu/visualizations-data/ycom-us/" target="_blank" rel="noopener">Yale Program on Climate Change Communication, &ldquo;Yale Climate Opinion Maps,&rdquo; 2023.</a></li>
 <!-- REMOVED: Boykoff & Roberts 2007 — title/details unverified, flagged as possible hallucination -->
 <!-- REMOVED: OECD "Climate policy database" 2023 — too generic, not directly cited in this work -->
@@ -1923,6 +1925,7 @@ code{background:#f3f7fa !important}
 <button class="annot-toggle-btn" id="annotToggle" title="Toggle comment mode" onclick="toggleAnnotMode()">
   &#128172; Comments <span class="annot-count-badge" id="annotCount">…</span>
 </button>
+<div class="annot-capture" id="annotCapture" aria-hidden="true"></div>
 
 <!-- ANNOTATION INPUT MODAL -->
 <div class="annot-modal" id="annotModal">
@@ -1973,24 +1976,31 @@ function toggleKwPanel(id, triggerEl) {
     document.getElementById('annotToggle').title = annotMode ? 'Click anywhere on the dashboard to add a comment. Click again to exit.' : 'Toggle comment mode';
   };
 
-  // ---- Capture clicks in annotation mode ----
-  document.body.addEventListener('click', function(e){
-    if(!annotMode) return;
-    if(e.target.closest('.annot-note, .annot-modal, .annot-toggle-btn')) return;
-    e.preventDefault(); e.stopPropagation();
-    // Find nearest named section
-    var sec = e.target.closest('[id]');
+  function openAnnotationAt(clientX, clientY){
+    var capture = document.getElementById('annotCapture');
+    if(capture) capture.style.display = 'none';
+    var target = document.elementFromPoint(clientX, clientY);
+    if(capture) capture.style.display = '';
+    var sec = target ? target.closest('[id]') : null;
     pendingTarget = {
       sectionId: sec ? sec.id : 'page',
       tab: (document.querySelector('.tab-content.active') || {id:''}).id.replace('tab-',''),
-      x: Math.round(e.clientX / window.innerWidth * 100),
-      y: Math.round(e.clientY / window.innerHeight * 100),
-      docX: Math.round(e.pageX),
-      docY: Math.round(e.pageY)
+      x: Math.round(clientX / window.innerWidth * 100),
+      y: Math.round(clientY / window.innerHeight * 100),
+      docX: Math.round(window.scrollX + clientX),
+      docY: Math.round(window.scrollY + clientY)
     };
     if(sec){ flashAnnotationTarget(sec); }
     document.getElementById('annotText').value = '';
     document.getElementById('annotModal').classList.add('show');
+  }
+
+  // ---- Capture clicks in annotation mode ----
+  document.getElementById('annotCapture').addEventListener('click', function(e){
+    if(!annotMode) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openAnnotationAt(e.clientX, e.clientY);
   }, true);
 
   window.closeAnnotModal = function(){
