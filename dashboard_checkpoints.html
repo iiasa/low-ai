@@ -1655,8 +1655,8 @@ code{background:#f3f7fa !important}
 <div class="stat"><div class="stat-val" style="color:#5ab4ac">20.1M</div><div class="stat-label">Total Posts</div></div>
 <div class="stat"><div class="stat-val" style="color:#af8dc3">16</div><div class="stat-label">Subreddits</div></div>
 <div class="stat"><div class="stat-val" style="color:#f4a460">3.7M</div><div class="stat-label">Keyword Matched</div></div>
-<div class="stat"><div class="stat-val" style="color:#3c7f4c;background:#eef9f0">21,300</div><div class="stat-label">Labeled Comments (checkpoint)</div></div>
-<div class="stat"><div class="stat-val" style="color:#b96a19;background:#fff4e8">~277K</div><div class="stat-label">Total Labels</div></div>
+<div class="stat"><div class="stat-val" style="color:#3c7f4c;background:#eef9f0"><span class="rev-del">21,300</span> <span style="color:#c73333">82K</span></div><div class="stat-label"><span class="rev-del">Labeled Comments (checkpoint)</span> <span style="color:#c73333">Survey Audit Rows (direct 9B)</span></div></div>
+<div class="stat"><div class="stat-val" style="color:#b96a19;background:#fff4e8"><span class="rev-del">~277K</span> <span style="color:#c73333">526K</span></div><div class="stat-label"><span class="rev-del">Total Labels</span> <span style="color:#c73333">Scaled Survey Inference Rows (ModernBERT+LoRA)</span></div></div>
 <div class="stat"><div class="stat-val" style="color:#b0c4d8">15</div><div class="stat-label">Years (2010&ndash;24)</div></div>
 </div>
 
@@ -1781,7 +1781,7 @@ code{background:#f3f7fa !important}
 <tr><td><span class="badge housing">Homes/solar PV</span></td><td class="r">10</td><td><span class="rev-del">Green Fox Energy 2025</span> <span style="color:#c73333">NREL SEEDS survey package (Adopter / Considerer / GPS instruments)</span></td><td>cost savings, env. benefit, obsolescence, installer trust</td></tr>
 </table>
 
-<p class="rev-purple"><strong>Total labels:</strong> The workflow is now split across two branches. <strong>Survey questions:</strong> `82,000` audit comments across `29` survey questions, followed by SLM training and `200k`-per-sector inference for the currently shown `16` questions. <strong>Social norms:</strong> `30,000` comments (`10,000` per sector) &times; `4` active labels &times; `2` passes = <strong>`240,000` model calls</strong>.</p>
+<p class="rev-purple"><strong>Total labels:</strong> The workflow is now split across two branches. <strong>Survey questions:</strong> <span class="rev-del">`82,000` audit comments across `29` survey questions, followed by SLM training and `200k`-per-sector inference for the currently shown `16` questions.</span> <span style="color:#c73333">`82,000` audit rows across `29` survey questions are the smaller direct-9B checkpoint used for robustness and selection. The later plotting stage then uses <strong>ModernBERT+LoRA</strong> to label a larger survey inference sample of <strong>`526,481` comments total</strong>: <strong>food = `200,000`</strong>, <strong>transport = `200,000`</strong>, and <strong>housing = `126,481`</strong>. Those later scaled outputs feed the current top-5-per-domain radar and temporal figures.</span> <strong>Social norms:</strong> `30,000` comments (`10,000` per sector) &times; `4` active labels &times; `2` passes = <strong>`240,000` model calls</strong>.</p>
 <p class="rev-purple"><strong>Current social-influence pass only:</strong> `30,000` comments (`10,000` per sector) &times; `4` active social-norm questions &times; `2` passes = <strong>`240,000` model calls</strong>. The static social-influence visuals currently shown use the current pass-1 outputs from that run.</p>
 </div>
 
@@ -1806,7 +1806,7 @@ code{background:#f3f7fa !important}
   <div class="pipe-step">
     <span class="pipe-num">4</span>
     <div class="pipe-title">Scale where justified</div>
-    <div class="pipe-desc">Only the kept survey questions move into small language model (SLM) training and larger sector-level inference. <span class="rev-purple"><span class="rev-del">The social-norm side remains direct 9B labeling for now.</span><br>The current radar and temporal panels then display the top 5 questions per domain within that later survey stage.</span></div>
+    <div class="pipe-desc">Only the kept survey questions move into small language model (SLM) training and larger sector-level inference. <span class="rev-purple"><span class="rev-del">The social-norm side remains direct 9B labeling for now.</span><br>Here the small language model is <strong>ModernBERT+LoRA</strong>, which is trained on the kept survey questions and then used to label the larger sector samples. The current radar and temporal panels then display the top 5 questions per domain within that later survey stage.</span></div>
   </div>
   <div class="pipe-step">
     <span class="pipe-num">5</span>
