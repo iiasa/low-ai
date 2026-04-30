@@ -1648,14 +1648,14 @@ code{background:#f3f7fa !important}
 </div>
 
 <!-- ================================================================ -->
-<h2 id="data">2. Data</h2>
+<div style="display:flex;align-items:center;gap:8px"><h2 id="data" style="margin:0">2. Data</h2><div class="floating-note-wrap" style="position:relative;display:inline-block"><button class="floating-note-btn" onclick="toggleFloatingNote(this)" title="Open count note">&#128172;</button><div class="floating-note-panel"><button class="floating-note-close" onclick="toggleFloatingNote(this)">&#215;</button><h4>Survey audit count note</h4><p>The direct 9B survey checkpoint mixes two units. It contains <strong>24,311 unique comments</strong>, but those comments are reused across question-specific files and therefore appear as <strong>82,000 audit rows</strong>. Cards and prose below now separate those two counts explicitly.</p></div></div></div>
 <!-- ================================================================ -->
 
 <div class="stats">
 <div class="stat"><div class="stat-val" style="color:#5ab4ac">20.1M</div><div class="stat-label">Total Posts</div></div>
 <div class="stat"><div class="stat-val" style="color:#af8dc3">16</div><div class="stat-label">Subreddits</div></div>
 <div class="stat"><div class="stat-val" style="color:#f4a460">3.7M</div><div class="stat-label">Keyword Matched</div></div>
-<div class="stat"><div class="stat-val" style="color:#3c7f4c;background:#eef9f0"><span class="rev-del">21,300</span> <span style="color:#c73333">82K</span></div><div class="stat-label"><span class="rev-del">Labeled Comments (checkpoint)</span> <span style="color:#c73333">Survey Audit Rows (direct 9B)</span></div></div>
+<div class="stat"><div class="stat-val" style="color:#3c7f4c;background:#eef9f0"><span class="rev-del">21,300</span> <span style="color:#c73333">24.3K / 82K</span></div><div class="stat-label"><span class="rev-del">Labeled Comments (checkpoint)</span> <span style="color:#c73333">Unique Comments / Audit Rows (direct 9B)</span></div></div>
 <div class="stat"><div class="stat-val" style="color:#b96a19;background:#fff4e8"><span class="rev-del">~277K</span> <span style="color:#c73333">526K</span></div><div class="stat-label"><span class="rev-del">Total Labels</span> <span style="color:#c73333">Scaled Survey Inference Rows (ModernBERT+LoRA)</span></div></div>
 <div class="stat"><div class="stat-val" style="color:#b0c4d8">15</div><div class="stat-label">Years (2010&ndash;24)</div></div>
 </div>
@@ -1726,15 +1726,15 @@ code{background:#f3f7fa !important}
 <td style="color:#6a8caf">Climate</td>
 <td>
 <div class="sub-pills">
-<span class="sub-pill climate">r/climate</span>
-<span class="sub-pill climate">r/ClimateActionPlan</span>
-<span class="sub-pill climate">r/climatechange</span>
-<span class="sub-pill climate">r/ClimateChaos</span>
-<span class="sub-pill climate">r/climatedisalarm</span>
-<span class="sub-pill climate">r/ClimateMemes</span>
-<span class="sub-pill climate">r/ClimateOffensive</span>
-<span class="sub-pill climate">r/ClimateShitposting</span>
-<span class="sub-pill climate">r/climateskeptics</span>
+<span class="sub-pill climate">r/climate<span style="color:#c73333"> (140,104)</span></span>
+<span class="sub-pill climate">r/ClimateActionPlan<span style="color:#c73333"> (28,998)</span></span>
+<span class="sub-pill climate">r/climatechange<span style="color:#c73333"> (88,486)</span></span>
+<span class="sub-pill climate">r/ClimateChaos<span style="color:#c73333"> (653)</span></span>
+<span class="sub-pill climate">r/climatedisalarm<span style="color:#c73333"> (114,436)</span></span>
+<span class="sub-pill climate">r/ClimateMemes<span style="color:#c73333"> (10,578)</span></span>
+<span class="sub-pill climate">r/ClimateOffensive<span style="color:#c73333"> (28,889)</span></span>
+<span class="sub-pill climate">r/ClimateShitposting<span style="color:#c73333"> (74,158)</span></span>
+<span class="sub-pill climate">r/climateskeptics<span style="color:#c73333"> (120,942)</span></span>
 </div>
 </td>
 <td class="r">607,244</td>
@@ -1781,7 +1781,7 @@ code{background:#f3f7fa !important}
 <tr><td><span class="badge housing">Homes/solar PV</span></td><td class="r">10</td><td><span class="rev-del">Green Fox Energy 2025</span> <span style="color:#c73333">NREL SEEDS survey package (Adopter / Considerer / GPS instruments)</span></td><td>cost savings, env. benefit, obsolescence, installer trust</td></tr>
 </table>
 
-<p class="rev-purple"><strong>Total labels:</strong> The workflow is now split across two branches. <strong>Survey questions:</strong> <span class="rev-del">`82,000` audit comments across `29` survey questions, followed by SLM training and `200k`-per-sector inference for the currently shown `16` questions.</span> <span style="color:#c73333">`82,000` audit rows across `29` survey questions are the smaller direct-9B checkpoint used for robustness and selection. The later plotting stage then uses <strong>ModernBERT+LoRA</strong> to label a larger survey inference sample of <strong>`526,481` comments total</strong>: <strong>food = `200,000`</strong>, <strong>transport = `200,000`</strong>, and <strong>housing = `126,481`</strong>. Those later scaled outputs feed the current top-5-per-domain radar and temporal figures.</span> <strong>Social norms:</strong> `30,000` comments (`10,000` per sector) &times; `4` active labels &times; `2` passes = <strong>`240,000` model calls</strong>.</p>
+<p class="rev-purple"><strong>Total labels:</strong> The workflow is now split across two branches. <strong>Survey questions:</strong> <span class="rev-del">`82,000` audit comments across `29` survey questions, followed by SLM training and `200k`-per-sector inference for the currently shown `16` questions.</span> <span style="color:#c73333">The smaller direct-9B checkpoint contains <strong>`24,311` unique comments</strong>, represented in the audit files as <strong>`82,000` audit rows</strong> across `29` survey questions. That checkpoint is used for robustness and selection. The later plotting stage then uses <strong>ModernBERT+LoRA</strong> to label a larger survey inference sample of <strong>`526,481` comments total</strong>: <strong>food = `200,000`</strong>, <strong>transport = `200,000`</strong>, and <strong>housing = `126,481`</strong>. Those later scaled outputs feed the current top-5-per-domain radar and temporal figures.</span> <strong>Social norms:</strong> `30,000` comments (`10,000` per sector) &times; `4` active labels &times; `2` passes = <strong>`240,000` model calls</strong>.</p>
 <p class="rev-purple"><strong>Current social-influence pass only:</strong> `30,000` comments (`10,000` per sector) &times; `4` active social-norm questions &times; `2` passes = <strong>`240,000` model calls</strong>. The static social-influence visuals currently shown use the current pass-1 outputs from that run.</p>
 </div>
 
