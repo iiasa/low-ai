@@ -579,7 +579,7 @@ code{background:#f3f7fa !important}
     <div class="floating-note-panel">
       <button class="floating-note-close" onclick="toggleFloatingNote(this)">&#215;</button>
       <h4>Figure update note</h4>
-      <p>These survey radar and temporal panels now show the <strong>top 5 questions per domain</strong>, ranked by mean prevalence in the later <strong>2010&ndash;2024</strong> scaled survey series. <span class="rev-purple"><span class="rev-del">The earlier display used only the smaller kept subset.</span><br>The figure now follows a simple top-5 rule at the plotting stage.</span></p>
+      <p>These survey radar and temporal panels now show the <strong>top 5 questions per domain</strong>, ranked by mean prevalence in the later <strong>2010&ndash;2024</strong> scaled survey series. <span class="rev-purple"><span class="rev-del">The earlier display used only the smaller kept subset.</span><br><span style="color:#c73333">The plotted values come from the later <strong>526,481-comment</strong> scaled survey inference stage, not from the smaller direct-9B audit checkpoint.</span></span></p>
     </div>
   </div>
 </div>
@@ -642,7 +642,7 @@ code{background:#f3f7fa !important}
   <div style="width:22px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative">
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
       <button class="info-btn" onclick="this.nextElementSibling.classList.toggle('show')">?</button>
-      <div class="info-popup" style="right:auto;left:28px;top:0;width:300px">% of Reddit comments in which a given attitude or barrier is expressed. Top 5 survey questions in this domain, ranked by mean prevalence in the later 2010&ndash;2024 scaled survey series. <span class="rev-purple"><span class="rev-del">Restricted to the survey questions currently surfaced in this dashboard build.</span><br>The figure now uses a top-5 display rule for each domain; &sect;4.3 still explains the smaller 9B checkpoint table separately.</span> Spoke length = prevalence; outer ring = 25%.</div>
+      <div class="info-popup" style="right:auto;left:28px;top:0;width:300px">% of Reddit comments in which a given attitude or barrier is expressed. Top 5 survey questions in this domain, ranked by mean prevalence in the later 2010&ndash;2024 scaled survey series. <span class="rev-purple"><span class="rev-del">Restricted to the survey questions currently surfaced in this dashboard build.</span><br><span style="color:#c73333">These plotted values come from the later <strong>526,481-comment</strong> scaled survey inference stage. The smaller direct-9B checkpoint uses <strong>24,311 unique comments</strong>, represented as <strong>82,000 audit rows</strong>, and is described separately in &sect;4.3.</span></span> Spoke length = prevalence; outer ring = 25%.</div>
       <span class="vlabel" style="flex:none">% of comments showing association</span>
     </div>
   </div>
@@ -1656,7 +1656,7 @@ code{background:#f3f7fa !important}
 <div class="stat"><div class="stat-val" style="color:#af8dc3">16</div><div class="stat-label">Subreddits</div></div>
 <div class="stat"><div class="stat-val" style="color:#f4a460">3.7M</div><div class="stat-label">Keyword Matched</div></div>
 <div class="stat"><div class="stat-val" style="color:#3c7f4c;background:#eef9f0"><span class="rev-del">21,300</span> <span style="color:#c73333">24.3K / 82K</span></div><div class="stat-label"><span class="rev-del">Labeled Comments (checkpoint)</span> <span style="color:#c73333">Unique Comments / Audit Rows (direct 9B)</span></div></div>
-<div class="stat"><div class="stat-val" style="color:#b96a19;background:#fff4e8"><span class="rev-del">~277K</span> <span style="color:#c73333">526K</span></div><div class="stat-label"><span class="rev-del">Total Labels</span> <span style="color:#c73333">Scaled Survey Inference Rows (ModernBERT+LoRA)</span></div></div>
+<div class="stat"><div class="stat-val" style="color:#b96a19;background:#fff4e8"><span class="rev-del">~277K</span> <span style="color:#c73333">526K</span></div><div class="stat-label"><span class="rev-del">Total Labels</span> <span style="color:#c73333">Scaled Survey Inference Comments (ModernBERT+LoRA)</span></div></div>
 <div class="stat"><div class="stat-val" style="color:#b0c4d8">15</div><div class="stat-label">Years (2010&ndash;24)</div></div>
 </div>
 
@@ -1868,7 +1868,7 @@ code{background:#f3f7fa !important}
 <p>These cards describe the plot families currently shown in the <strong>Lifestyle Adoption Factors</strong> and <strong>Social Influence</strong> tabs. They focus on what each plot family shows and how the values are computed.</p>
 <div class="plot-note-grid">
   <div class="plot-note-card"><h4>Corpus keywords</h4><p>Word clouds summarize the most frequent matched terms in each sector. They describe the topical makeup of the Reddit corpus before any survey-style or norm-style labeling.</p></div>
-  <div class="plot-note-card"><h4>Lifestyle factors</h4><p>Radial plots show the top 5 survey questions in each domain, ranked by mean prevalence in the later 2010&ndash;2024 scaled survey series. Values are estimated shares of Reddit comments where each association is present.</p></div>
+  <div class="plot-note-card"><h4>Lifestyle factors</h4><p>Radial plots show the top 5 survey questions in each domain, ranked by mean prevalence in the later 2010&ndash;2024 scaled survey series. Values are estimated shares of Reddit comments where each association is present, using the later <strong>526,481-comment</strong> scaled survey inference stage rather than the smaller direct-9B audit checkpoint.</p></div>
   <div class="plot-note-card"><h4>Survey time trends</h4><p>Year-by-year lines track the same top 5 survey questions per domain through time in the larger inference sample. They are the temporal view of the same question set shown in the radial plots. <span style="color:#c73333">This plotting rule is separate from the smaller 9B checkpoint table in &sect;4.3.</span></p></div>
   <div class="plot-note-card"><h4>Norm signal</h4><p>The norm prevalence panel shows the share of sampled comments in each sector that are coded as norm-relevant discourse.</p></div>
   <div class="plot-note-card"><h4>Reference groups</h4><p>The bubble view counts which social groups are mentioned in norm-bearing comments. It is based on the filtered subset where descriptive or injunctive norm is present.</p></div>
