@@ -75,7 +75,6 @@ Important implication:
   - `people in my town`
   - `people like me`
 
-So the current rule requiring a personal relationship is too narrow.
 
 ---
 
