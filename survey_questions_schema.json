@@ -1,0 +1,286 @@
+{
+  "survey_system": "You are an expert annotator analyzing social survey questions in climate-related discourse. Answer with exactly one of the allowed options; no explanation.",
+  "FOOD": {
+    "dietary_change_meat_reduction": {
+      "source": "Gallup 2019; Yale & GMU 2020; Yale",
+      "questions": [
+        {
+          "id": "diet_1",
+          "wording": "Cite health as main reason for cutting meat",
+          "short_form": "meat reduction - health",
+          "prompt": "Check whether the text links reducing meat consumption to health considerations (health benefits/risks, cholesterol, weight, disease, wellness). Direction does not matter. Output YES if health is used as a reason or concern, otherwise NO.",
+          "agree_percent": 70
+        },
+        {
+          "id": "diet_2",
+          "wording": "Protecting animals is 'moderately' important when choosing food",
+          "short_form": "food choice - animal welfare",
+          "prompt": "Check whether the text associates food choice (especially meat vs plant-based) with animal welfare/ethics (harm to animals, cruelty, rights, compassion). Direction does not matter. Output YES if animal welfare is invoked, otherwise NO.",
+          "agree_percent": 64
+        },
+        {
+          "id": "diet_3",
+          "wording": "Helping to reduce global warming is 'moderately' important",
+          "short_form": "diet choices - climate impact",
+          "prompt": "Check whether the text links dietary choices (meat reduction/plant-based) to climate impact (global warming, emissions, carbon footprint). Direction does not matter. Output YES if climate is a stated consideration, otherwise NO.",
+          "agree_percent": 64
+        },
+        {
+          "id": "diet_4568",
+          "wording": "Willing (or unwilling) to adopt any low-carbon diet change: plant-based meat alternatives, less red meat, less/alternative dairy, or lab-grown meat",
+          "short_form": "willingness/unwillingness - low-carbon diet",
+          "prompt": "Check whether the text discusses willingness or intent (positive or negative) regarding any low-carbon dietary change: eating plant-based meat alternatives or substitutes, reducing red meat consumption, reducing dairy or using plant milks (soy/almond/oat), or eating lab-grown/cultivated meat. Direction does not matter — willing or unwilling both count. Output YES if any such intent or willingness is mentioned, otherwise NO.",
+          "agree_percent": 45,
+          "merged_from": [
+            "diet_4",
+            "diet_5",
+            "diet_6",
+            "diet_8"
+          ],
+          "original_questions": [
+            {
+              "id": "diet_4",
+              "wording": "Willing to eat more plant-based meat alternatives",
+              "short_form": "willingness/unwillingness - plant-based meat alternatives",
+              "prompt": "Check whether the text discusses willingness or intent to consume plant-based meat alternatives (substitutes, meat analogs). Direction does not matter (willing or unwilling both count). Output YES if intent/willingness is mentioned, otherwise NO.",
+              "agree_percent": 55
+            },
+            {
+              "id": "diet_5",
+              "wording": "Willing to eat less red meat",
+              "short_form": "willingness/unwillingness - reduce red meat",
+              "prompt": "Check whether the text discusses willingness or intent to reduce red meat consumption. Direction does not matter. Output YES if intent/willingness is mentioned, otherwise NO.",
+              "agree_percent": 54
+            },
+            {
+              "id": "diet_6",
+              "wording": "Willing to reduce dairy or use dairy alternatives",
+              "short_form": "willingness/unwillingness - dairy reduction/alternatives",
+              "prompt": "Check whether the text discusses willingness or intent to reduce dairy consumption or use dairy alternatives (plant milks like soy/almond/oat, reducing dairy intake). Direction does not matter. Output YES if intent/willingness is mentioned, otherwise NO.",
+              "agree_percent": 44,
+              "merged_from": [
+                "diet_6",
+                "diet_7"
+              ],
+              "original_questions": [
+                {
+                  "id": "diet_6",
+                  "wording": "Willing to use dairy alternatives (soy/almond) instead of dairy milk",
+                  "short_form": "willingness/unwillingness - dairy alternatives",
+                  "agree_percent": 46
+                },
+                {
+                  "id": "diet_7",
+                  "wording": "Willing to eat less dairy",
+                  "short_form": "willingness/unwillingness - reduce dairy",
+                  "agree_percent": 42
+                }
+              ]
+            },
+            {
+              "id": "diet_8",
+              "wording": "Willing to eat lab-grown meat (cell culture)",
+              "short_form": "willingness/unwillingness - lab-grown meat",
+              "prompt": "Check whether the text discusses willingness or intent to eat lab-grown/cultivated meat (cell-cultured). Direction does not matter. Output YES if intent/willingness is mentioned, otherwise NO.",
+              "agree_percent": 26
+            }
+          ]
+        },
+        {
+          "id": "diet_9",
+          "wording": "Taste is important for plant-based choices or would switch if tasted better",
+          "short_form": "plant-based choices - taste",
+          "prompt": "Check whether the text links plant-based choices to taste/palatability (flavor, satisfaction, texture, taste quality as a factor or switching condition). Direction does not matter. Output YES if taste is mentioned as a factor, otherwise NO.",
+          "agree_percent": 75,
+          "merged_from": [
+            "diet_9",
+            "diet_12"
+          ],
+          "original_questions": [
+            {
+              "id": "diet_9",
+              "wording": "Taste is 'moderately' important motive for plant-based choices",
+              "short_form": "plant-based choices - taste",
+              "agree_percent": 83
+            },
+            {
+              "id": "diet_12",
+              "wording": "Would switch if plant-based foods tasted better",
+              "short_form": "plant-based choices - taste quality",
+              "agree_percent": 67
+            }
+          ]
+        },
+        {
+          "id": "diet_10",
+          "wording": "Convenience (ease/quick prep) is 'moderately' important",
+          "short_form": "plant-based choices - convenience",
+          "prompt": "Check whether the text links plant-based choices to convenience/effort/time (ease of cooking, quick prep, availability, hassle). Direction does not matter. Output YES if convenience/effort is invoked, otherwise NO.",
+          "agree_percent": 77
+        },
+        {
+          "id": "diet_11",
+          "wording": "Would switch if plant-based foods were cheaper",
+          "short_form": "plant-based choices - cost",
+          "prompt": "Check whether the text associates plant-based choices with price/cost/affordability (too expensive, cheaper, pricing barriers, value). Direction does not matter. Output YES if cost is mentioned as a factor, otherwise NO.",
+          "agree_percent": 63
+        },
+        {
+          "id": "diet_13",
+          "wording": "Nobody has ever asked them to eat more plant-based foods",
+          "short_form": "plant-based eating - social prompting",
+          "prompt": "Check whether the text links plant-based eating to social prompting/normative asking (being asked/encouraged, social influence, requests from others). Direction does not matter. Output YES if social prompting/norms are mentioned, otherwise NO.",
+          "agree_percent": 64
+        },
+        {
+          "id": "diet_14",
+          "wording": "Barriers to plant-based eating (knowledge or buying effort)",
+          "short_form": "plant-based eating - barriers",
+          "prompt": "Check whether the text associates plant-based eating with barriers (knowledge/information barriers, buying effort/friction, not knowing what to buy, confusion, lack of guidance, labels, shopping difficulty, hard to find, limited options, inconvenience in purchasing). Direction does not matter. Output YES if any barrier is mentioned, otherwise NO.",
+          "agree_percent": 48,
+          "merged_from": [
+            "diet_14",
+            "diet_15"
+          ],
+          "original_questions": [
+            {
+              "id": "diet_14",
+              "wording": "Don't know what plant-based foods to buy (knowledge barrier)",
+              "short_form": "plant-based eating - knowledge barrier",
+              "agree_percent": 53
+            },
+            {
+              "id": "diet_15",
+              "wording": "Too much effort to buy plant-based foods",
+              "short_form": "plant-based eating - buying effort",
+              "agree_percent": 44
+            }
+          ]
+        },
+        {
+          "id": "diet_17",
+          "wording": "Prefer meals with meat/dairy (identity preference)",
+          "short_form": "meat/dairy preference - identity",
+          "prompt": "Check whether the text links preference for meat/dairy to identity, tradition, or self-concept (\"I'm a meat person\", culture, habits, masculinity, comfort identity). Direction does not matter. Output YES if identity/tradition framing appears, otherwise NO.",
+          "agree_percent": 81
+        }
+      ]
+    }
+  },
+  "TRANSPORT": {
+    "electric_vehicle_attitudes": {
+      "source": "Pew 2024",
+      "questions": [
+        {
+          "id": "ev_1",
+          "wording": "Say EVs are better for the environment than gas cars",
+          "short_form": "EVs - environment",
+          "prompt": "Check whether the text links EVs to environmental impact compared to gas cars (pollution, emissions, climate, air quality, lifecycle footprint). Direction does not matter. Output YES if environment is discussed as a comparison dimension, otherwise NO.",
+          "agree_percent": 47
+        },
+        {
+          "id": "ev_2",
+          "wording": "Say EVs cost more up front",
+          "short_form": "EVs - purchase cost",
+          "prompt": "Check whether the text associates EVs with up-front purchase price/cost to buy (sticker price, affordability, incentives, MSRP, financing). Direction does not matter. Output YES if purchase-cost is mentioned, otherwise NO.",
+          "agree_percent": 72
+        },
+        {
+          "id": "ev_3",
+          "wording": "Say EVs cost less to charge than fueling gas",
+          "short_form": "EVs - operating cost",
+          "prompt": "Check whether the text links EVs to operating/energy costs, especially charging cost versus gasoline fueling (cost per mile, electricity price, gas price, running costs). Direction does not matter. Output YES if charging vs fueling cost is referenced, otherwise NO.",
+          "agree_percent": 36
+        },
+        {
+          "id": "ev_4",
+          "wording": "Extremely/very confident U.S. will build enough chargers",
+          "short_form": "EV adoption - infrastructure",
+          "prompt": "Check whether the text associates EV adoption with charging infrastructure availability (enough chargers, charger rollout, network density, access, buildout). Direction does not matter. Output YES if infrastructure adequacy is discussed, otherwise NO.",
+          "agree_percent": 17
+        },
+        {
+          "id": "ev_5",
+          "wording": "Feel EVs are more fun to drive",
+          "short_form": "EVs - driving experience",
+          "prompt": "Check whether the text links EVs to driving experience/pleasure (fun, acceleration, smoothness, quietness, performance feel). Direction does not matter. Output YES if driving-experience is mentioned, otherwise NO.",
+          "agree_percent": 13
+        },
+        {
+          "id": "ev_6",
+          "wording": "Believe EVs are more reliable than gas cars",
+          "short_form": "EVs - reliability",
+          "prompt": "Check whether the text associates EVs with reliability/maintenance compared to gas cars (breakdowns, battery degradation, repairs, service, longevity). Direction does not matter. Output YES if reliability/maintenance is discussed as a dimension, otherwise NO.",
+          "agree_percent": 9
+        }
+      ]
+    }
+  },
+  "HOUSING": {
+    "residential_solar_adoption": {
+      "source": "Green Fox Energy 2025",
+      "questions": [
+        {
+          "id": "solar_1",
+          "wording": "View home solar panels as a major cost-saving addition",
+          "short_form": "home solar - cost savings",
+          "prompt": "Check whether the text associates home/residential solar panels with cost savings or financial benefits (reducing bills, saving money, return on investment, energy cost reduction). Direction does not matter. Output YES if cost-saving benefit is mentioned, otherwise NO."
+        },
+        {
+          "id": "solar_2",
+          "wording": "See solar as a way to help the environment/planet",
+          "short_form": "home solar - environmental benefit",
+          "prompt": "Check whether the text links home solar panels to environmental or climate benefits (helping planet, reducing emissions, carbon footprint, sustainability, green energy). Direction does not matter. Output YES if environmental motivation is present, otherwise NO."
+        },
+        {
+          "id": "solar_3",
+          "wording": "Worry solar technology will become obsolete before investment is recovered",
+          "short_form": "home solar - technology obsolescence",
+          "prompt": "Check whether the text associates home solar with technology obsolescence concerns (tech becoming outdated, newer/better technology coming, system becoming old-fashioned before payback). Direction does not matter. Output YES if obsolescence concern appears, otherwise NO."
+        },
+        {
+          "id": "solar_4",
+          "wording": "Believe it's difficult or impossible to recover the investment",
+          "short_form": "home solar - payback concerns",
+          "prompt": "Check whether the text discusses home solar investment recovery or payback concerns (taking too long to pay back, not recovering costs, breakeven period, ROI uncertainty, worth the investment). Direction does not matter. Output YES if payback/recovery concerns are mentioned, otherwise NO."
+        },
+        {
+          "id": "solar_5",
+          "wording": "Think local climate has insufficient sunshine for solar",
+          "short_form": "home solar - climate suitability",
+          "prompt": "Check whether the text links home solar viability to local sunshine/weather conditions (not enough sun, too cloudy, climate unsuitable, weather limiting effectiveness, geographic location affecting performance). Direction does not matter. Output YES if climate/sunshine adequacy is discussed, otherwise NO."
+        },
+        {
+          "id": "solar_6",
+          "wording": "Have concerns about installer quality or qualifications",
+          "short_form": "home solar - installer trust",
+          "prompt": "Check whether the text discusses installer quality, trustworthiness, or qualifications for home solar (installer competence, proper credentials, quality of work, cowboy installers, choosing reliable installer, installer reputation). Direction does not matter. Output YES if installer quality/trust concerns appear, otherwise NO."
+        },
+        {
+          "id": "solar_7",
+          "wording": "Received inadequate post-installation support or maintenance information",
+          "short_form": "home solar - support/maintenance info",
+          "prompt": "Check whether the text associates home solar with post-installation support, maintenance information, or ongoing care (lack of guidance, no maintenance info, unclear how to maintain, need for support, system registration, aftercare, servicing guidance). Direction does not matter. Output YES if support/maintenance information is mentioned, otherwise NO."
+        },
+        {
+          "id": "solar_8",
+          "wording": "Willing to pay for ongoing maintenance or care plans",
+          "short_form": "home solar - maintenance willingness/unwillingness",
+          "prompt": "Check whether the text discusses willingness or interest in paying for home solar maintenance plans or ongoing care (subscription for maintenance, care plans, service agreements, paying for upkeep, maintenance contracts). Direction does not matter. Output YES if maintenance payment willingness appears, otherwise NO."
+        },
+        {
+          "id": "solar_9",
+          "wording": "Believe their system generates what was promised or more",
+          "short_form": "home solar - performance delivery",
+          "prompt": "Check whether the text discusses home solar system performance relative to expectations (meeting promises, generating expected energy, underperforming or overperforming, matching projections, actual vs promised output). Direction does not matter. Output YES if performance delivery is discussed, otherwise NO."
+        },
+        {
+          "id": "solar_10",
+          "wording": "Lack confidence in using or understanding their solar system",
+          "short_form": "home solar - user confidence",
+          "prompt": "Check whether the text associates home solar with user confidence or understanding (ease of use, system complexity, unclear how it works, monitoring difficulties, understanding output, operating the system). Direction does not matter. Output YES if confidence/understanding issues appear, otherwise NO."
+        }
+      ]
+    }
+  }
+}
