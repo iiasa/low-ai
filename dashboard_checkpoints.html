@@ -393,8 +393,8 @@ code{background:#f3f7fa !important}
 </div>
 <div class="normgate-wrap" style="margin-top:8px">
 <div class="normgate-sidecopy">
-  <p>Each comment is first screened for <strong>norm-relevant discourse</strong>. This is broader than a narrow textbook norm detector: it includes explicit descriptive or injunctive norms, but can also capture Reddit-style public normative talk.</p>
-  <p>The plot shows the share of sampled comments in each sector that are coded as norm-relevant discourse by the currently selected data source (LLM or SLM). <strong>Food and diets emerges as the most norm-saturated sector, indicating that online discussion of dietary behaviour is disproportionately structured around social norms.</strong></p>
+  <p>Each comment is first screened for norm-relevant discourse. This is broader than a narrow textbook norm detector: it includes explicit descriptive or injunctive norms, but can also capture Reddit-style public normative talk.</p>
+  <p>The plot shows the share of sampled comments in each sector that are coded as norm-relevant discourse by the currently selected data source (LLM or SLM). Food and diets emerges as the most norm-saturated sector, indicating that online discussion of dietary behaviour is disproportionately structured around social norms.</p>
 </div>
 <div class="normgate-inline-figure">
 <div id="lollipop-chart" style="width:100%;max-width:300px;margin:0 auto"></div>
@@ -415,12 +415,12 @@ code{background:#f3f7fa !important}
 <div class="bubble-wrap">
 <div class="bubble-inline-figure">
 <div id="bubble-pack" class="bubble-chart"></div>
-<div style="text-align:center;color:#6a8caf;font-size:0.72em;margin-top:4px">Count = comments mentioning that social group &nbsp;&middot;&nbsp; % = share of all cross-sector group mentions in the filtered norm-bearing subset</div>
+<div style="text-align:center;color:#6a8caf;font-size:0.72em;margin-top:4px">Count = comments mentioning that social group &nbsp;&middot;&nbsp; % = share of all cross-sector group mentions in the filtered norm-bearing subset &nbsp;&middot;&nbsp; Percentages may not sum to 100%; comments can mention multiple groups</div>
 <div class="legend" id="bubble-legend"></div>
 </div>
 <div class="bubble-sidecopy">
-  <p>The IPCC stresses that climate mitigation depends not only on technologies, but also on social and cultural processes that shape what actions people take and how change spreads through society. This panel complements the survey-style motivators and barriers by showing whether climate action is discussed in relation to broad public audiences or more personal social ties.</p>
-  <p>The plot shows which social groups are mentioned inside norm-bearing comments, after filtering to comments with descriptive or injunctive norm present. Percentages may not sum to 100% because a comment may mention none or more than one group. <strong>Food and diets contains relatively more interpersonal reference-group language than transport or homes/solar PV, suggesting that dietary behaviour is discussed in relation to closer social ties rather than the general public alone.</strong></p>
+  <p>The IPCC stresses that climate mitigation depends not only on technologies, but also on social and cultural processes that shape what actions people take and how change spreads through society. This panel complements the survey-style motivators and barriers by showing whether lifestyle choices are discussed in relation to broad public audiences or more personal social ties.</p>
+  <p>The plot shows which social groups are mentioned inside norm-bearing comments, after filtering to comments with descriptive or injunctive norm present. Food and diets contains relatively more interpersonal reference-group language than transport or homes/solar PV, suggesting that dietary behaviour is discussed in relation to closer social ties rather than the general public alone.</p>
 </div>
 </div>
 </div>
@@ -436,7 +436,7 @@ code{background:#f3f7fa !important}
   <p>Descriptive norm means language about what people do. Injunctive norm means language about what people should do, including approval, disapproval, praise, blame, ridicule, or prescriptive force.</p>
   <p>The plot shows how often descriptive and injunctive labels are present or absent in each sector for the currently selected label source.</p>
   <p>This panel helps separate talk about observed behavior from talk about approval or social pressure. Area = comment count in the current generated social-norm sample.</p>
-  <p><strong>The sectors show broadly similar levels of descriptive norm presence, but Food/Diets stands out on Reddit for much stronger injunctive-norm language than Transport/EVs or Homes/solar PV.</strong></p>
+  <p>The sectors show broadly similar levels of descriptive norm presence, but Food/Diets stands out on Reddit for much stronger injunctive-norm language than Transport/EVs or Homes/solar PV.</p>
 </div>
 <div class="treemap-inline-figure">
 <div class="grid2">
@@ -454,7 +454,7 @@ code{background:#f3f7fa !important}
 <div class="normtemporal-wrap" style="margin-top:8px">
 <div class="normtemporal-sidecopy">
   <p>The plot shows the yearly share of comments where the selected norm dimension is present for the currently selected label source. Each line is one sector.</p>
-  <p><strong>Injunctive norms are consistently higher in the Food/Diets sector on Reddit, and their presence increased over time, from roughly 40% in 2010 to nearly 60% in 2024.</strong></p>
+  <p>Injunctive norms are consistently higher in the Food/Diets sector on Reddit, and their presence increased over time, from roughly 40% in 2010 to nearly 60% in 2024.</p>
   
 </div>
 <div class="normtemporal-inline-figure">
@@ -603,15 +603,15 @@ code{background:#f3f7fa !important}
   </div>
   <div style="width:250px;flex-shrink:0;font-size:0.84em;line-height:1.62;color:#516579;padding-top:10px">
     <div style="font-size:1.42rem;line-height:1.35;color:#2b4a63;font-weight:700;margin:0 0 10px">Prominence of factors affecting adoption of specific lifestyles on Reddit</div>
-    <p>AI can help us detect lifestyle choices and the factors influencing those choices in social-media discourse, even when the data were never originally collected for that purpose. With modern language models, we can project large-scale text into subspaces defined by the questions we choose to ask. Tasks that would require manual human labeling can now be automated.</p>
-    <p style="margin:0 0 10px">Here we show the percentage of Reddit comments in which a given attitude or barrier is expressed. These numbers do not measure individual preferences the way surveys do. Instead, they capture an orthogonal dimension: how prominent a factor becomes in collective attention when climate action is discussed in public.</p>
+    <p>AI can help us detect lifestyle choices and the factors influencing those choices in social-media discourse, even when the data were never originally collected for that purpose. With modern language models, we can project large-scale text into subspaces defined by the questions we choose to ask, without need for human labeling. In our case, we track survey questions on Reddit using LLMs.</p>
+    <p style="margin:0 0 10px">Here we show the percentage of Reddit comments in which a given attitude or barrier is expressed. These numbers do not measure individual preferences the way surveys do. Instead, they capture an orthogonal dimension: how prominent a factor becomes in collective attention when lifestyle choices are discussed in public.</p>
   </div>
 </div>
 <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 0 0">
   <span style="text-transform:none;color:#000;font-weight:400;font-size:1.2em">% of comments showing factor</span>
   <div style="position:relative;display:inline-flex;align-items:center">
     <button class="info-btn" onclick="toggleInfo(this)">?</button>
-    <div class="info-popup" style="right:auto;left:24px;top:-4px;width:300px">% of Reddit comments in which a given attitude or barrier is expressed. Top 5 survey questions in this domain, ranked by mean prevalence in the later 2010&ndash;2024 scaled survey series.</div>
+    <div class="info-popup" style="right:auto;left:24px;top:-4px;width:300px">% of Reddit comments in which a given attitude or barrier is expressed. Top 5 by prominence and confidence.</div>
   </div>
 </div>
 <!-- Row 3: Temporal trends (Removed) -->
@@ -2268,7 +2268,7 @@ code{background:#f3f7fa !important}
 <p>The objective is to explore the drivers and barriers of low-carbon behaviours using open-ended Reddit posts. For individual and structural drivers, the dashboard compares Reddit discourse with existing survey questions and measures how often those survey ideas appear in posts. For social drivers, it examines social influence through descriptive norms, injunctive norms, and reference groups. Across both parts of the workflow, large language models are used and their reliability is checked through repeated labeling, cross-model checks, and manual review. The result is both a substantive picture of climate discourse on Reddit and a methodological demonstration of how large language models can be used to complement survey-based measurement.</p>
 
 <h3 id="intro-gap">1.1 Knowledge Gap</h3>
-<p><span>IPCC AR6 WGIII highlights a knowledge gap in understanding the dynamic interaction between individual, social, and structural drivers of change, and in particular asks how social media influences the development and impacts of narratives about low-carbon transitions<sup>[1]</sup>. More research is needed to assess the role played by social media platforms in influencing emerging narratives of climate change and low-carbon transition<sup>[21]</sup>.</span> Traditional measures of societal readiness&mdash;public opinion polls, climate opinion maps, and related survey-style instruments can be slow, costly, or limited in temporal granularity<sup>[8,9,12]</sup>. Existing social-media studies also tend to compress discourse into broad sentiment categories<sup>[10]</sup>, ignoring the richer norm taxonomy that behavioural science has shown to matter (descriptive vs. injunctive, reference group specificity, and the difference between strict norm statements and public normative performances in Reddit-style discourse). No prior study has tracked survey questions directly in social-media data at scale. This dashboard projects Reddit discourse into subspaces defined by established survey instruments, revealing how prominent each factor becomes in collective attention when climate action is discussed publicly—capturing an orthogonal dimension to individual preferences measured by surveys.</p>
+<p><span>IPCC AR6 WGIII highlights a knowledge gap in understanding the dynamic interaction between individual, social, and structural drivers of change, and in particular asks how social media influences the development and impacts of narratives about low-carbon transitions<sup>[1]</sup>. More research is needed to assess the role played by social media platforms in influencing emerging narratives of climate change and low-carbon transition<sup>[21]</sup>.</span> Traditional measures of societal readiness&mdash;public opinion polls, climate opinion maps, and related survey-style instruments can be slow, costly, or limited in temporal granularity<sup>[8,9,12]</sup>. Existing social-media studies also tend to compress discourse into broad sentiment categories<sup>[10]</sup>, ignoring the richer norm taxonomy that behavioural science has shown to matter (descriptive vs. injunctive, reference group specificity, and the difference between strict norm statements and public normative performances in Reddit-style discourse). No prior study has tracked survey questions directly in social-media data at scale. This dashboard projects Reddit discourse into subspaces defined by established survey instruments, revealing how prominent each factor becomes in collective attention when lifestyle choices are discussed publicly—capturing an orthogonal dimension to individual preferences measured by surveys.</p>
 
 <h3 id="intro-contrib">1.2 Contributions</h3>
 <p><span>This dashboard uses Reddit discourse to extend and complement past survey-based work on climate-related behaviour. It asks whether the very same questions from carefully crafted survey instruments can be used with AI, at scale, to extract meaningful insights from observed public discourse rather than only from self-reported responses. In that sense, the dashboard does not simply reproduce survey categories on a new platform; it tracks an orthogonal dimension of collective attention, namely which motivators, barriers, and social pressures are publicly evoked when people discuss food, transport, and home-energy choices online. At a broader level, narratives about climate mitigation circulate within and across societies, and enable people to imagine and make sense of the future through processes of interpretation, understanding, communication, and social interaction<sup>[17]</sup>. The analysis therefore uses AI to recover structured signals from messy social-media text while also tracing social norms—approval, disapproval, observed behaviour, and reference groups—in public conversation.</span></p>
@@ -2630,7 +2630,7 @@ code{background:#f3f7fa !important}
 
 <h3 id="limitations" style="color:#ff6b6b;margin:18px 0 4px 0">3.5 Limitations and Future Directions</h3>
 <p><span style="color:#2f3f4d !important">As the reader may have noticed, the LLM tracks easier versions of the original survey questions in some instances. This is deliberate, as we found in our experiments that the complexity of a question can stump an LLM of a certain size; a larger model may resolve this at the cost of more compute and parameters.</span></p>
-<p><span style="color:#2f3f4d !important">This limitation has another cause, separate from question complexity. The Reddit data are not self-reported descriptions of individuals; they are better understood as projecting large-scale text into subspaces defined by the questions we choose to ask. There is no guarantee that Reddit discourse supports such projections for arbitrary survey questions. In particular, questions invoking willingness caused the model to fail most often.</span></p>
+<p><span style="color:#2f3f4d !important">This limitation has another cause, separate from question complexity. The Reddit data are not self-reported descriptions of individuals; they are better understood as projecting large-scale text into subspaces defined by the questions we choose to ask. There is no guarantee that Reddit discourse supports such projections for arbitrary survey questions.</span></p>
 <p><span style="color:#2f3f4d !important">In future work, as models improve in capability and efficiency, the same methodology could be applied to track arbitrary climate-change-related questions across large-scale textual or video data. This would extend the dashboard's approach beyond Reddit to other platforms and modalities, enabling broader monitoring of public discourse on low-carbon transitions.</span></p>
 </div>
 
