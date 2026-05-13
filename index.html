@@ -1997,22 +1997,22 @@ function renderSurveyComparisonTables(){
             title:'Table A. Food/Diets — Reddit frame mention vs. survey agreement',
             sourceSub:'("very"+"somewhat")',
             rows:[
-                {qid:'diet_2',  surveyQ:'"Protecting animals is \'moderately\' important when choosing food" · Gallup 2019; Yale &amp; GMU 2020', surveyPct:64},
-                {qid:'diet_9',  surveyQ:'"Taste is \'moderately\' important motive for plant-based choices" · Gallup 2019; Yale &amp; GMU 2020', surveyPct:83},
-                {qid:'diet_10', surveyQ:'"Convenience (ease/quick prep) is \'moderately\' important" · Gallup 2019; Yale &amp; GMU 2020', surveyPct:77},
-                {qid:'diet_13', surveyQ:'"Nobody has ever asked them to eat more plant-based foods" · Yale PCCC &amp; EDN 2019', surveyPct:64},
-                {qid:'diet_14', surveyQ:'"Don\'t know what plant-based foods to buy" + "Too much effort to buy" · Yale PCCC &amp; EDN 2019', surveyPct:53}
+                {qid:'diet_2',  surveyQ:'"Protecting animals is \'moderately\' important when choosing food"', surveyPct:64},
+                {qid:'diet_9',  surveyQ:'"Taste is \'moderately\' important motive for plant-based choices"', surveyPct:83},
+                {qid:'diet_10', surveyQ:'"Convenience (ease/quick prep) is \'moderately\' important"', surveyPct:77},
+                {qid:'diet_13', surveyQ:'"Nobody has ever asked them to eat more plant-based foods"', surveyPct:64},
+                {qid:'diet_14', surveyQ:'"Don\'t know what plant-based foods to buy" + "Too much effort to buy"', surveyPct:53}
             ]
         },
         transport:{
             title:'Table B. Transport/EVs — Reddit frame mention vs. survey agreement',
             sourceSub:'("strongly"+"somewhat")',
             rows:[
-                {qid:'ev_1', surveyQ:'"Say EVs are better for the environment than gas cars" · Pew 2024', surveyPct:47},
-                {qid:'ev_2', surveyQ:'"Say EVs cost more up front" · Pew 2024', surveyPct:72},
-                {qid:'ev_3', surveyQ:'"Say EVs cost less to charge than fueling gas" · Pew 2024', surveyPct:36},
-                {qid:'ev_4', surveyQ:'"Extremely/very confident U.S. will build enough chargers" · Pew 2024', surveyPct:17},
-                {qid:'ev_6', surveyQ:'"Believe EVs are more reliable than gas cars" · Pew 2024', surveyPct:9}
+                {qid:'ev_1', surveyQ:'"Say EVs are better for the environment than gas cars"', surveyPct:47},
+                {qid:'ev_2', surveyQ:'"Say EVs cost more up front"', surveyPct:72},
+                {qid:'ev_3', surveyQ:'"Say EVs cost less to charge than fueling gas"', surveyPct:36},
+                {qid:'ev_4', surveyQ:'"Extremely/very confident U.S. will build enough chargers"', surveyPct:17},
+                {qid:'ev_6', surveyQ:'"Believe EVs are more reliable than gas cars"', surveyPct:9}
             ]
         },
         housing:{
@@ -2053,13 +2053,14 @@ function renderSurveyComparisonTables(){
         });
     }
 
-    function buildTable(meta){
+    function buildTable(meta, sector){
+        var showSource = sector === 'housing';
         var hdr='<p><strong>'+meta.title+'</strong></p>';
         hdr+='<table style="font-size:0.85em;border-collapse:collapse;width:100%;border:1px solid #ccc">';
         hdr+='<thead><tr style="background:#f6f9fc"><th style="text-align:left;padding:4px 8px;border:1px solid #ccc">QID</th>';
         hdr+='<th style="text-align:left;padding:4px 8px;border:1px solid #ccc">Frame</th>';
         hdr+='<th style="text-align:center;padding:4px 8px;border:1px solid #ccc">Reddit %</th>';
-        hdr+='<th style="text-align:left;padding:4px 8px;border:1px solid #ccc">Survey Question &amp; Source</th>';
+        hdr+='<th style="text-align:left;padding:4px 8px;border:1px solid #ccc">'+(showSource ? 'Survey Question &amp; Source' : 'Survey Question')+'</th>';
         hdr+='<th style="text-align:center;padding:4px 8px;border:1px solid #ccc">Survey %<br><small>'+meta.sourceSub+'</small></th></tr></thead><tbody>';
         var body='';
         meta.rows.forEach(function(row){
@@ -2080,7 +2081,7 @@ function renderSurveyComparisonTables(){
     var html='';
     ['food','transport','housing'].forEach(function(sec){
         var meta=surveyMeta[sec];
-        if(meta) html+=buildTable(meta)+'\n';
+        if(meta) html+=buildTable(meta, sec)+'\n';
     });
     container.innerHTML=html;
 }
@@ -2623,7 +2624,7 @@ code{background:#f3f7fa !important}
 <p>The 27B model's confidence check confirms the pattern seen in section 3.2: descriptive norms are harder for even the larger 9B model to identify reliably, compared to injunctive norms. This may reflect that the definitions of descriptive norms are somewhat vaguer; observing what others do is a subtler signal than explicit approval or disapproval. Overall, social-norm labels show lower confidence than survey-question labels.</p>
 <h3 id="survey_comparison" style="color:#ff6b6b;margin:18px 0 4px 0">3.4 Comparing Surveys to Reddit: Prevalence of Key Frames in U.S. Public Opinion</h3>
 <p>Language models let us project large-scale social-media text into subspaces defined by survey-style questions, even though those data were never collected for that purpose. What emerges is not a measure of individual preferences. Rather, it reflects how visible a given factor becomes in public conversation when climate action is on the table, an orthogonal dimension to what structured surveys capture.</p>
-<p>Reddit % is the share of comments in which an LLM classifier flagged the frame as present (YES/NO, direction-agnostic). Survey % combines "strongly" + "somewhat" agree (Pew) or "very" + "somewhat" willing/positive (Gallup; Yale), per Table 2 of the published paper. The two measures capture related but distinct constructs and are not directly comparable.</p>
+<p>Reddit % is the share of comments in which an LLM classifier flagged the frame as present (YES/NO, direction-agnostic). Survey % combines "strongly" + "somewhat" agree (Pew) or "very" + "somewhat" willing/positive (Gallup; Yale), The two measures capture related but distinct constructs and are not directly comparable.</p>
 <div id="survey-comparison-tables"></div>
 <p>The survey data show that respondents broadly agree all these factors influence their choices, with comparable agreement rates across questions. Reddit discourse tells a different story: it naturally differentiates between more commonly discussed frames, such as animal welfare in food choice, and those that receive far less public attention.</p>
 
